@@ -1,5 +1,7 @@
 <?php
-require 'config/db.php';
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+require 'Php/config/db.php';
 
 $errores = [];
 $exito   = false;
@@ -73,5 +75,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ```
 
 ---
-
-http://localhost/mi_app/registro.php

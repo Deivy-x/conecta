@@ -1,130 +1,223 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empleos - Quibdó Conecta</title>
-    <link rel="stylesheet" href="css/index.css?v=1.1">
-    <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Quibdó Conecta | Empleos</title>
+
+<link rel="stylesheet" href="css/empleos.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 </head>
+
 <body>
 
-<header class="navbar">
-    <div class="nav-left">
-        <img src="Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
-        <span class="brand">Quibdó<span>Conecta</span></span>
-    </div>
+<!-- NAVBAR -->
 
-    <nav class="nav-center">
-        <a href="index.html">Inicio</a>
-        <a href="empleos.html" class="active">Empleos</a>
-        <a href="talento.html">Talento</a>
-        <a href="empresas.html">Empresas</a>
-        <a href="publicar.html" class="highlight">Publicar empleo</a>
-        <a href="ayuda.html">Ayuda</a>
-    </nav>
+<nav class="navbar">
 
-    <div class="nav-right">
-        <a href="inicio.html" class="login">Iniciar sesión</a>
-        <a href="registro.html" class="register">Registrarse</a>
-    </div>
-</header>
+<div class="nav-left">
+<img src="Imagenes/Quibdo.png" class="logo">
+<h2 class="brand">Quibdó <span>Conecta</span></h2>
+</div>
 
-<section class="hero small-hero">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-        <h1>Encuentra empleos en Quibdó y Chocó</h1>
-        <p class="hero-subtitle">Oportunidades reales cerca de ti</p>
+<div class="nav-center">
+<a href="#">Inicio</a>
+<a href="#">Empleos</a>
+<a href="#">Empresas</a>
+<a href="#">Servicios</a>
+<a href="#" class="highlight">Publicar empleo</a>
+</div>
 
-        <div class="search-bar">
-            <div class="search-field">
-                <span class="icon">💼</span>
-                <input type="text" placeholder="Cargo, profesión o categoría">
-            </div>
-            <div class="divider"></div>
-            <div class="search-field">
-                <span class="icon">📍</span>
-                <input type="text" placeholder="Quibdó, Chocó o remoto">
-            </div>
-            <button class="search-btn">🔍 Buscar empleos</button>
-        </div>
-    </div>
+<div class="nav-right">
+<a href="#" class="login">Iniciar sesión</a>
+<a href="#" class="register">Registrarse</a>
+</div>
+
+</nav>
+
+<!-- HERO -->
+
+<section class="hero">
+
+<div class="hero-overlay"></div>
+
+<div class="hero-content">
+
+<h1>Encuentra trabajo en Quibdó</h1>
+
+<p class="hero-subtitle">
+Conecta con oportunidades laborales en tu ciudad
+</p>
+
+<div class="search-bar">
+
+<div class="search-field">
+<input type="text" placeholder="Buscar trabajo">
+</div>
+
+<div class="divider"></div>
+
+<div class="search-field">
+<input type="text" placeholder="Ubicación">
+</div>
+
+<button class="search-btn">
+Buscar
+</button>
+
+</div>
+
+</div>
+
 </section>
 
-<section class="jobs-section">
-    <div class="container">
-        <div class="filters-bar">
-            <div class="filter-group">
-                <label>Modalidad</label>
-                <select>
-                    <option>Todas</option>
-                    <option>Presencial</option>
-                    <option>Híbrido</option>
-                    <option>Remoto</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Tipo de contrato</label>
-                <select>
-                    <option>Todos</option>
-                    <option>Indefinido</option>
-                    <option>Definido</option>
-                    <option>Por prestación de servicios</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Ordenar por</label>
-                <select>
-                    <option>Más recientes</option>
-                    <option>Menor salario</option>
-                    <option>Mayor salario</option>
-                </select>
-            </div>
-        </div>
 
-        <div class="jobs-grid large">
-            <!-- Ejemplo de oferta (repetir según necesites) -->
-            <div class="job-card">
-                <div class="job-header">
-                    <h3>Auxiliar Administrativo</h3>
-                    <span class="job-type">Presencial • Tiempo completo</span>
-                </div>
-                <p class="company">Empresa Local S.A.S</p>
-                <p class="location">📍 Quibdó, Chocó</p>
-                <p class="salary">Salario: $1.300.000 - $1.600.000</p>
-                <p class="date">Publicado hace 2 días</p>
-                <a href="#" class="job-apply">Postularme</a>
-            </div>
+<!-- SECCIÓN EMPLEOS -->
 
-            <div class="job-card">
-                <div class="job-header">
-                    <h3>Ingeniero de Sistemas</h3>
-                    <span class="job-type">Híbrido • Tiempo completo</span>
-                </div>
-                <p class="company">Tech Chocó</p>
-                <p class="location">📍 Quibdó</p>
-                <p class="salary">Salario: $3.200.000 - $4.500.000</p>
-                <p class="date">Publicado hace 5 días</p>
-                <a href="#" class="job-apply">Postularme</a>
-            </div>
+<section class="empleos">
 
-            <!-- Agrega 6–10 tarjetas más aquí en producción -->
-        </div>
+<h2>Empleos en Quibdó</h2>
 
-        <div class="pagination">
-            <a href="#" class="page-btn active">1</a>
-            <a href="#" class="page-btn">2</a>
-            <a href="#" class="page-btn">3</a>
-            <a href="#" class="page-btn">Siguiente →</a>
-        </div>
-    </div>
+<p class="empleos-sub">
+Oportunidades laborales disponibles
+</p>
+
+<div class="empleos-grid">
+
+<div class="empleo-card">
+<h3>💈 Barbero</h3>
+<p>Barbería del Centro</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>💇 Peluquera</h3>
+<p>Salón Belleza Afro</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>🎨 Diseñador Gráfico</h3>
+<p>Agencia Creativa</p>
+<span>Remoto / Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>💻 Ingeniero en Sistemas</h3>
+<p>Empresa Tecnológica</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>🎵 Músico</h3>
+<p>Eventos y Cultura</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>📊 Administrador de Empresas</h3>
+<p>Empresa Comercial</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>🤝 Trabajador Social</h3>
+<p>Fundación Comunitaria</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>🔧 Electricista</h3>
+<p>Servicios Técnicos</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>🍽️ Cocinero</h3>
+<p>Restaurante Local</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>🚗 Conductor</h3>
+<p>Transporte Urbano</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>📷 Fotógrafo</h3>
+<p>Eventos Sociales</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+<div class="empleo-card">
+<h3>🎧 DJ</h3>
+<p>Eventos Nocturnos</p>
+<span>Quibdó</span>
+<button>Ver detalles</button>
+</div>
+
+</div>
+
 </section>
 
-<script>
-    window.addEventListener("scroll", function () {
-        document.querySelector("header").classList.toggle("abajo", window.scrollY > 0);
-    });
-</script>
+
+<!-- CTA FINAL -->
+
+<section class="final-cta">
+
+<h2>¿Buscas talento o empleo?</h2>
+
+<p>
+Publica oportunidades o encuentra trabajo en tu ciudad.
+</p>
+
+<div class="cta-buttons">
+
+<a href="#" class="cta-primary">
+Publicar empleo
+</a>
+
+<a href="#" class="cta-secondary">
+Explorar empleos
+</a>
+
+</div>
+
+</section>
+
+
+<!-- FOOTER -->
+
+<footer class="footer">
+
+<p>
+© 2026 Quibdó Conecta - Plataforma de empleos locales
+</p>
+
+</footer>
+
+
+<!-- JAVASCRIPT -->
+
+<script src="js/empleo.js"></script>
 
 </body>
+
 </html>
