@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talento - Quibdó Conecta</title>
+    <link rel="stylesheet" href="css/talento.css">
+    <link rel="icon" href="../Imagenes/quibdo1-removebg-preview.png">
+</head>
+<body>
+
+<header class="navbar">
+    <div class="nav-left">
+        <img src="../Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
+        <span class="brand">Quibdó<span>Conecta</span></span>
+    </div>
+    <nav class="nav-center">
+        <a href="index.html">Inicio</a>
+        <a href="empleos.html">Empleos</a>
+        <a href="talento.html" class="active">Talento</a>
+        <a href="../html/empresas.html">Empresas</a>
+        <a href="../html/publicar.html" class="highlight">Publicar empleo</a>
+        <a href="../html/ayuda.html">Ayuda</a>
+    </nav>
+    <div class="nav-right">
+        <a href="../html/inicio.html" class="login">Iniciar sesión</a>
+        <a href="../html/registro.html" class="register">Registrarse</a>
+    </div>
+</header>
+
+<section class="hero small-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1>Descubre talento local del Chocó</h1>
+        <p class="hero-subtitle">Profesionales listos para trabajar contigo</p>
+
+        <div class="search-bar">
+            <div class="search-field">
+                <span class="icon">👤</span>
+                <input type="text" placeholder="Profesión o habilidad">
+            </div>
+            <div class="divider"></div>
+            <div class="search-field">
+                <span class="icon">📍</span>
+                <input type="text" placeholder="Quibdó, Chocó o remoto">
+            </div>
+            <button class="search-btn">🔍 Buscar talento</button>
+        </div>
+    </div>
+</section>
+
+<section class="talento-section">
+    <div class="container">
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>Experiencia</label>
+                <select>
+                    <option>Todas</option>
+                    <option>0-1 año</option>
+                    <option>1-3 años</option>
+                    <option>3+ años</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Profesión</label>
+                <select>
+                    <option>Todas</option>
+                    <option>Administrativo</option>
+                    <option>Tecnología</option>
+                    <option>Educación</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Ordenar por</label>
+                <select>
+                    <option>Más recientes</option>
+                    <option>Mejor calificados</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="talento-grid">
+            <div class="talento-card">
+                <img src="../Imagenes/perfil-placeholder.jpg" alt="Perfil">
+                <h3>María López</h3>
+                <p class="profession">Auxiliar Administrativa • 2 años exp.</p>
+                <p class="location">📍 Quibdó</p>
+                <p class="availability">Disponible inmediato</p>
+                <a href="#" class="btn-apply">Ver perfil</a>
+            </div>
+
+            <!-- más tarjetas aquí -->
+
+        </div>
+
+        <div class="pagination">
+            <a href="#" class="page-btn active">1</a>
+            <a href="#" class="page-btn">2</a>
+            <a href="#" class="page-btn">Siguiente →</a>
+        </div>
+    </div>
+</section>
+
+<script>
+    window.addEventListener("scroll", () => {
+        document.querySelector(".navbar").classList.toggle("abajo", window.scrollY > 0);
+    });
+</script>
+</body>
+</html>

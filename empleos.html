@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empleos - Quibdó Conecta</title>
+    <link rel="stylesheet" href="css/index.css?v=1.1">
+    <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
+</head>
+<body>
+
+<header class="navbar">
+    <div class="nav-left">
+        <img src="Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
+        <span class="brand">Quibdó<span>Conecta</span></span>
+    </div>
+
+    <nav class="nav-center">
+        <a href="index.html">Inicio</a>
+        <a href="empleos.html" class="active">Empleos</a>
+        <a href="talento.html">Talento</a>
+        <a href="empresas.html">Empresas</a>
+        <a href="publicar.html" class="highlight">Publicar empleo</a>
+        <a href="ayuda.html">Ayuda</a>
+    </nav>
+
+    <div class="nav-right">
+        <a href="inicio.html" class="login">Iniciar sesión</a>
+        <a href="registro.html" class="register">Registrarse</a>
+    </div>
+</header>
+
+<section class="hero small-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1>Encuentra empleos en Quibdó y Chocó</h1>
+        <p class="hero-subtitle">Oportunidades reales cerca de ti</p>
+
+        <div class="search-bar">
+            <div class="search-field">
+                <span class="icon">💼</span>
+                <input type="text" placeholder="Cargo, profesión o categoría">
+            </div>
+            <div class="divider"></div>
+            <div class="search-field">
+                <span class="icon">📍</span>
+                <input type="text" placeholder="Quibdó, Chocó o remoto">
+            </div>
+            <button class="search-btn">🔍 Buscar empleos</button>
+        </div>
+    </div>
+</section>
+
+<section class="jobs-section">
+    <div class="container">
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>Modalidad</label>
+                <select>
+                    <option>Todas</option>
+                    <option>Presencial</option>
+                    <option>Híbrido</option>
+                    <option>Remoto</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Tipo de contrato</label>
+                <select>
+                    <option>Todos</option>
+                    <option>Indefinido</option>
+                    <option>Definido</option>
+                    <option>Por prestación de servicios</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Ordenar por</label>
+                <select>
+                    <option>Más recientes</option>
+                    <option>Menor salario</option>
+                    <option>Mayor salario</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="jobs-grid large">
+            <!-- Ejemplo de oferta (repetir según necesites) -->
+            <div class="job-card">
+                <div class="job-header">
+                    <h3>Auxiliar Administrativo</h3>
+                    <span class="job-type">Presencial • Tiempo completo</span>
+                </div>
+                <p class="company">Empresa Local S.A.S</p>
+                <p class="location">📍 Quibdó, Chocó</p>
+                <p class="salary">Salario: $1.300.000 - $1.600.000</p>
+                <p class="date">Publicado hace 2 días</p>
+                <a href="#" class="job-apply">Postularme</a>
+            </div>
+
+            <div class="job-card">
+                <div class="job-header">
+                    <h3>Ingeniero de Sistemas</h3>
+                    <span class="job-type">Híbrido • Tiempo completo</span>
+                </div>
+                <p class="company">Tech Chocó</p>
+                <p class="location">📍 Quibdó</p>
+                <p class="salary">Salario: $3.200.000 - $4.500.000</p>
+                <p class="date">Publicado hace 5 días</p>
+                <a href="#" class="job-apply">Postularme</a>
+            </div>
+
+            <!-- Agrega 6–10 tarjetas más aquí en producción -->
+        </div>
+
+        <div class="pagination">
+            <a href="#" class="page-btn active">1</a>
+            <a href="#" class="page-btn">2</a>
+            <a href="#" class="page-btn">3</a>
+            <a href="#" class="page-btn">Siguiente →</a>
+        </div>
+    </div>
+</section>
+
+<script>
+    window.addEventListener("scroll", function () {
+        document.querySelector("header").classList.toggle("abajo", window.scrollY > 0);
+    });
+</script>
+
+</body>
+</html>

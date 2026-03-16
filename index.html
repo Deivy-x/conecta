@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quibdó Conecta</title>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
+    <link rel="stylesheet" href="css/index.css?v=1.1">
+</head>
+
+<body>
+<header class="navbar">
+    <div class="nav-left">
+        <img src="Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
+        <span class="brand">Quibdó<span>Conecta</span></span>
+    </div>
+
+    <nav class="nav-center">
+        <a href="index.html">Inicio</a>
+        <a href="empleos.html">Empleos</a>
+        <a href="talento.html">Talento</a>
+        <a href="empresas.html">Empresas</a>
+        <a href="publicar.html" class="highlight">Publicar empleo</a>
+        <a href="ayuda.html">Ayuda</a>
+    </nav>
+
+    <div class="nav-right">
+        <a href="inicio.html" class="login">Iniciar sesión</a>
+        <a href="registro.html" class="register">Registrarse</a>
+    </div>
+</header>
+
+   
+<section class="hero">
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+        <h1>
+            <span class="welcome1">Conecta</span> tu
+            <span class="welcome2">Talento</span> con
+            <span class="welcome3">Oportunidades</span>
+        </h1>
+
+        <p class="hero-subtitle">
+            La plataforma de empleo hecha para Quibdó y el Chocó
+        </p>
+
+        <div class="search-bar">
+    <div class="search-field">
+        <span class="icon">💼</span>
+        <input type="text" placeholder="Cargo o categoría">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="search-field">
+        <span class="icon">📍</span>
+        <input type="text" placeholder="Lugar">
+    </div>
+
+    <button class="search-btn">
+        🔍 Buscar empleos
+    </button>
+</div>
+
+    </div>
+</section>
+
+<!-- =========================
+     SECCIÓN: CÓMO FUNCIONA
+========================= -->
+<section class="how-it-works">
+    <h2>¿Cómo funciona QuibdóConecta?</h2>
+
+    <div class="steps">
+        <div class="step-card">
+            <span>📝</span>
+            <h3>Crea tu perfil</h3>
+            <p>Regístrate y muestra tu talento al mundo laboral.</p>
+        </div>
+
+        <div class="step-card">
+            <span>🔍</span>
+            <h3>Busca oportunidades</h3>
+            <p>Encuentra empleos y empresas del Chocó.</p>
+        </div>
+
+        <div class="step-card">
+            <span>🤝</span>
+            <h3>Postúlate o contrata</h3>
+            <p>Conecta talento local con empresas reales.</p>
+        </div>
+
+        <div class="step-card">
+            <span>🚀</span>
+            <h3>Crece profesionalmente</h3>
+            <p>Impulsa tu futuro sin salir de la región.</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- =========================
+     SECCIÓN: EMPLEOS DESTACADOS
+========================= -->
+<section class="featured-jobs">
+    <h2>Empleos destacados</h2>
+
+    <div class="jobs-grid">
+        <div class="job-card">
+            <h3>Auxiliar Administrativo</h3>
+            <p class="company">Empresa Local S.A.S</p>
+            <p class="location">📍 Quibdó</p>
+            <a href="#">Ver oferta</a>
+        </div>
+
+        <div class="job-card">
+            <h3>Ingeniero de Sistemas</h3>
+            <p class="company">Tech Chocó</p>
+            <p class="location">📍 Quibdó</p>
+            <a href="#">Ver oferta</a>
+        </div>
+
+        <div class="job-card">
+            <h3>Docente</h3>
+            <p class="company">Institución Educativa</p>
+            <p class="location">📍 Chocó</p>
+            <a href="#">Ver oferta</a>
+        </div>
+    </div>
+</section>
+
+
+<!-- =========================
+     SECCIÓN: EMPRESAS ALIADAS
+========================= -->
+<section class="partners">
+    <h2>Empresas que confían en nosotros</h2>
+
+    <div class="partners-logos">
+        <div class="partner">Empresa 1</div>
+        <div class="partner">Empresa 2</div>
+        <div class="partner">Empresa 3</div>
+        <div class="partner">Empresa 4</div>
+    </div>
+</section>
+
+
+<!-- =========================
+     SECCIÓN: IMPACTO
+========================= -->
+<section class="impact">
+    <div class="impact-grid">
+        <div class="impact-card">
+            <h3>+500</h3>
+            <p>Talentos registrados</p>
+        </div>
+
+        <div class="impact-card">
+            <h3>+120</h3>
+            <p>Empresas activas</p>
+        </div>
+
+        <div class="impact-card">
+            <h3>+300</h3>
+            <p>Vacantes publicadas</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- =========================
+     CTA FINAL
+========================= -->
+<section class="final-cta">
+    <h2>Haz parte del talento que mueve al Chocó</h2>
+    <p>Conecta tu futuro con oportunidades reales.</p>
+
+    <div class="cta-buttons">
+        <a href="#" class="cta-primary">Crear perfil</a>
+        <a href="#" class="cta-secondary">Publicar vacante</a>
+    </div>
+</section>
+
+
+
+
+    <script type="text/javascript">
+        window.addEventListener("scroll", function () {
+            var header = document.querySelector("header");
+            header.classList.toggle("abajo", window.scrollY>0);
+            })
+    </script>
+</body>
+
+</html>
