@@ -14,20 +14,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password  = $_POST['password'] ?? '';
     $confirmar = $_POST['confirmar'] ?? '';
 
-    // Validaciones
     if (empty($nombre))                             $errores[] = "El nombre es obligatorio.";
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errores[] = "El email no es válido.";
     if (strlen($password) < 8)                      $errores[] = "La contraseña debe tener mínimo 8 caracteres.";
     if ($password !== $confirmar)                   $errores[] = "Las contraseñas no coinciden.";
 
-    // Verificar que el email no exista
     if (empty($errores)) {
         $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
         $stmt->execute([$email]);
         if ($stmt->fetch()) $errores[] = "Ese email ya está registrado.";
     }
 
-    // Guardar en la base de datos
     if (empty($errores)) {
         $hash = password_hash($password, PASSWORD_BCRYPT);
         $stmt = $pdo->prepare("INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)");
@@ -48,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if ($exito): ?>
         <p style="color:green">✅ ¡Cuenta creada exitosamente!</p>
         <a href="login.php">Iniciar sesión</a>
-
     <?php else: ?>
         <?php foreach ($errores as $e): ?>
             <p style="color:red">⚠️ <?= htmlspecialchars($e) ?></p>
@@ -72,4 +68,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 </body>
 </html>
-
