@@ -1,7 +1,191 @@
+/* RESET */
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins', sans-serif;
+}
+
+body{
+background:#f5f7fa;
+color:#333;
+line-height:1.6;
+}
+
+
+/* NAVBAR */
+
+.navbar{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:75px;
+
+display:flex;
+align-items:center;
+justify-content:space-between;
+
+padding:0 40px;
+
+background:white;
+border-bottom:1px solid rgba(0,0,0,0.08);
+
+z-index:1000;
+}
+
+.nav-left{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.logo{
+width:45px;
+}
+
+.brand{
+font-size:22px;
+font-weight:700;
+}
+
+.brand span{
+color:#1f9d55;
+}
+
+.nav-center{
+display:flex;
+gap:25px;
+}
+
+.nav-center a{
+text-decoration:none;
+color:#333;
+font-weight:500;
+}
+
+.highlight{
+background:#1f9d55;
+color:white !important;
+padding:8px 16px;
+border-radius:25px;
+}
+
+.nav-right{
+display:flex;
+gap:15px;
+}
+
+.login{
+border:2px solid #1f9d55;
+padding:6px 15px;
+border-radius:20px;
+text-decoration:none;
+color:#1f9d55;
+}
+
+.register{
+background:#1f9d55;
+padding:7px 16px;
+border-radius:20px;
+color:white;
+text-decoration:none;
+}
+
+
+/* HERO */
+
+.hero{
+height:90vh;
+background:url("../Imagenes/quibdo 4.jpg") center/cover no-repeat;
+
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+
+color:white;
+padding-top:80px;
+}
+
+.hero-overlay{
+position:absolute;
+inset:0;
+background:rgba(0,0,0,0.5);
+}
+
+.hero-content{
+position:relative;
+z-index:2;
+}
+
+.hero h1{
+font-size:60px;
+margin-bottom:10px;
+}
+
+.hero-subtitle{
+font-size:20px;
+margin-bottom:30px;
+}
+
+
+/* SEARCH BAR */
+
+.search-bar{
+display:flex;
+align-items:center;
+background:white;
+
+border-radius:40px;
+
+padding:8px;
+
+max-width:800px;
+
+margin:auto;
+}
+
+.search-field{
+flex:1;
+padding:10px;
+}
+
+.search-field input{
+width:100%;
+border:none;
+outline:none;
+font-size:15px;
+}
+
+.divider{
+width:1px;
+height:30px;
+background:#ddd;
+}
+
+.search-btn{
+background:#0b3a7e;
+color:white;
+border:none;
+
+padding:12px 20px;
+
+border-radius:30px;
+
+cursor:pointer;
+}
+
+
+/* SECCION EMPLEOS */
+
 .empleos{
 padding:100px 40px;
 background:#f8fafc;
 text-align:center;
+max-width:1200px;
+margin:auto;
 }
 
 .empleos h2{
@@ -14,24 +198,35 @@ margin-bottom:50px;
 opacity:0.8;
 }
 
+
+/* GRID */
+
 .empleos-grid{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-gap:25px;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:30px;
 }
+
+
+/* TARJETA */
 
 .empleo-card{
 background:white;
-padding:30px;
-border-radius:15px;
-text-align:left;
+padding:25px;
+border-radius:14px;
+
 border:1px solid rgba(0,0,0,0.08);
-transition:0.3s;
+
+transition:all 0.3s ease;
+
+box-shadow:0 4px 12px rgba(0,0,0,0.05);
+
+text-align:left;
 }
 
 .empleo-card:hover{
-transform:translateY(-6px);
-box-shadow:0 10px 25px rgba(0,0,0,0.1);
+transform:translateY(-5px);
+box-shadow:0 10px 25px rgba(0,0,0,0.15);
 }
 
 .empleo-card h3{
@@ -54,12 +249,63 @@ margin:5px 0 15px;
 .empleo-card button{
 background:#1f9d55;
 border:none;
+
 color:white;
+
 padding:8px 16px;
+
 border-radius:20px;
+
 cursor:pointer;
 }
 
 .empleo-card button:hover{
 background:#166f3d;
+}
+
+
+/* CTA FINAL */
+
+.final-cta{
+padding:100px 40px;
+background:#0f172a;
+color:white;
+text-align:center;
+}
+
+.final-cta h2{
+font-size:36px;
+}
+
+.cta-buttons{
+margin-top:30px;
+display:flex;
+justify-content:center;
+gap:20px;
+}
+
+.cta-primary{
+background:#1f9d55;
+padding:12px 30px;
+border-radius:30px;
+color:white;
+text-decoration:none;
+}
+
+.cta-secondary{
+border:2px solid #1f9d55;
+padding:12px 30px;
+border-radius:30px;
+color:#1f9d55;
+text-decoration:none;
+}
+
+
+/* FOOTER */
+
+.footer{
+padding:30px;
+text-align:center;
+background:#111;
+color:white;
 }
