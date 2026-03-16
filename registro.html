@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Registro | Quibdó Conecta</title>
+<link rel="stylesheet" href="css/registro.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="logo">
+<img src="Imagenes/Quibdo.png">
+</div>
+
+<h1>Crear cuenta</h1>
+
+<form id="registerForm">
+
+<div class="profile-upload">
+
+<img id="preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+
+<br>
+
+<label>Foto de perfil <span class="required">*</span></label>
+<input type="file" id="photo" accept="image/*" required>
+
+</div>
+
+<div class="row">
+
+<div class="input-group">
+<label>Nombres <span class="required">*</span></label>
+<input type="text" id="name" required>
+</div>
+
+<div class="input-group">
+<label>Apellidos <span class="required">*</span></label>
+<input type="text" id="lastname" required>
+</div>
+
+</div>
+
+<div class="input-group">
+<label>Correo electrónico <span class="required">*</span></label>
+<input type="email" id="email" required>
+</div>
+
+<div class="input-group">
+
+<label>Tipo de usuario <span class="required">*</span></label>
+
+<select id="role" required>
+
+<option value="">Seleccione...</option>
+<option value="talento">Talento</option>
+<option value="empresa">Empresa</option>
+
+</select>
+
+</div>
+
+<div class="input-group">
+
+<label>Contraseña <span class="required">*</span></label>
+
+<input type="password" id="password" required>
+
+<div class="strength">
+<span id="strengthBar"></span>
+</div>
+
+</div>
+
+<div class="input-group">
+
+<label>Subir hoja de vida <span class="required">*</span></label>
+
+<input type="file" id="cv" accept=".pdf,.doc,.docx" required>
+
+</div>
+
+<button class="btn">Crear cuenta</button>
+
+</form>
+
+<div class="divider">o registrarse con</div>
+
+<button class="social" onclick="googleLogin()">
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg">
+
+Continuar con Google
+
+</button>
+
+<button class="social facebook" onclick="facebookLogin()">
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/facebook/facebook-original.svg">
+
+Continuar con Facebook
+
+</button>
+
+<div class="extra">
+
+¿Ya tienes cuenta?
+<a href="login.html">Iniciar sesión</a>
+
+</div>
+
+</div>
+
+<script>
+
+/* FOTO PREVIEW */
+
+photo.onchange=e=>{
+
+const file=e.target.files[0]
+
+if(file){
+
+const reader=new FileReader()
+
+reader.onload=e=>{
+preview.src=e.target.result
+}
+
+reader.readAsDataURL(file)
+
+}
+
+}
+
+/* PASSWORD STRENGTH */
+
+password.oninput=()=>{
+
+let val=password.value
+let strength=0
+
+if(val.length>7)strength++
+if(/[A-Z]/.test(val))strength++
+if(/[0-9]/.test(val))strength++
+if(/[^A-Za-z0-9]/.test(val))strength++
+
+let width=strength*25
+
+strengthBar.style.width=width+"%"
+
+if(width<50)strengthBar.style.background="red"
+else if(width<75)strengthBar.style.background="orange"
+else strengthBar.style.background="lime"
+
+}
+
+/* VALIDACION */
+
+registerForm.onsubmit=e=>{
+
+if(password.value.length<8){
+
+alert("La contraseña debe tener mínimo 8 caracteres")
+
+e.preventDefault()
+
+}
+
+}
+
+/* SOCIAL LOGIN DEMO */
+
+function googleLogin(){
+alert("Aquí se conectará con Google OAuth")
+}
+
+function facebookLogin(){
+alert("Aquí se conectará con Facebook Login")
+}
+
+</script>
+
+</body>
+</html>
