@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Publicar empleo | Quibdó Conecta</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Poppins",sans-serif;
+}
+
+body{
+
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+min-height:100vh;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+padding:40px;
+
+}
+
+/* CONTENEDOR */
+
+.container{
+
+width:850px;
+max-width:100%;
+
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(20px);
+
+padding:40px;
+
+border-radius:15px;
+
+box-shadow:0 20px 50px rgba(0,0,0,0.4);
+
+color:white;
+
+}
+
+/* LOGO */
+
+.logo{
+text-align:center;
+margin-bottom:15px;
+}
+
+.logo img{
+width:90px;
+}
+
+h1{
+text-align:center;
+margin-bottom:25px;
+}
+
+/* GRID */
+
+.row{
+display:flex;
+gap:15px;
+flex-wrap:wrap;
+}
+
+.input-group{
+flex:1;
+margin-bottom:18px;
+}
+
+label{
+display:block;
+margin-bottom:6px;
+font-size:14px;
+}
+
+.required{
+color:#ff6b6b;
+}
+
+/* INPUTS */
+
+input,select,textarea{
+
+width:100%;
+padding:12px;
+
+border:none;
+border-radius:8px;
+
+background:rgba(255,255,255,0.15);
+
+color:white;
+
+outline:none;
+
+}
+
+textarea{
+height:120px;
+resize:none;
+}
+
+/* BOTON */
+
+.btn{
+
+width:100%;
+padding:14px;
+
+border:none;
+
+border-radius:10px;
+
+background:linear-gradient(90deg,#00c6ff,#0072ff);
+
+color:white;
+
+font-size:16px;
+
+cursor:pointer;
+
+margin-top:10px;
+
+transition:.3s;
+
+}
+
+.btn:hover{
+transform:scale(1.03);
+}
+
+/* PREVIEW */
+
+.preview{
+
+margin-top:30px;
+
+background:rgba(255,255,255,0.12);
+
+padding:20px;
+
+border-radius:10px;
+
+display:none;
+
+}
+
+.preview h2{
+margin-bottom:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="logo">
+<img src="Imagenes/Quibdo.png">
+</div>
+
+<h1>Publicar Empleo</h1>
+
+<form id="jobForm">
+
+<div class="input-group">
+
+<label>Título del empleo <span class="required">*</span></label>
+
+<input type="text" id="titulo" required>
+
+</div>
+
+<div class="row">
+
+<div class="input-group">
+
+<label>Empresa <span class="required">*</span></label>
+
+<input type="text" id="empresa" required>
+
+</div>
+
+<div class="input-group">
+
+<label>Ubicación <span class="required">*</span></label>
+
+<input type="text" id="ubicacion" placeholder="Ej: Quibdó, Chocó" required>
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="input-group">
+
+<label>Tipo de empleo <span class="required">*</span></label>
+
+<select id="tipo" required>
+
+<option value="">Seleccione</option>
+<option>Tiempo completo</option>
+<option>Medio tiempo</option>
+<option>Remoto</option>
+<option>Freelance</option>
+<option>Prácticas</option>
+
+</select>
+
+</div>
+
+<div class="input-group">
+
+<label>Salario</label>
+
+<input type="text" placeholder="Ej: $2.000.000">
+
+</div>
+
+</div>
+
+<div class="input-group">
+
+<label>Descripción del empleo <span class="required">*</span></label>
+
+<textarea id="descripcion" required></textarea>
+
+</div>
+
+<div class="input-group">
+
+<label>Requisitos <span class="required">*</span></label>
+
+<textarea id="requisitos" required></textarea>
+
+</div>
+
+<div class="input-group">
+
+<label>Imagen del empleo</label>
+
+<input type="file" id="imagen" accept="image/*">
+
+</div>
+
+<button type="button" class="btn" onclick="previewJob()">
+
+Vista previa
+
+</button>
+
+<button class="btn">
+
+Publicar empleo
+
+</button>
+
+</form>
+
+<div class="preview" id="preview">
+
+<h2 id="pTitulo"></h2>
+
+<p><strong>Empresa:</strong> <span id="pEmpresa"></span></p>
+
+<p><strong>Ubicación:</strong> <span id="pUbicacion"></span></p>
+
+<p><strong>Tipo:</strong> <span id="pTipo"></span></p>
+
+<p><strong>Descripción:</strong></p>
+
+<p id="pDescripcion"></p>
+
+<p><strong>Requisitos:</strong></p>
+
+<p id="pRequisitos"></p>
+
+</div>
+
+</div>
+
+<script>
+
+function previewJob(){
+
+let titulo=tituloInput.value
+let empresa=empresaInput.value
+let ubicacion=ubicacionInput.value
+let tipo=tipoInput.value
+let descripcion=descripcionInput.value
+let requisitos=requisitosInput.value
+
+if(!titulo||!empresa||!ubicacion||!tipo||!descripcion||!requisitos){
+
+alert("Completa todos los campos obligatorios")
+
+return
+
+}
+
+pTitulo.innerText=titulo
+pEmpresa.innerText=empresa
+pUbicacion.innerText=ubicacion
+pTipo.innerText=tipo
+pDescripcion.innerText=descripcion
+pRequisitos.innerText=requisitos
+
+preview.style.display="block"
+
+}
+
+const tituloInput=document.getElementById("titulo")
+const empresaInput=document.getElementById("empresa")
+const ubicacionInput=document.getElementById("ubicacion")
+const tipoInput=document.getElementById("tipo")
+const descripcionInput=document.getElementById("descripcion")
+const requisitosInput=document.getElementById("requisitos")
+
+</script>
+
+</body>
+</html>
