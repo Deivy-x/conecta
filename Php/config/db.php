@@ -1,8 +1,8 @@
 <?php
-$host = 'localhost';
-$dbname = 'mi_app';
-$user = 'root';
-$pass = ''; // En producción, usa una contraseña fuerte
+$host = 'sql213.infinityfree.com';
+$dbname = 'if0_41408419_XXX';
+$user = 'if0_41408419';
+$pass = 'quibdoconecta'; // En producción, usa una contraseña fuerte
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
