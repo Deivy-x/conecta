@@ -1,7 +1,7 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-require 'Php/config/db.php';
+require 'config/db.php';
 
 $errores = [];
 $exito   = false;
@@ -72,6 +72,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 </body>
 </html>
-```
 
----

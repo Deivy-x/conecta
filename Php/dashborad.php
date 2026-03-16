@@ -18,5 +18,4 @@ $usuario = $stmt->fetch();
 
 <h1>Hola, <?= htmlspecialchars($usuario['nombre']) ?></h1>
 <a href="logout.php">Cerrar sesión</a>
-```
 
