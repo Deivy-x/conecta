@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = trim($_POST['email'] ?? '');
     $rol      = trim($_POST['rol'] ?? '');
     $password = $_POST['password'] ?? '';
-
+    
     // Validaciones
     if (empty($nombre))                             $errores[] = "El nombre es obligatorio.";
     if (empty($apellido))                           $errores[] = "El apellido es obligatorio.";
