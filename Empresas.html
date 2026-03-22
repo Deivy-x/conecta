@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empresas - Quibdó Conecta</title>
+    <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', Arial, sans-serif;
+            background: #f9fafb;
+            color: #111;
+        }
+
+        /* ========================= NAVBAR ========================= */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 78px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            transition: box-shadow 0.3s;
+        }
+
+        .navbar.abajo {
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.13);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 52px;
+            height: auto;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+            color: #111;
+        }
+
+        .brand span {
+            color: #1f9d55;
+        }
+
+        .nav-center {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-center a {
+            color: #333;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 6px 4px;
+            position: relative;
+        }
+
+        .nav-center a::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -6px;
+            width: 0%;
+            height: 2px;
+            background: #1f9d55;
+            transition: width 0.3s ease;
+        }
+
+        .nav-center a:hover::after,
+        .nav-center a.active::after {
+            width: 100%;
+        }
+
+        .nav-center .highlight {
+            background: linear-gradient(135deg, #1f9d55, #2ecc71);
+            color: white !important;
+            padding: 9px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(31, 157, 85, 0.35);
+        }
+
+        .nav-center .highlight::after {
+            display: none;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .login {
+            color: #1f9d55;
+            text-decoration: none;
+            font-size: 14.5px;
+            font-weight: 600;
+            padding: 8px 18px;
+            border: 2px solid #1f9d55;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+
+        .login:hover {
+            background: #1f9d55;
+            color: white;
+        }
+
+        .register {
+            background: #1f9d55;
+            color: white;
+            padding: 9px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14.5px;
+            box-shadow: 0 4px 12px rgba(31, 157, 85, 0.35);
+        }
+
+        .register:hover {
+            background: #166f3d;
+        }
+
+        /* ========================= HERO ========================= */
+        .hero-empresas {
+            padding: 160px 48px 100px;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1a2e 50%, #0f172a 100%);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-empresas::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 25% 50%, rgba(11, 58, 126, 0.2) 0%, transparent 60%),
+                radial-gradient(ellipse at 75% 50%, rgba(31, 157, 85, 0.12) 0%, transparent 60%);
+        }
+
+        .hero-empresas-content {
+            position: relative;
+            z-index: 2;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(31, 157, 85, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.35);
+            color: #2ecc71;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 18px;
+            border-radius: 30px;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-empresas h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 56px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .hero-empresas h1 span {
+            color: #2ecc71;
+        }
+
+        .hero-empresas p {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.72);
+            margin-bottom: 40px;
+            line-height: 1.7;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-verde {
+            background: linear-gradient(135deg, #1f9d55, #2ecc71);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 6px 20px rgba(31, 157, 85, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-verde:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(31, 157, 85, 0.5);
+        }
+
+        .btn-outline {
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .btn-outline:hover {
+            border-color: #2ecc71;
+            color: #2ecc71;
+        }
+
+        /* ========================= CONFIANZA STATS ========================= */
+        .confianza {
+            background: white;
+            padding: 55px 48px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .confianza-item h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 40px;
+            font-weight: 800;
+            color: #1f9d55;
+        }
+
+        .confianza-item p {
+            font-size: 14px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        /* ========================= BENEFICIOS ========================= */
+        .beneficios {
+            padding: 100px 48px;
+            background: #f9fafb;
+            text-align: center;
+        }
+
+        .section-label {
+            display: inline-block;
+            background: #edfaf3;
+            color: #1f9d55;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 16px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .beneficios h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 36px;
+            margin-bottom: 14px;
+        }
+
+        .beneficios .subtitulo {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 60px;
+        }
+
+        .beneficios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 28px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .beneficio-card {
+            background: white;
+            border-radius: 20px;
+            padding: 36px 28px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .beneficio-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .beneficio-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #edfaf3, #d4f5e2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .beneficio-card h3 {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .beneficio-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.65;
+        }
+
+        /* ========================= CÓMO REGISTRARSE ========================= */
+        .como-registrarse {
+            padding: 100px 48px;
+            background: white;
+        }
+
+        .como-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .como-texto h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 38px;
+            margin-bottom: 18px;
+            line-height: 1.2;
+        }
+
+        .como-texto h2 span {
+            color: #1f9d55;
+        }
+
+        .como-texto p {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        .pasos-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .paso-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+        }
+
+        .paso-num {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #1f9d55, #2ecc71);
+            color: white;
+            border-radius: 50%;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(31, 157, 85, 0.3);
+        }
+
+        .paso-texto h4 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .paso-texto p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .como-visual {
+            background: linear-gradient(135deg, #0f172a, #1a2e1a);
+            border-radius: 24px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .mini-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s;
+        }
+
+        .mini-card:hover {
+            background: rgba(31, 157, 85, 0.1);
+            border-color: rgba(31, 157, 85, 0.25);
+        }
+
+        .mini-card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1f9d55, #2ecc71);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .mini-card-info h4 {
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .mini-card-info p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        .mini-card-info .activo {
+            color: #2ecc71;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+        /* ========================= EMPRESAS REGISTRADAS ========================= */
+        .empresas-lista {
+            padding: 100px 48px;
+            background: #f9fafb;
+        }
+
+        .empresas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .empresas-header h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 36px;
+        }
+
+        .ver-todos {
+            color: #1f9d55;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 15px;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .ver-todos:hover {
+            border-color: #1f9d55;
+        }
+
+        .empresas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .empresa-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px;
+            border: 1px solid rgba(0, 0, 0, 0.07);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .empresa-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .empresa-card .badge {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: #edfaf3;
+            color: #1f9d55;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .empresa-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #1f9d55, #2ecc71);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .empresa-card h3 {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .empresa-card .sector {
+            color: #1f9d55;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .empresa-card .ubicacion {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 14px;
+        }
+
+        .empresa-card .vacantes {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 18px;
+            font-weight: 500;
+        }
+
+        .btn-ver-empresa {
+            display: block;
+            text-align: center;
+            border: 2px solid #1f9d55;
+            color: #1f9d55;
+            padding: 10px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-ver-empresa:hover {
+            background: #1f9d55;
+            color: white;
+        }
+
+        /* ========================= PLANES ========================= */
+        .planes {
+            padding: 100px 48px;
+            background: white;
+            text-align: center;
+        }
+
+        .planes h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 36px;
+            margin-bottom: 14px;
+        }
+
+        .planes .subtitulo {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 60px;
+        }
+
+        .planes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 28px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .plan-card {
+            border-radius: 24px;
+            padding: 40px 32px;
+            border: 2px solid rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            text-align: left;
+            position: relative;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .plan-card.destacado {
+            background: linear-gradient(135deg, #0f172a, #1a2e1a);
+            border-color: #1f9d55;
+            color: white;
+        }
+
+        .plan-badge {
+            display: inline-block;
+            background: #1f9d55;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .plan-card h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .plan-precio {
+            font-family: 'Syne', sans-serif;
+            font-size: 42px;
+            font-weight: 800;
+            color: #1f9d55;
+            margin-bottom: 6px;
+        }
+
+        .plan-card.destacado .plan-precio {
+            color: #2ecc71;
+        }
+
+        .plan-periodo {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 28px;
+        }
+
+        .plan-card.destacado .plan-periodo {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .plan-features {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .plan-features li {
+            font-size: 14px;
+            color: #444;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plan-card.destacado .plan-features li {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .plan-features li::before {
+            content: '✓';
+            color: #1f9d55;
+            font-weight: 800;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .plan-card.destacado .plan-features li::before {
+            color: #2ecc71;
+        }
+
+        .btn-plan {
+            display: block;
+            text-align: center;
+            padding: 13px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: 2px solid #1f9d55;
+            color: #1f9d55;
+        }
+
+        .btn-plan:hover {
+            background: #1f9d55;
+            color: white;
+        }
+
+        .plan-card.destacado .btn-plan {
+            background: linear-gradient(135deg, #1f9d55, #2ecc71);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 20px rgba(31, 157, 85, 0.4);
+        }
+
+        .plan-card.destacado .btn-plan:hover {
+            opacity: 0.9;
+        }
+
+        /* ========================= CTA FINAL ========================= */
+        .final-cta {
+            padding: 110px 48px;
+            background: #0f172a;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .final-cta::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(31, 157, 85, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .final-cta h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 40px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .final-cta p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 17px;
+            margin-bottom: 44px;
+            position: relative;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .cta-primary {
+            background: linear-gradient(135deg, #1f9d55, #2ecc71);
+            color: white;
+            padding: 15px 36px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 6px 22px rgba(31, 157, 85, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(31, 157, 85, 0.5);
+        }
+
+        .cta-secondary {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 36px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .cta-secondary:hover {
+            border-color: #2ecc71;
+            color: #2ecc71;
+        }
+
+        /* ========================= FOOTER ========================= */
+        footer {
+            background: #0f172a;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            padding: 28px 48px;
+            font-size: 14px;
+        }
+
+        footer span {
+            color: #2ecc71;
+        }
+
+
+        /* ── HAMBURGER ── */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 26px;
+            height: 2.5px;
+            background: #111;
+            border-radius: 4px;
+            transition: all .35s;
+        }
+
+        .hamburger.open span:nth-child(1) {
+            transform: translateY(7.5px) rotate(45deg);
+        }
+
+        .hamburger.open span:nth-child(2) {
+            opacity: 0;
+            transform: scaleX(0);
+        }
+
+        .hamburger.open span:nth-child(3) {
+            transform: translateY(-7.5px) rotate(-45deg);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 78px;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+            flex-direction: column;
+            padding: 20px 24px;
+            gap: 6px;
+            z-index: 999;
+            animation: slideDown .3s ease;
+        }
+
+        .mobile-menu.open {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-12px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .mobile-menu a {
+            color: #333;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .mobile-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-menu a.highlight-m {
+            color: #1f9d55;
+            font-weight: 700;
+        }
+
+        .mobile-auth {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .mobile-auth a {
+            flex: 1;
+            text-align: center;
+            padding: 11px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+        }
+
+        .mobile-auth .m-login {
+            border: 2px solid #1f9d55;
+            color: #1f9d55;
+        }
+
+        .mobile-auth .m-reg {
+            background: #1f9d55;
+            color: white;
+        }
+
+        /* ── SCROLL REVEAL BIDIRECCIONAL ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(36px);
+            transition: opacity .65s ease, transform .65s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── PARTNERS CARRUSEL ── */
+        .partners-band {
+            padding: 70px 48px;
+            background: #f9fafb;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .partners-band h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        .partners-band .sub {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+
+        .partners-track-wrap {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .partners-track-wrap::before,
+        .partners-track-wrap::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 100px;
+            height: 100%;
+            z-index: 2;
+        }
+
+        .partners-track-wrap::before {
+            left: 0;
+            background: linear-gradient(to right, #f9fafb, transparent);
+        }
+
+        .partners-track-wrap::after {
+            right: 0;
+            background: linear-gradient(to left, #f9fafb, transparent);
+        }
+
+        .partners-track {
+            display: flex;
+            gap: 16px;
+            width: max-content;
+            animation: scrollPartners 26s linear infinite;
+        }
+
+        .partners-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes scrollPartners {
+            from {
+                transform: translateX(0)
+            }
+
+            to {
+                transform: translateX(-50%)
+            }
+        }
+
+        .p-chip {
+            background: white;
+            padding: 16px 28px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 14px;
+            color: #444;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all .3s;
+        }
+
+        .p-chip:hover {
+            border-color: #1f9d55;
+            color: #1f9d55;
+        }
+
+        /* ========================= RESPONSIVE ========================= */
+
+        /* ── RESPONSIVE HERO COMPLETO 2026 ── */
+        @media (max-width: 1200px) {
+            .hero-empresas h1 {
+                font-size: 46px;
+            }
+
+            .navbar {
+                padding: 0 32px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hero-empresas {
+                padding: 140px 32px 80px;
+            }
+
+            .hero-empresas h1 {
+                font-size: 38px;
+            }
+
+            .como-inner {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 20px;
+            }
+
+            .nav-center,
+            .nav-right {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .hero-empresas {
+                padding: 110px 20px 70px;
+            }
+
+            .hero-empresas h1 {
+                font-size: 30px;
+            }
+
+            .beneficios,
+            .empresas-lista,
+            .planes,
+            .final-cta,
+            .como-registrarse {
+                padding: 60px 20px;
+            }
+
+            .confianza {
+                padding: 36px 20px;
+            }
+
+            .beneficios-grid,
+            .empresas-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .planes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-btns {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-verde,
+            .btn-outline {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero-empresas h1 {
+                font-size: 26px;
+            }
+
+            .confianza {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-empresas h1 {
+                font-size: 22px;
+            }
+
+            .confianza {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .cta-primary,
+            .cta-secondary {
+                width: 100%;
+                text-align: center;
+            }
+        }
+        /* ── MODAL EMPRESA ── */
+        .modal-empresa-ov {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.55); z-index: 9999;
+            align-items: center; justify-content: center; padding: 20px
+        }
+        .modal-empresa-ov.open { display: flex }
+        .modal-empresa-box {
+            background: #fff; border-radius: 20px; padding: 32px 28px;
+            max-width: 440px; width: 100%; position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,.2); text-align: center;
+            animation: slideUp .25s ease
+        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+        .modal-empresa-close {
+            position: absolute; top: 14px; right: 14px;
+            background: #f5f5f5; border: none; border-radius: 50%;
+            width: 32px; height: 32px; font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background .2s
+        }
+        .modal-empresa-close:hover { background: #ffe0e0 }
+        .meb-logo {
+            width: 72px; height: 72px; border-radius: 16px;
+            background: linear-gradient(135deg, #1c5c32, #2d8a50);
+            color: white; font-size: 22px; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px; font-family: 'Cabinet Grotesk', sans-serif
+        }
+        .meb-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 10px }
+        .meb-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700
+        }
+        .meb-badge.verif { background: #e8f5e9; color: #1c5c32; border: 1px solid #a5d6a7 }
+        .meb-badge.dest  { background: #fff8e1; color: #b7791f; border: 1px solid #f6d860 }
+        .meb-nombre { font-size: 20px; font-weight: 800; color: #0e0e0e; margin-bottom: 4px }
+        .meb-sector { font-size: 14px; color: #888; margin-bottom: 6px }
+        .meb-loc    { font-size: 13px; color: #555; margin-bottom: 12px }
+        .meb-desc   { font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 16px; text-align: left }
+        .meb-vacantes {
+            display: inline-block; padding: 8px 18px; border-radius: 30px;
+            background: #f0fdf4; color: #1c5c32; font-weight: 700; font-size: 14px;
+            border: 1px solid #a5d6a7; margin-bottom: 18px
+        }
+        .meb-btn {
+            display: block; padding: 12px 24px; border-radius: 12px;
+            background: linear-gradient(135deg, #1c5c32, #2d8a50);
+            color: white; text-decoration: none; font-weight: 800; font-size: 14px;
+            transition: opacity .2s
+        }
+        .meb-btn:hover { opacity: .85 }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <div class="nav-left">
+            <img src="Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
+            <span class="brand">Quibdó<span>Conecta</span></span>
+        </div>
+        <nav class="nav-center">
+            <a href="index.html">Inicio</a>
+            <a href="Empleo.html">Empleos</a>
+            <a href="talentos.php">Talento</a>
+            <a href="Empresas.html" class="active">Empresas</a>
+                        <a href="Ayuda.html">Ayuda</a>
+        </nav>
+        <div class="nav-right">
+            <a href="inicio_sesion.php" class="login">Iniciar sesión</a>
+            <a href="registro.php" class="register">Registrarse</a>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Menú"><span></span><span></span><span></span></button>
+    </header>
+
+    <!-- MENÚ MÓVIL -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="index.html">🏠 Inicio</a>
+        <a href="Empleo.html">💼 Empleos</a>
+        <a href="talentos.php">🌟 Talento</a>
+        <a href="Empresas.html">🏢 Empresas</a>
+                <a href="Ayuda.html">❓ Ayuda</a>
+        <div class="mobile-auth"><a href="inicio_sesion.php" class="m-login">Iniciar sesión</a><a href="registro.php"
+                class="m-reg">Registrarse</a></div>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero-empresas">
+        <div class="hero-empresas-content">
+            <span class="hero-badge">🏢 Para empresas y emprendedores</span>
+            <h1>Conecta tu empresa con el <span>mejor talento</span> del Chocó</h1>
+            <p>Publica vacantes, encuentra profesionales locales y haz crecer tu negocio. Gratis para empezar.</p>
+            <!-- HERO SUBTITLE -->
+            <p style="font-size:17px;color:rgba(255,255,255,0.75);margin-bottom:30px;line-height:1.6;">Publica tus
+                vacantes, accede a talento verificado del Chocó y haz crecer tu equipo. Todo desde un solo lugar.</p>
+            <div class="hero-btns">
+                <a href="registro.php" class="btn-verde">Registrar mi empresa</a>
+                <a href="#empresas" class="btn-outline">Ver empresas activas</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS DE CONFIANZA -->
+    <div class="confianza">
+        <div class="confianza-item reveal">
+            <h3>+120</h3>
+            <p>Empresas registradas</p>
+        </div>
+        <div class="confianza-item reveal">
+            <h3>+300</h3>
+            <p>Vacantes publicadas</p>
+        </div>
+        <div class="confianza-item reveal">
+            <h3>+500</h3>
+            <p>Talentos disponibles</p>
+        </div>
+        <div class="confianza-item reveal">
+            <h3>+50</h3>
+            <p>Municipios del Chocó</p>
+        </div>
+        <div class="confianza-item reveal">
+            <h3>98%</h3>
+            <p>Empresas satisfechas</p>
+        </div>
+    </div>
+
+    <!-- BENEFICIOS -->
+    <section class="beneficios">
+        <span class="section-label">¿Por qué elegirnos?</span>
+        <h2>Beneficios de publicar en QuibdóConecta</h2>
+        <p class="subtitulo">Todo lo que necesitas para encontrar el talento ideal en tu región</p>
+
+        <div class="beneficios-grid">
+            <div class="beneficio-card reveal">
+                <div class="beneficio-icon">🎯</div>
+                <h3>Talento local y verificado</h3>
+                <p>Accede a profesionales del Chocó que conocen la región y están listos para trabajar contigo.</p>
+            </div>
+            <div class="beneficio-card reveal">
+                <div class="beneficio-icon">⚡</div>
+                <h3>Publicación rápida</h3>
+                <p>Publica una vacante en menos de 5 minutos y empieza a recibir candidatos el mismo día.</p>
+            </div>
+            <div class="beneficio-card reveal">
+                <div class="beneficio-icon">📊</div>
+                <h3>Visibilidad real</h3>
+                <p>Tu empresa aparece ante cientos de talentos activos que buscan oportunidades en la región.</p>
+            </div>
+            <div class="beneficio-card reveal">
+                <div class="beneficio-icon">🤝</div>
+                <h3>Conexión directa</h3>
+                <p>Contacta directamente con los candidatos sin intermediarios ni costos adicionales.</p>
+            </div>
+            <div class="beneficio-card reveal">
+                <div class="beneficio-icon">🌿</div>
+                <h3>Impacto social</h3>
+                <p>Al contratar local ayudas a reducir el desempleo y a fortalecer la economía del Chocó.</p>
+            </div>
+            <div class="beneficio-card reveal">
+                <div class="beneficio-icon">📱</div>
+                <h3>Panel de gestión</h3>
+                <p>Administra tus vacantes, revisa candidatos y gestiona tus procesos desde un solo lugar.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CÓMO REGISTRARSE -->
+    <section class="como-registrarse">
+        <div class="como-inner">
+            <div class="como-texto">
+                <span class="section-label">Paso a paso</span>
+                <h2>¿Cómo registro <span>mi empresa</span>?</h2>
+                <p>El proceso es sencillo y toma menos de 10 minutos. Sin costos ocultos, sin complicaciones.</p>
+
+                <div class="pasos-lista">
+                    <div class="paso-item">
+                        <div class="paso-num">1</div>
+                        <div class="paso-texto">
+                            <h4>Crea tu cuenta</h4>
+                            <p>Regístrate con el correo de tu empresa y crea tu perfil empresarial.</p>
+                        </div>
+                    </div>
+                    <div class="paso-item">
+                        <div class="paso-num">2</div>
+                        <div class="paso-texto">
+                            <h4>Completa tu perfil</h4>
+                            <p>Agrega el nombre, sector, ubicación y descripción de tu empresa.</p>
+                        </div>
+                    </div>
+                    <div class="paso-item">
+                        <div class="paso-num">3</div>
+                        <div class="paso-texto">
+                            <h4>Publica tu primera vacante</h4>
+                            <p>Describe el cargo, requisitos y condiciones del empleo en minutos.</p>
+                        </div>
+                    </div>
+                    <div class="paso-item">
+                        <div class="paso-num">4</div>
+                        <div class="paso-texto">
+                            <h4>Recibe candidatos</h4>
+                            <p>Los talentos del Chocó se postularán y tú elijes al mejor.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="como-visual">
+                <div class="mini-card">
+                    <div class="mini-card-icon">🏗️</div>
+                    <div class="mini-card-info">
+                        <h4>Constructora Chocó S.A.S</h4>
+                        <p>Construcción e Infraestructura</p>
+                        <p class="activo">✅ 3 vacantes activas</p>
+                    </div>
+                </div>
+                <div class="mini-card">
+                    <div class="mini-card-icon">🛒</div>
+                    <div class="mini-card-info">
+                        <h4>Supermercado Central</h4>
+                        <p>Comercio y Retail</p>
+                        <p class="activo">✅ 5 vacantes activas</p>
+                    </div>
+                </div>
+                <div class="mini-card">
+                    <div class="mini-card-icon">💻</div>
+                    <div class="mini-card-info">
+                        <h4>Tech Chocó</h4>
+                        <p>Tecnología y Sistemas</p>
+                        <p class="activo">✅ 2 vacantes activas</p>
+                    </div>
+                </div>
+                <div class="mini-card">
+                    <div class="mini-card-icon">🏥</div>
+                    <div class="mini-card-info">
+                        <h4>Clínica Quibdó</h4>
+                        <p>Salud y Bienestar</p>
+                        <p class="activo">✅ 7 vacantes activas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EMPRESAS REGISTRADAS -->
+    <section class="empresas-lista" id="empresas">
+        <div class="empresas-header">
+            <h2>Empresas activas</h2>
+            <a href="#" class="ver-todos">Ver todas →</a>
+        </div>
+
+        <div class="empresas-grid">
+            <div class="empresa-card reveal" data-nombre="Constructora Chocó S.A.S" data-sector="Construcción e Infraestructura" data-lugar="Quibdó, Chocó" data-vacantes="3" data-verificada="1" data-destacada="1" data-desc="Empresa líder en construcción e infraestructura en el departamento del Chocó. Más de 10 años de experiencia en proyectos residenciales y de obra pública.">
+                <span class="badge">⭐ Destacada</span>
+                <div class="empresa-logo">CC</div>
+                <h3>Constructora Chocó S.A.S</h3>
+                <p class="sector">Construcción e Infraestructura</p>
+                <p class="ubicacion">📍 Quibdó, Chocó</p>
+                <p class="vacantes">💼 3 vacantes abiertas</p>
+                <a href="#" class="btn-ver-empresa">Ver empresa</a>
+            </div>
+
+            <div class="empresa-card reveal" data-nombre="Tech Chocó" data-sector="Tecnología y Sistemas" data-lugar="Quibdó, Chocó" data-vacantes="2" data-verificada="1" data-destacada="1" data-desc="Empresa de tecnología enfocada en soluciones digitales para el Chocó. Desarrollamos software, apps y sistemas para negocios locales y entidades públicas.">
+                <span class="badge">⭐ Destacada</span>
+                <div class="empresa-logo" style="background: linear-gradient(135deg, #0b3a7e, #1e6fd9);">TC</div>
+                <h3>Tech Chocó</h3>
+                <p class="sector">Tecnología y Sistemas</p>
+                <p class="ubicacion">📍 Quibdó, Chocó</p>
+                <p class="vacantes">💼 2 vacantes abiertas</p>
+                <a href="#" class="btn-ver-empresa">Ver empresa</a>
+            </div>
+
+            <div class="empresa-card reveal" data-nombre="Supermercado Central" data-sector="Comercio y Retail" data-lugar="Quibdó, Chocó" data-vacantes="5" data-verificada="0" data-destacada="0" data-desc="Cadena de supermercados con presencia en Quibdó y municipios del Chocó. Amplia variedad de productos locales e importados.">
+                <div class="empresa-logo" style="background: linear-gradient(135deg, #c0392b, #e74c3c);">SC</div>
+                <h3>Supermercado Central</h3>
+                <p class="sector">Comercio y Retail</p>
+                <p class="ubicacion">📍 Quibdó, Chocó</p>
+                <p class="vacantes">💼 5 vacantes abiertas</p>
+                <a href="#" class="btn-ver-empresa">Ver empresa</a>
+            </div>
+
+            <div class="empresa-card reveal" data-nombre="Clínica Quibdó" data-sector="Salud y Bienestar" data-lugar="Quibdó, Chocó" data-vacantes="7" data-verificada="1" data-destacada="0" data-desc="Institución prestadora de salud con servicios de medicina general, especialidades y urgencias. Comprometida con la salud de las comunidades chocoanas.">
+                <div class="empresa-logo" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">CQ</div>
+                <h3>Clínica Quibdó</h3>
+                <p class="sector">Salud y Bienestar</p>
+                <p class="ubicacion">📍 Quibdó, Chocó</p>
+                <p class="vacantes">💼 7 vacantes abiertas</p>
+                <a href="#" class="btn-ver-empresa">Ver empresa</a>
+            </div>
+
+            <div class="empresa-card reveal" data-nombre="Institución Educativa del Chocó" data-sector="Educación" data-lugar="Chocó" data-vacantes="4" data-verificada="1" data-destacada="0" data-desc="Institución educativa pública comprometida con la formación integral de niños y jóvenes del departamento. Ofrecemos bachillerato académico y técnico.">
+                <div class="empresa-logo" style="background: linear-gradient(135deg, #e67e22, #f39c12);">IE</div>
+                <h3>Institución Educativa del Chocó</h3>
+                <p class="sector">Educación</p>
+                <p class="ubicacion">📍 Chocó</p>
+                <p class="vacantes">💼 4 vacantes abiertas</p>
+                <a href="#" class="btn-ver-empresa">Ver empresa</a>
+            </div>
+
+            <div class="empresa-card reveal" data-nombre="Restaurante Local Pacífico" data-sector="Gastronomía y Turismo" data-lugar="Quibdó, Chocó" data-vacantes="2" data-verificada="0" data-destacada="0" data-desc="Restaurante especializado en gastronomía del Pacífico colombiano. Ofrecemos platos típicos chocoanos en un ambiente acogedor y auténtico.">
+                <div class="empresa-logo" style="background: linear-gradient(135deg, #16a085, #1abc9c);">RL</div>
+                <h3>Restaurante Local Pacífico</h3>
+                <p class="sector">Gastronomía y Turismo</p>
+                <p class="ubicacion">📍 Quibdó, Chocó</p>
+                <p class="vacantes">💼 2 vacantes abiertas</p>
+                <a href="#" class="btn-ver-empresa">Ver empresa</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL EMPRESA -->
+    <div class="modal-empresa-ov" id="modalEmpresaOv">
+        <div class="modal-empresa-box">
+            <button class="modal-empresa-close" id="modalEmpresaClose">✕</button>
+            <div class="meb-logo" id="mebLogo">CC</div>
+            <div class="meb-badges" id="mebBadges"></div>
+            <h2 class="meb-nombre" id="mebNombre">Empresa</h2>
+            <p class="meb-sector" id="mebSector">Sector</p>
+            <p class="meb-loc" id="mebLoc">📍 Ubicación</p>
+            <p class="meb-desc" id="mebDesc">Descripción</p>
+            <div class="meb-vacantes" id="mebVacantes">💼 0 vacantes</div>
+            <a href="Empleo.html" class="meb-btn">Ver empleos disponibles →</a>
+        </div>
+    </div>
+
+    <!-- PLANES -->
+    <section class="planes">
+        <span class="section-label">Planes</span>
+        <h2>Elige el plan ideal para tu empresa</h2>
+        <p class="subtitulo">Empieza gratis y escala cuando lo necesites</p>
+
+        <div class="planes-grid">
+            <div class="plan-card reveal">
+                <h3>Gratuito</h3>
+                <div class="plan-precio">$0</div>
+                <p class="plan-periodo">Para siempre</p>
+                <ul class="plan-features">
+                    <li>1 vacante activa</li>
+                    <li>Perfil de empresa básico</li>
+                    <li>Acceso a talentos registrados</li>
+                    <li>Soporte por correo</li>
+                </ul>
+                <a href="registro.php" class="btn-plan">Comenzar gratis</a>
+            </div>
+
+            <div class="plan-card destacado">
+                <span class="plan-badge">🔥 Más popular</span>
+                <h3>Pro</h3>
+                <div class="plan-precio">$49.900</div>
+                <p class="plan-periodo">por mes / COP</p>
+                <ul class="plan-features">
+                    <li>Vacantes ilimitadas</li>
+                    <li>Perfil destacado en búsquedas</li>
+                    <li>Acceso prioritario a talentos</li>
+                    <li>Panel de gestión completo</li>
+                    <li>Soporte prioritario</li>
+                </ul>
+                <a href="registro.php" class="btn-plan">Contratar Pro</a>
+            </div>
+
+            <div class="plan-card reveal">
+                <h3>Empresarial</h3>
+                <div class="plan-precio">$99.900</div>
+                <p class="plan-periodo">por mes / COP</p>
+                <ul class="plan-features">
+                    <li>Todo lo del plan Pro</li>
+                    <li>Logo en página de inicio</li>
+                    <li>Reportes y estadísticas</li>
+                    <li>Asesor dedicado</li>
+                    <li>Publicidad en la plataforma</li>
+                </ul>
+                <a href="registro.php" class="btn-plan">Contratar Empresarial</a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- PARTNERS CARRUSEL -->
+    <section class="partners-band">
+        <h2 class="reveal">Empresas que ya nos eligen</h2>
+        <p class="sub reveal">La comunidad empresarial del Chocó crece con QuibdóConecta</p>
+        <div class="partners-track-wrap">
+            <div class="partners-track">
+                <div class="p-chip">🏦 Bancolombia Chocó</div>
+                <div class="p-chip">🏥 Hospital San Francisco</div>
+                <div class="p-chip">🌿 Codechocó</div>
+                <div class="p-chip">🏗️ Constructora Pacífico</div>
+                <div class="p-chip">📡 TeleComunica</div>
+                <div class="p-chip">🎓 UTCH</div>
+                <div class="p-chip">🛒 Almacén Éxito</div>
+                <div class="p-chip">🚌 TransChocó</div>
+                <div class="p-chip">🌊 Ecoturismo Pacífico</div>
+                <div class="p-chip">🏛️ Gobernación del Chocó</div>
+                <div class="p-chip">🏦 Bancolombia Chocó</div>
+                <div class="p-chip">🏥 Hospital San Francisco</div>
+                <div class="p-chip">🌿 Codechocó</div>
+                <div class="p-chip">🏗️ Constructora Pacífico</div>
+                <div class="p-chip">📡 TeleComunica</div>
+                <div class="p-chip">🎓 UTCH</div>
+                <div class="p-chip">🛒 Almacén Éxito</div>
+                <div class="p-chip">🚌 TransChocó</div>
+                <div class="p-chip">🌊 Ecoturismo Pacífico</div>
+                <div class="p-chip">🏛️ Gobernación del Chocó</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="final-cta">
+        <h2>¿Listo para encontrar tu próximo empleado?</h2>
+        <p>Únete a más de 120 empresas que ya confían en QuibdóConecta.</p>
+        <div class="cta-buttons">
+            <a href="registro.php" class="cta-primary">Registrar mi empresa</a>
+            
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2026 <span>QuibdóConecta</span> — Conectando el talento del Chocó con el mundo.</p>
+    </footer>
+
+    <script>
+        window.addEventListener("scroll", () => { document.querySelector(".navbar").classList.toggle("abajo", window.scrollY > 50); });
+
+        /* ── HAMBURGER ── */
+        const ham = document.querySelector('#hamburger') || document.createElement('button');
+        const mob = document.querySelector('#mobileMenu') || document.createElement('div');
+        if (document.getElementById('hamburger')) {
+            ham.addEventListener('click', () => { ham.classList.toggle('open'); mob.classList.toggle('open'); });
+            document.addEventListener('click', e => { if (!ham.contains(e.target) && !mob.contains(e.target)) { ham.classList.remove('open'); mob.classList.remove('open'); } });
+        }
+        /* ── SCROLL REVEAL BIDIRECCIONAL ── */
+        (function () {
+            const reveals = document.querySelectorAll('.reveal');
+            if (!reveals.length) return;
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) { e.target.classList.add('visible'); }
+                    else { const r = e.target.getBoundingClientRect(); if (r.top < 0) { e.target.classList.remove('visible'); } }
+                });
+            }, { threshold: 0.12 });
+            reveals.forEach(el => obs.observe(el));
+        })();
+
+        /* ── MODAL EMPRESA ── */
+        const empOv    = document.getElementById('modalEmpresaOv');
+        const empClose = document.getElementById('modalEmpresaClose');
+        empClose.addEventListener('click', () => empOv.classList.remove('open'));
+        empOv.addEventListener('click', e => { if (e.target === empOv) empOv.classList.remove('open'); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') empOv.classList.remove('open'); });
+
+        document.querySelectorAll('.btn-ver-empresa').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.preventDefault();
+                const card = btn.closest('.empresa-card');
+                const d = card.dataset;
+
+                // Logo: copiar texto y estilo del empresa-logo
+                const logoEl = card.querySelector('.empresa-logo');
+                const mebLogo = document.getElementById('mebLogo');
+                mebLogo.textContent = logoEl.textContent;
+                mebLogo.style.cssText = `width:72px;height:72px;border-radius:16px;color:white;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-family:'Cabinet Grotesk',sans-serif;background:${logoEl.style.background || 'linear-gradient(135deg,#1c5c32,#2d8a50)'}`;
+
+                // Badges
+                const badges = document.getElementById('mebBadges');
+                badges.innerHTML = '';
+                if (d.verificada === '1') badges.innerHTML += '<span class="meb-badge verif">✅ Empresa Verificada</span>';
+                if (d.destacada === '1')  badges.innerHTML += '<span class="meb-badge dest">⭐ Destacada</span>';
+
+                document.getElementById('mebNombre').textContent  = d.nombre;
+                document.getElementById('mebSector').textContent  = d.sector;
+                document.getElementById('mebLoc').textContent     = '📍 ' + d.lugar;
+                document.getElementById('mebDesc').textContent    = d.desc;
+                document.getElementById('mebVacantes').textContent = '💼 ' + d.vacantes + ' vacante' + (d.vacantes == 1 ? '' : 's') + ' abierta' + (d.vacantes == 1 ? '' : 's');
+
+                empOv.classList.add('open');
+            });
+        });
+
+    </script>
+
+</html>

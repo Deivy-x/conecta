@@ -1,0 +1,1181 @@
+<?php
+// ============================================================
+// dashboard_empresa.php — Panel de gestión para empresas
+// QuibdóConecta 2026
+// ============================================================
+session_start();
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+require_once __DIR__ . '/Php/db.php';
+
+if (!isset($_SESSION['usuario_id'])) {
+    header('Location: inicio_sesion.php'); exit;
+}
+$db = getDB();
+$stmt = $db->prepare("SELECT * FROM usuarios WHERE id = ? AND activo = 1");
+$stmt->execute([$_SESSION['usuario_id']]);
+$usuario = $stmt->fetch();
+if (!$usuario || $usuario['tipo'] !== 'empresa') {
+    // Si no es empresa, redirigir al dashboard normal
+    header('Location: dashboard.php'); exit;
+}
+
+// ── ACCIONES POST ────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+    $action = $_POST['_action'] ?? '';
+
+    // ── EDITAR PERFIL EMPRESA ────────────────────────────────
+    if ($action === 'editar_empresa') {
+        $nombreEmp  = trim($_POST['nombre_empresa'] ?? '');
+        $sector     = trim($_POST['sector']         ?? '');
+        $nit        = trim($_POST['nit']            ?? '');
+        $descripcion= trim($_POST['descripcion']    ?? '');
+        $sitioWeb   = trim($_POST['sitio_web']      ?? '');
+        $telefonoEmp= trim($_POST['telefono_empresa']?? '');
+        $ciudad     = trim($_POST['ciudad']         ?? '');
+        $municipio  = trim($_POST['municipio']      ?? '');
+
+        if (!$nombreEmp) {
+            echo json_encode(['ok' => false, 'msg' => 'El nombre de la empresa es obligatorio.']); exit;
+        }
+        // Actualizar tabla usuarios
+        $db->prepare("UPDATE usuarios SET nombre=?, telefono=?, ciudad=? WHERE id=?")
+           ->execute([$nombreEmp, $telefonoEmp, $ciudad, $usuario['id']]);
+        // Upsert perfiles_empresa
+        $db->prepare("INSERT INTO perfiles_empresa
+            (usuario_id, nombre_empresa, sector, nit, descripcion, sitio_web, telefono_empresa, municipio)
+            VALUES (?,?,?,?,?,?,?,?)
+            ON DUPLICATE KEY UPDATE
+              nombre_empresa    = VALUES(nombre_empresa),
+              sector            = VALUES(sector),
+              nit               = VALUES(nit),
+              descripcion       = VALUES(descripcion),
+              sitio_web         = VALUES(sitio_web),
+              telefono_empresa  = VALUES(telefono_empresa),
+              municipio         = VALUES(municipio),
+              actualizado_en    = NOW()")
+           ->execute([$usuario['id'], $nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio]);
+        echo json_encode(['ok' => true, 'nombre_empresa' => $nombreEmp, 'sector' => $sector, 'ciudad' => $ciudad]);
+        exit;
+    }
+
+    // ── TOGGLE VISIBILIDAD ───────────────────────────────────
+    if ($action === 'toggle_visibilidad') {
+        $visible = (int) ($_POST['visible'] ?? 1);
+        $db->prepare("UPDATE perfiles_empresa SET visible = ? WHERE usuario_id = ? ORDER BY id DESC LIMIT 1")
+           ->execute([$visible, $usuario['id']]);
+        echo json_encode(['ok' => true, 'visible' => $visible]);
+        exit;
+    }
+
+    // ── SUBIR LOGO ───────────────────────────────────────────
+    if ($action === 'subir_logo') {
+        if (!isset($_FILES['logo']) || $_FILES['logo']['error'] !== 0) {
+            echo json_encode(['ok' => false, 'msg' => 'No se recibió ninguna imagen.']); exit;
+        }
+        $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg','jpeg','png','webp','svg'])) {
+            echo json_encode(['ok' => false, 'msg' => 'Solo JPG, PNG, WEBP o SVG.']); exit;
+        }
+        if ($_FILES['logo']['size'] > 2 * 1024 * 1024) {
+            echo json_encode(['ok' => false, 'msg' => 'Imagen demasiado grande (máx 2 MB).']); exit;
+        }
+        $dir = __DIR__ . '/uploads/logos/';
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        $epOld = $db->prepare("SELECT logo FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+        $epOld->execute([$usuario['id']]);
+        $oldLogo = $epOld->fetchColumn();
+        if ($oldLogo && file_exists($dir . $oldLogo)) @unlink($dir . $oldLogo);
+        $nombre = 'emp' . $usuario['id'] . '_' . time() . '.' . $ext;
+        if (move_uploaded_file($_FILES['logo']['tmp_name'], $dir . $nombre)) {
+            $db->prepare("UPDATE perfiles_empresa SET logo = ? WHERE usuario_id = ? ORDER BY id DESC LIMIT 1")
+               ->execute([$nombre, $usuario['id']]);
+            echo json_encode(['ok' => true, 'logo' => 'uploads/logos/' . $nombre]);
+        } else {
+            echo json_encode(['ok' => false, 'msg' => 'Error al guardar el logo.']);
+        }
+        exit;
+    }
+
+    // ── CREAR CONVOCATORIA (empresa) ─────────────────────────────
+    if ($action === 'crear_convocatoria') {
+        $titulo    = trim($_POST['titulo']    ?? '');
+        $entidad   = trim($_POST['entidad']   ?? '');
+        $categoria = trim($_POST['categoria'] ?? 'gobernacion');
+        $vacantes  = max(1,(int)($_POST['vacantes'] ?? 1));
+        $modalidad = trim($_POST['modalidad'] ?? 'Presencial');
+        $nivel     = trim($_POST['nivel']     ?? 'Bachillerato');
+        $salario   = trim($_POST['salario']   ?? '');
+        $lugar     = trim($_POST['lugar']     ?? 'Quibdó, Chocó');
+        $requisito = trim($_POST['requisito'] ?? '');
+        $vence_en  = trim($_POST['vence_en']  ?? '');
+        $icono     = trim($_POST['icono']     ?? '🏢');
+
+        if (!$titulo || !$entidad) {
+            echo json_encode(['ok'=>false,'msg'=>'Título y entidad son obligatorios.']); exit;
+        }
+
+        try {
+            $db->prepare("
+                INSERT INTO convocatorias
+                  (usuario_id, empresa_id, entidad, categoria, titulo, vacantes,
+                   modalidad, nivel, salario, lugar, requisito, icono,
+                   activo, origen, vence_en, creado_en)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0,'empresa',?,NOW())
+            ")->execute([
+                $_SESSION['usuario_id'], $_SESSION['usuario_id'],
+                $entidad, $categoria, $titulo, $vacantes,
+                $modalidad, $nivel, $salario, $lugar, $requisito, $icono,
+                $vence_en ?: null
+            ]);
+            echo json_encode(['ok'=>true,'msg'=>'Convocatoria enviada. El administrador la revisará pronto.']);
+        } catch (Exception $e) {
+            echo json_encode(['ok'=>false,'msg'=>'Error al guardar: '.$e->getMessage()]);
+        }
+        exit;
+    }
+
+    // ── ELIMINAR CONVOCATORIA PROPIA (solo pendientes) ────────────
+    if ($action === 'eliminar_convocatoria') {
+        $cid = (int)($_POST['conv_id'] ?? 0);
+        if (!$cid) { echo json_encode(['ok'=>false,'msg'=>'ID inválido']); exit; }
+        // Solo puede borrar la suya y si aún no fue aprobada
+        $chk = $db->prepare("SELECT id FROM convocatorias WHERE id=? AND usuario_id=? AND activo=0 AND origen='empresa'");
+        $chk->execute([$cid, $_SESSION['usuario_id']]);
+        if (!$chk->fetch()) { echo json_encode(['ok'=>false,'msg'=>'No autorizado o ya aprobada']); exit; }
+        $db->prepare("DELETE FROM convocatorias WHERE id=?")->execute([$cid]);
+        echo json_encode(['ok'=>true]);
+        exit;
+    }
+
+    echo json_encode(['ok' => false, 'msg' => 'Acción desconocida.']); exit;
+}
+
+// ── CARGAR DATOS EMPRESA ──────────────────────────────────────
+$epStmt = $db->prepare("SELECT * FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+$epStmt->execute([$usuario['id']]);
+$ep = $epStmt->fetch() ?: [
+    'nombre_empresa' => $usuario['nombre'] ?? '',
+    'sector' => '', 'nit' => '', 'descripcion' => '',
+    'logo' => '', 'sitio_web' => '', 'telefono_empresa' => '',
+    'municipio' => '', 'avatar_color' => 'linear-gradient(135deg,#1a56db,#3b82f6)',
+    'visible' => 1, 'visible_admin' => 1, 'destacado' => 0, 'vacantes_activas' => 0
+];
+
+require_once __DIR__ . '/Php/badges_helper.php';
+$badgesUsuario = getBadgesUsuario($db, $usuario['id']);
+$badgesHTML    = renderBadges($badgesUsuario);
+$tieneVerificado = (bool)($usuario['verificado'] ?? false)
+    || tieneBadge($badgesUsuario, 'Verificado')
+    || tieneBadge($badgesUsuario, 'Empresa Verificada');
+$tienePremium    = tieneBadge($badgesUsuario, 'Premium');
+$tieneDestacado  = tieneBadge($badgesUsuario, 'Destacado') || (int)($ep['destacado'] ?? 0);
+$tieneTop        = tieneBadge($badgesUsuario, 'Top');
+
+// Chat no leídos
+$nrChat = $db->prepare("SELECT COUNT(*) FROM mensajes WHERE para_usuario=? AND leido=0");
+$nrChat->execute([$usuario['id']]);
+$chatNoLeidos = (int)$nrChat->fetchColumn();
+
+// Estado verificación
+$stmtV = $db->prepare("SELECT estado FROM verificaciones WHERE usuario_id=? ORDER BY creado_en DESC LIMIT 1");
+$stmtV->execute([$usuario['id']]);
+$verifDoc = $stmtV->fetch();
+$estadoVerif = $verifDoc ? $verifDoc['estado'] : null;
+
+// Vacantes activas (si existe tabla empleos)
+$vacantesActivas = 0;
+try {
+    $vStmt = $db->prepare("SELECT COUNT(*) FROM empleos WHERE empresa_id=? AND activo=1");
+    $vStmt->execute([$usuario['id']]);
+    $vacantesActivas = (int)$vStmt->fetchColumn();
+} catch(Exception $e) { $vacantesActivas = 0; }
+
+// Historial de vacantes publicadas
+$historialVacantes = [];
+try {
+    $hvStmt = $db->prepare("SELECT titulo, ciudad, tipo_contrato, activo, creado_en FROM empleos WHERE empresa_id=? ORDER BY creado_en DESC LIMIT 10");
+    $hvStmt->execute([$usuario['id']]);
+    $historialVacantes = $hvStmt->fetchAll();
+} catch(Exception $e) { $historialVacantes = []; }
+
+// Convocatorias de esta empresa
+$misConvocatorias = [];
+try {
+    $cStmt = $db->prepare("
+        SELECT id, titulo, entidad, categoria, vacantes, salario,
+               activo, origen, aprobado_en,
+               DATE_FORMAT(vence_en,'%d/%m/%Y') AS vence_fmt,
+               DATE_FORMAT(creado_en,'%d/%m/%Y') AS creado_fmt
+        FROM convocatorias
+        WHERE usuario_id = ? AND origen = 'empresa'
+        ORDER BY creado_en DESC LIMIT 20
+    ");
+    $cStmt->execute([$usuario['id']]);
+    $misConvocatorias = $cStmt->fetchAll();
+} catch (Exception $e) { $misConvocatorias = []; }
+
+// Porcentaje perfil completado
+$campos = ['nombre_empresa', 'sector', 'descripcion', 'sitio_web', 'telefono_empresa', 'municipio'];
+$llenos = array_filter($campos, fn($c) => !empty($ep[$c]));
+$pct = (int)(count($llenos) / count($campos) * 100);
+if (!empty($ep['logo'])) $pct = min(100, $pct + 5);
+if ($tieneVerificado)     $pct = min(100, $pct + 5);
+
+$nombreEmpresa  = htmlspecialchars(trim($ep['nombre_empresa'] ?: $usuario['nombre'] ?? 'Mi Empresa'));
+$iniciales      = strtoupper(mb_substr($nombreEmpresa, 0, 2));
+$sector         = htmlspecialchars($ep['sector'] ?? '');
+$ciudad         = htmlspecialchars($usuario['ciudad'] ?? '');
+$logoUrl        = !empty($ep['logo']) ? 'uploads/logos/' . htmlspecialchars($ep['logo']) : '';
+$fechaRegistro  = date('d \de F Y', strtotime($usuario['creado_en']));
+$correo         = htmlspecialchars($usuario['correo']);
+$visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1);
+?><!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Panel Empresa – QuibdóConecta</title>
+  <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <style>
+    :root {
+      --ink: #0e0e0e; --ink2: #3a3a3a; --ink3: #888;
+      --papel: #f5f2ed; --blanco: #fff;
+      --verde: #1c5c32; --verde2: #2d8a50; --hoja: #4dba74; --lima: #a8e063; --selva: #0a2e16;
+      --azul: #1a56db; --azul2: #3b82f6; --azul-claro: #eff6ff;
+      --oro: #c8860a; --dorado: #f0b429; --arena: #f9f3e3;
+      --borde: rgba(0,0,0,.09); --sombra: 0 2px 16px rgba(0,0,0,.07)
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Cabinet Grotesk',sans-serif;background:var(--papel);color:var(--ink);min-height:100vh}
+
+    /* ── NAVBAR ── */
+    .navbar{position:sticky;top:0;z-index:200;background:#0a1a3e;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:56px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .nav-marca{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .nav-marca img{width:28px;filter:drop-shadow(0 2px 6px rgba(96,165,250,.3))}
+    .nav-marca-texto{font-family:'Instrument Serif',serif;font-size:18px;color:white}
+    .nav-marca-texto em{color:#60a5fa;font-style:italic}
+    .nav-links{display:flex;align-items:center;gap:4px}
+    .nl{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;color:rgba(255,255,255,.55);text-decoration:none;font-size:13px;font-weight:700;transition:all .2s;position:relative}
+    .nl:hover{background:rgba(255,255,255,.07);color:white}
+    .nl.on{background:rgba(96,165,250,.15);color:#60a5fa}
+    .nl-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#e74c3c;border:1.5px solid #0a1a3e}
+    .nav-usuario{display:flex;align-items:center;gap:10px}
+    .nav-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--azul),var(--azul2));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:white;cursor:pointer;border:2px solid rgba(96,165,250,.3);overflow:hidden;flex-shrink:0}
+    .nav-nombre{font-size:13px;font-weight:700;color:rgba(255,255,255,.8);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .nav-salir{padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);font-size:12px;font-weight:700;text-decoration:none;transition:all .2s}
+    .nav-salir:hover{background:rgba(231,76,60,.15);color:#ff8080}
+    .nav-notif{position:relative;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:background .2s;flex-shrink:0}
+    .nav-notif:hover{background:rgba(255,255,255,.12)}
+    .notif-dot{position:absolute;top:4px;right:4px;width:9px;height:9px;border-radius:50%;background:#e74c3c;border:2px solid #0a1a3e;animation:pulse-dot 1.5s infinite}
+    @keyframes pulse-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+
+    /* ── HERO ── */
+    .hero{background:linear-gradient(135deg,#0a1a3e 0%,#1a3060 60%,#0a1a3e 100%);padding:48px 40px 36px;position:relative;overflow:hidden}
+    .hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(26,86,219,.15) 0%,transparent 60%);pointer-events:none}
+    .hero-inner{position:relative;z-index:2;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+    .hero-av{width:72px;height:72px;border-radius:16px;background:linear-gradient(135deg,var(--azul),var(--azul2));display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:white;flex-shrink:0;cursor:pointer;border:3px solid rgba(96,165,250,.3);overflow:hidden;transition:all .2s}
+    .hero-av:hover{border-color:#60a5fa;transform:scale(1.03)}
+    .hero-info{flex:1;min-width:200px}
+    .hero-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    .hchip{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
+    .hc-tipo{background:rgba(96,165,250,.18);color:#93c5fd}
+    .hc-veri{background:rgba(16,185,129,.18);color:#6ee7b7}
+    .hc-prem{background:rgba(245,158,11,.18);color:#fcd34d}
+    .hc-dest{background:rgba(168,85,247,.18);color:#c4b5fd}
+    .hc-top{background:rgba(239,68,68,.18);color:#fca5a5}
+    .hero-nombre{font-family:'Instrument Serif',serif;font-size:26px;color:white;line-height:1.2;margin-bottom:6px}
+    .hero-sub{font-size:14px;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .hero-stats{display:flex;gap:24px;flex-wrap:wrap;margin-top:20px}
+    .hs{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 20px;text-align:center;min-width:110px}
+    .hs-val{font-size:22px;font-weight:900;color:white}
+    .hs-lab{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+    .hero-deco{position:absolute;right:40px;bottom:-10px;font-size:120px;opacity:.06;pointer-events:none;z-index:1}
+
+    /* ── ALERTAS ── */
+    .alerta{display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:14px;margin:0 40px 24px;border:1px solid}
+    .alerta .a-ico{font-size:22px;flex-shrink:0}
+    .alerta .a-txt{flex:1;font-size:13px;line-height:1.5}
+    .alerta .a-txt strong{display:block;font-size:14px;font-weight:800;margin-bottom:2px}
+    .alerta .a-btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;background:var(--azul);color:white}
+    .as{background:#eff6ff;border-color:#93c5fd;color:#1e40af}
+    .ap{background:#fffbeb;border-color:#fcd34d;color:#92400e}
+    .ar{background:#fff1f2;border-color:#fca5a5;color:#991b1b}
+    .av{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+
+    /* ── GRID ── */
+    .contenido{padding:32px 40px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    .span2{grid-column:span 2}
+    .span3{grid-column:span 3}
+    .card{background:var(--blanco);border:1px solid var(--borde);border-radius:18px;padding:22px;box-shadow:var(--sombra)}
+
+    /* ── MINI CARDS ── */
+    .mini{display:flex;align-items:center;gap:14px}
+    .m-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .ig{background:#dbeafe}
+    .ia{background:#d1fae5}
+    .im{background:#ede9fe}
+    .io{background:#fef3c7}
+    .m-val{font-size:26px;font-weight:900;color:var(--ink)}
+    .m-lab{font-size:12px;color:var(--ink3);font-weight:600;margin-top:1px}
+    .m-sub{font-size:11px;color:var(--azul);font-weight:700;margin-top:2px;cursor:pointer}
+
+    /* ── ACCIONES RÁPIDAS ── */
+    .ca-tit{font-size:13px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px}
+    .ac-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+    .ac{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border-radius:14px;background:var(--papel);border:1px solid var(--borde);text-decoration:none;transition:all .2s;position:relative}
+    .ac:hover{background:#eff6ff;border-color:#93c5fd;transform:translateY(-2px);box-shadow:0 6px 16px rgba(26,86,219,.1)}
+    .ac-ico{font-size:22px}
+    .ac-tit{font-size:12px;font-weight:800;color:var(--ink2);text-align:center}
+    .ac-desc{font-size:11px;color:var(--ink3);text-align:center}
+    .ac-badge{position:absolute;top:-6px;right:-6px;background:#e74c3c;color:white;font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;white-space:nowrap}
+
+    /* ── TARJETAS VACANTES / TALENTOS ── */
+    .ce-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .ce-tit{font-size:14px;font-weight:800;color:var(--ink)}
+    .ce-ver{font-size:12px;font-weight:700;color:var(--azul);text-decoration:none}
+    .ce-ver:hover{text-decoration:underline}
+    .ce-list{display:flex;flex-direction:column;gap:10px}
+    .ce-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--papel);border:1px solid var(--borde);cursor:pointer;transition:all .2s}
+    .ce-item:hover{background:#eff6ff;border-color:#93c5fd}
+    .ce-ico{font-size:22px;flex-shrink:0}
+    .ce-info{flex:1;min-width:0}
+    .ce-nom{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ce-emp{font-size:12px;color:var(--ink3)}
+    .ce-met{font-size:11px;color:var(--azul);font-weight:600;margin-top:2px}
+    .ce-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;background:var(--azul-claro);color:var(--azul);white-space:nowrap;flex-shrink:0}
+
+    /* ── PERFIL EMPRESA CARD ── */
+    .cp-head{display:flex;flex-direction:column;align-items:center;text-align:center;padding-bottom:16px;border-bottom:1px solid var(--borde)}
+    .cp-av{width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,var(--azul),var(--azul2));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:white;margin-bottom:12px;cursor:pointer;border:3px solid rgba(26,86,219,.2);overflow:hidden;transition:all .2s}
+    .cp-av:hover{border-color:var(--azul)}
+    .cp-nom{font-size:17px;font-weight:900;margin-bottom:3px}
+    .cp-pro{font-size:13px;color:var(--azul);font-weight:600}
+    .cp-body{padding:14px 0;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--ink2)}
+    .cp-fil{display:flex;align-items:center;gap:8px}
+    .cp-ico{font-size:16px;flex-shrink:0}
+
+    /* ── VISIBILIDAD TOGGLE ── */
+    .vis-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--papel);border-radius:12px;border:1px solid var(--borde);margin-top:4px}
+    .vis-label{font-size:13px;font-weight:700;color:var(--ink2)}
+    .vis-sub{font-size:11px;color:var(--ink3);margin-top:2px}
+    .toggle-wrap{display:flex;align-items:center;gap:8px}
+    .toggle{position:relative;width:44px;height:24px;cursor:pointer}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;inset:0;border-radius:12px;background:#cbd5e1;transition:.3s}
+    .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:white;transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+    .toggle input:checked + .toggle-slider{background:var(--azul)}
+    .toggle input:checked + .toggle-slider::before{transform:translateX(20px)}
+    .pv-chip{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;display:inline-block}
+    .pv-chip.ok{background:#d1fae5;color:#065f46}
+    .pv-chip.off{background:#fef3c7;color:#92400e}
+
+    /* ── PROGRESO ── */
+    .prog-w{margin:12px 0}
+    .prog-h{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px;color:var(--ink3)}
+    .prog-t{height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+    .prog-f{height:100%;background:linear-gradient(90deg,var(--azul),var(--azul2));border-radius:4px;transition:width 1s ease}
+
+    /* ── HISTORIAL ── */
+    .hist-tit{font-size:13px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+    .hist-list{display:flex;flex-direction:column;gap:8px}
+    .hist-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:var(--papel);border:1px solid var(--borde)}
+    .hist-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .dot-activo{background:#22c55e}
+    .dot-inactivo{background:#94a3b8}
+    .hist-info{flex:1;min-width:0}
+    .hist-nom{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .hist-meta{font-size:11px;color:var(--ink3);margin-top:2px}
+    .hist-fecha{font-size:11px;color:var(--ink3);flex-shrink:0;white-space:nowrap}
+
+    /* ── BADGES ── */
+    .badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .bdg{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700}
+    .bdg-v{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+    .bdg-p{background:#fffbeb;color:#92400e;border:1px solid #fcd34d}
+    .bdg-d{background:#f3e8ff;color:#6b21a8;border:1px solid #d8b4fe}
+    .bdg-t{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+
+    /* ── BTN EDITAR ── */
+    .btn-edit{width:100%;padding:11px;border-radius:12px;background:linear-gradient(135deg,var(--azul),var(--azul2));color:white;border:none;font-size:13px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;margin-top:14px;transition:all .2s;box-shadow:0 4px 12px rgba(26,86,219,.3)}
+    .btn-edit:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(26,86,219,.4)}
+    .btn-sec{width:100%;padding:11px;border-radius:12px;background:transparent;color:var(--azul);border:2px solid var(--azul);font-size:13px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;margin-top:8px;transition:all .2s}
+    .btn-sec:hover{background:var(--azul-claro)}
+
+    /* ── MODAL ── */
+    .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+    .modal-ov.open{display:flex}
+    .modal-box{background:var(--blanco);border-radius:22px;max-width:560px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.2);animation:fadeUp .3s ease;max-height:90vh;overflow-y:auto;position:relative}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .mcerrar{position:absolute;top:16px;right:18px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink3);z-index:1}
+    .mcerrar:hover{color:var(--ink)}
+    .modal-pad{padding:32px}
+    .mtit{font-family:'Instrument Serif',serif;font-size:22px;font-weight:700;margin-bottom:6px}
+    .msub{font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.5}
+    .msec{font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin:16px 0 8px}
+    .mmsg{display:none;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:14px}
+    .mmsg.success{background:#d1fae5;color:#065f46}
+    .mmsg.error{background:#fee2e2;color:#991b1b}
+    .mfila{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+    .mgr{display:flex;flex-direction:column;gap:5px}
+    .mgr.full{grid-column:1/-1}
+    .mgr label{font-size:12px;font-weight:700;color:var(--ink3)}
+    .mgr input,.mgr select,.mgr textarea{border:1.5px solid var(--borde);border-radius:10px;padding:10px 12px;font-size:13px;font-family:'Cabinet Grotesk',sans-serif;color:var(--ink);background:var(--papel);transition:border-color .2s;outline:none;resize:none}
+    .mgr input:focus,.mgr select:focus,.mgr textarea:focus{border-color:var(--azul)}
+    .btn-save{width:100%;padding:13px;border-radius:12px;background:linear-gradient(135deg,var(--azul),var(--azul2));color:white;border:none;font-size:14px;font-weight:900;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;margin-top:18px;box-shadow:0 4px 14px rgba(26,86,219,.35);transition:all .2s}
+    .btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,86,219,.45)}
+    .btn-save:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.span3{grid-column:1/-1}.span2{grid-column:1/-1}}
+    @media(max-width:640px){
+      .navbar{padding:0 16px}.nav-links{display:none}
+      .hero{padding:32px 20px 28px}.hero-deco{display:none}
+      .alerta{margin:0 20px 16px}.contenido{padding:20px}
+      .grid{grid-template-columns:1fr}.span2,.span3{grid-column:1/-1}
+      .hero-stats{gap:10px}.hs{min-width:80px;padding:10px 14px}
+      .mfila{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<header class="navbar">
+  <a href="index.html" class="nav-marca">
+    <img src="Imagenes/Quibdo.png" alt="Logo">
+    <span class="nav-marca-texto">Quibdó<em>Conecta</em></span>
+  </a>
+  <nav class="nav-links">
+    <a href="dashboard_empresa.php" class="nl on">🏠 Panel</a>
+    <a href="talentos.php" class="nl">🌟 Talentos</a>
+    <a href="Empleo.html" class="nl">💼 Empleos</a>
+    <a href="Publicar-empleo.html" class="nl">➕ Publicar vacante</a>
+    <a href="chat.php" class="nl">
+      💬 Mensajes
+      <?php if ($chatNoLeidos > 0): ?><span class="nl-dot"></span><?php endif; ?>
+    </a>
+    <a href="Ayuda.html" class="nl">❓ Ayuda</a>
+  </nav>
+  <div class="nav-usuario">
+    <div class="nav-avatar" id="navAvatar" onclick="abrirModal()">
+      <?php if ($logoUrl): ?>
+        <img src="<?= $logoUrl ?>" alt="Logo" style="width:100%;height:100%;object-fit:cover">
+      <?php else: ?>
+        <?= $iniciales ?>
+      <?php endif; ?>
+    </div>
+    <span class="nav-nombre"><?= $nombreEmpresa ?></span>
+    <a href="?salir=1" class="nav-salir">Salir</a>
+  </div>
+</header>
+
+<?php
+// Logout
+if (isset($_GET['salir'])) {
+    session_destroy();
+    header('Location: inicio_sesion.php'); exit;
+}
+?>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-av" id="heroAvatar" onclick="abrirModal()" title="Cambiar logo">
+      <?php if ($logoUrl): ?>
+        <img src="<?= $logoUrl ?>" alt="Logo empresa" style="width:100%;height:100%;object-fit:cover">
+      <?php else: ?>
+        <?= $iniciales ?>
+      <?php endif; ?>
+    </div>
+    <div class="hero-info">
+      <div class="hero-chips">
+        <span class="hchip hc-tipo">🏢 Empresa</span>
+        <?php if ($tieneTop): ?><span class="hchip hc-top">👑 Top</span>
+        <?php elseif ($tienePremium): ?><span class="hchip hc-prem">⭐ Premium</span>
+        <?php elseif ($tieneDestacado): ?><span class="hchip hc-dest">🏅 Destacada</span>
+        <?php endif; ?>
+        <?php if ($tieneVerificado): ?><span class="hchip hc-veri">✓ Verificada</span><?php endif; ?>
+      </div>
+      <div class="hero-nombre"><?= $nombreEmpresa ?></div>
+      <div class="hero-sub">
+        <?php if ($sector): ?><span>🏷️ <?= $sector ?></span><?php endif; ?>
+        <?php if ($ciudad): ?><span>📍 <?= $ciudad ?></span><?php endif; ?>
+        <span>📅 Desde <?= $fechaRegistro ?></span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hs">
+      <div class="hs-val"><?= $vacantesActivas ?></div>
+      <div class="hs-lab">Vacantes activas</div>
+    </div>
+    <div class="hs">
+      <div class="hs-val"><?= $pct ?>%</div>
+      <div class="hs-lab">Perfil completado</div>
+    </div>
+    <div class="hs">
+      <div class="hs-val"><?= $visibleEnWeb ? '🟢' : '🟡' ?></div>
+      <div class="hs-lab"><?= $visibleEnWeb ? 'Visible en web' : 'Oculto en web' ?></div>
+    </div>
+    <div class="hs">
+      <div class="hs-val"><?= $chatNoLeidos ?: '0' ?></div>
+      <div class="hs-lab">Mensajes nuevos</div>
+    </div>
+  </div>
+  <div class="hero-deco">🏢</div>
+</div>
+
+<!-- ── ALERTAS ── -->
+<div style="padding:24px 40px 0">
+  <?php if (!$tieneVerificado): ?>
+    <?php if ($estadoVerif === 'pendiente'): ?>
+      <div class="alerta ap">
+        <div class="a-ico">⏳</div>
+        <div class="a-txt"><strong>Documentos en revisión</strong><span>El administrador está revisando tu RUT o cámara de comercio.</span></div>
+      </div>
+    <?php elseif ($estadoVerif === 'rechazado'): ?>
+      <div class="alerta ar">
+        <div class="a-ico">❌</div>
+        <div class="a-txt"><strong>Verificación rechazada</strong><span>Intenta subir los documentos con mejor calidad.</span></div>
+        <a href="verificar_cuenta.php" class="a-btn">Reintentar</a>
+      </div>
+    <?php else: ?>
+      <div class="alerta as">
+        <div class="a-ico">🏢</div>
+        <div class="a-txt"><strong>Verifica tu empresa</strong><span>Sube tu RUT o cámara de comercio y obtén el badge de Empresa Verificada.</span></div>
+        <a href="verificar_cuenta.php" class="a-btn">Verificar ahora</a>
+      </div>
+    <?php endif; ?>
+  <?php else: ?>
+    <div class="alerta av">
+      <div class="a-ico">✅</div>
+      <div class="a-txt"><strong>Empresa verificada</strong><span>Los talentos ven tu badge de Empresa Verificada al ver tus vacantes.</span></div>
+    </div>
+  <?php endif; ?>
+</div>
+
+<!-- ── CONTENIDO ── -->
+<div class="contenido">
+  <div class="grid">
+
+    <!-- MINI: VACANTES -->
+    <div class="card mini">
+      <div class="m-ico ig">💼</div>
+      <div>
+        <div class="m-val"><?= $vacantesActivas ?></div>
+        <div class="m-lab">Vacantes activas</div>
+        <div class="m-sub" onclick="location.href='Publicar-empleo.html'">Publicar nueva →</div>
+      </div>
+    </div>
+
+    <!-- MINI: CANDIDATOS -->
+    <div class="card mini">
+      <div class="m-ico ia">👥</div>
+      <div>
+        <div class="m-val">0</div>
+        <div class="m-lab">Candidatos recibidos</div>
+        <div class="m-sub" onclick="location.href='talentos.php'">Ver talentos →</div>
+      </div>
+    </div>
+
+    <!-- MINI: VISTAS -->
+    <div class="card mini">
+      <div class="m-ico im">👁️</div>
+      <div>
+        <div class="m-val">—</div>
+        <div class="m-lab">Vistas al perfil</div>
+        <div class="m-sub" onclick="abrirModal()">Completar perfil →</div>
+      </div>
+    </div>
+
+    <!-- ACCIONES RÁPIDAS (span 3) -->
+    <div class="card span3">
+      <div class="ca-tit">⚡ Acciones rápidas</div>
+      <div class="ac-row">
+        <a href="Publicar-empleo.html" class="ac">
+          <div class="ac-ico">➕</div>
+          <div class="ac-tit">Publicar vacante</div>
+          <div class="ac-desc">Nueva oferta de empleo</div>
+        </a>
+        <a href="talentos.php" class="ac">
+          <div class="ac-ico">🌟</div>
+          <div class="ac-tit">Ver talentos</div>
+          <div class="ac-desc">Profesionales locales</div>
+        </a>
+        <a href="chat.php" class="ac">
+          <div class="ac-ico">💬</div>
+          <div class="ac-tit">Mensajes</div>
+          <?php if ($chatNoLeidos > 0): ?>
+            <span class="ac-badge"><?= $chatNoLeidos ?> sin leer</span>
+          <?php else: ?>
+            <div class="ac-desc">Sin nuevos</div>
+          <?php endif; ?>
+        </a>
+        <a href="empresas.php" class="ac">
+          <div class="ac-ico">🏢</div>
+          <div class="ac-tit">Mi empresa</div>
+          <div class="ac-desc">Ver en directorio</div>
+        </a>
+        <a href="verificar_cuenta.php" class="ac">
+          <div class="ac-ico">🪪</div>
+          <div class="ac-tit">Verificación</div>
+          <div class="ac-desc"><?= $tieneVerificado ? '✅ Verificada' : 'Subir documentos' ?></div>
+        </a>
+        <a href="convocatorias.php" class="ac">
+          <div class="ac-ico">📢</div>
+          <div class="ac-tit">Convocatorias</div>
+          <div class="ac-desc">Sector público</div>
+        </a>
+        <a href="Empleo.html" class="ac">
+          <div class="ac-ico">🔍</div>
+          <div class="ac-tit">Ver empleos</div>
+          <div class="ac-desc">Mercado laboral</div>
+        </a>
+        <a href="Ayuda.html" class="ac">
+          <div class="ac-ico">❓</div>
+          <div class="ac-tit">Ayuda</div>
+          <div class="ac-desc">Soporte y guías</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- HISTORIAL VACANTES (span 2) -->
+    <div class="card span2">
+      <div class="ce-head">
+        <div class="ce-tit">📋 Historial de vacantes</div>
+        <a href="Publicar-empleo.html" class="ce-ver">Publicar nueva →</a>
+      </div>
+      <div class="hist-list" id="historialVacantes">
+        <?php if (!empty($historialVacantes)): ?>
+          <?php foreach ($historialVacantes as $v): ?>
+            <div class="hist-item">
+              <div class="hist-dot <?= $v['activo'] ? 'dot-activo' : 'dot-inactivo' ?>"></div>
+              <div class="hist-info">
+                <div class="hist-nom"><?= htmlspecialchars($v['titulo']) ?></div>
+                <div class="hist-meta">📍 <?= htmlspecialchars($v['ciudad'] ?? 'Chocó') ?> · <?= htmlspecialchars($v['tipo_contrato'] ?? '') ?> · <?= $v['activo'] ? '<span style="color:#22c55e;font-weight:700">Activa</span>' : '<span style="color:#94a3b8">Cerrada</span>' ?></div>
+              </div>
+              <div class="hist-fecha"><?= date('d/m/Y', strtotime($v['creado_en'])) ?></div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div style="text-align:center;padding:32px 20px;color:var(--ink3)">
+            <div style="font-size:40px;margin-bottom:10px">💼</div>
+            <div style="font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:6px">Aún no has publicado vacantes</div>
+            <div style="font-size:13px">Conecta con talentos del Chocó publicando tu primera oferta</div>
+            <a href="Publicar-empleo.html" style="display:inline-block;margin-top:16px;padding:10px 22px;background:var(--azul);color:white;border-radius:10px;text-decoration:none;font-weight:800;font-size:13px">➕ Publicar primera vacante</a>
+          </div>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <!-- PERFIL EMPRESA (card lateral) -->
+    <div class="card" style="display:flex;flex-direction:column">
+      <div class="cp-head">
+        <div class="cp-av" id="cpAvatar" onclick="abrirModal()" title="Cambiar logo">
+          <?php if ($logoUrl): ?>
+            <img src="<?= $logoUrl ?>" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
+          <?php else: ?>
+            <?= $iniciales ?>
+          <?php endif; ?>
+        </div>
+        <div class="cp-nom" id="dNombreEmp"><?= $nombreEmpresa ?></div>
+        <div class="cp-pro" id="dSector"><?= $sector ?: 'Sector no definido' ?></div>
+      </div>
+      <div class="cp-body">
+        <div class="cp-fil"><span class="cp-ico">📍</span><span id="dCiudad"><?= $ciudad ?: 'Ciudad no registrada' ?></span></div>
+        <div class="cp-fil"><span class="cp-ico">✉️</span><span><?= $correo ?></span></div>
+        <?php if (!empty($ep['sitio_web'])): ?>
+          <div class="cp-fil"><span class="cp-ico">🌐</span><a href="<?= htmlspecialchars($ep['sitio_web']) ?>" target="_blank" style="color:var(--azul);font-size:13px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= htmlspecialchars($ep['sitio_web']) ?></a></div>
+        <?php endif; ?>
+        <div class="cp-fil"><span class="cp-ico">📅</span><span><?= $fechaRegistro ?></span></div>
+        <?php if (!empty($badgesHTML)): ?>
+          <div style="margin-top:8px"><?= $badgesHTML ?></div>
+        <?php endif; ?>
+      </div>
+
+      <!-- TOGGLE VISIBILIDAD -->
+      <div class="vis-row" id="visRow">
+        <div>
+          <div class="vis-label">Aparecer en empresas activas</div>
+          <div class="vis-sub">Tu empresa se mostrará en el directorio público</div>
+        </div>
+        <div class="toggle-wrap">
+          <span id="visChip" class="pv-chip <?= $visibleEnWeb ? 'ok' : 'off' ?>"><?= $visibleEnWeb ? '🟢 Visible' : '🟡 Oculto' ?></span>
+          <label class="toggle">
+            <input type="checkbox" id="toggleVisible" <?= $visibleEnWeb ? 'checked' : '' ?> onchange="toggleVisibilidad(this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- PROGRESO -->
+      <div class="prog-w">
+        <div class="prog-h"><span>Perfil completado</span><span id="pctLabel"><?= $pct ?>%</span></div>
+        <div class="prog-t"><div class="prog-f" id="progBar" style="width:0%"></div></div>
+      </div>
+
+      <button class="btn-edit" onclick="abrirModal()">✏️ Editar perfil empresa</button>
+      <button class="btn-sec" onclick="location.href='empresas.php'">🌐 Ver en directorio</button>
+    </div>
+
+    <!-- ACTIVIDAD RECIENTE -->
+    <div class="card span2">
+      <div class="ca-tit">🕐 Actividad reciente</div>
+      <div class="hist-list">
+        <div class="hist-item">
+          <div class="hist-dot dot-activo"></div>
+          <div class="hist-info">
+            <div class="hist-nom">🎉 Cuenta empresarial creada</div>
+            <div class="hist-meta">Bienvenida a QuibdóConecta</div>
+          </div>
+          <div class="hist-fecha"><?= $fechaRegistro ?></div>
+        </div>
+        <div class="hist-item">
+          <div class="hist-dot" style="background:#3b82f6"></div>
+          <div class="hist-info">
+            <div class="hist-nom">👁️ Exploraste talentos locales</div>
+            <div class="hist-meta">+500 talentos disponibles en la plataforma</div>
+          </div>
+          <div class="hist-fecha">Hoy</div>
+        </div>
+        <?php if ($tieneVerificado): ?>
+          <div class="hist-item">
+            <div class="hist-dot dot-activo"></div>
+            <div class="hist-info">
+              <div class="hist-nom">✅ Empresa Verificada</div>
+              <div class="hist-meta">Badge asignado por el administrador</div>
+            </div>
+            <div class="hist-fecha">—</div>
+          </div>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <!-- BADGES ACTIVOS -->
+    <div class="card">
+      <div class="ca-tit">🏆 Badges activos</div>
+      <div class="badge-row">
+        <?php if ($tieneTop): ?><span class="bdg bdg-t">👑 Top</span><?php endif; ?>
+        <?php if ($tienePremium): ?><span class="bdg bdg-p">⭐ Premium</span><?php endif; ?>
+        <?php if ($tieneDestacado): ?><span class="bdg bdg-d">🏅 Destacada</span><?php endif; ?>
+        <?php if ($tieneVerificado): ?><span class="bdg bdg-v">✓ Verificada</span><?php endif; ?>
+        <?php if (!$tieneVerificado && !$tienePremium && !$tieneDestacado && !$tieneTop): ?>
+          <div style="font-size:13px;color:var(--ink3);padding:8px 0">
+            Aún no tienes badges. <a href="verificar_cuenta.php" style="color:var(--azul);font-weight:700">Verifica tu empresa →</a>
+          </div>
+        <?php endif; ?>
+      </div>
+      <div style="margin-top:16px;padding:14px;background:var(--azul-claro);border-radius:12px;border:1px solid #bfdbfe">
+        <div style="font-size:12px;font-weight:800;color:var(--azul);margin-bottom:6px">¿Quieres más visibilidad?</div>
+        <div style="font-size:12px;color:#1e40af;line-height:1.5">Los badges <strong>Premium</strong> y <strong>Destacada</strong> son asignados por el administrador. Contacta al equipo para más información.</div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- ══ MIS CONVOCATORIAS ══════════════════════════════════════ -->
+  <div style="margin-top:28px;background:var(--blanco);border:1px solid var(--borde);border-radius:var(--radio);padding:28px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+      <div>
+        <div style="font-size:13px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">📢 Mis convocatorias</div>
+        <div style="font-size:13px;color:var(--ink2)">Las convocatorias aparecen en el sitio <strong>solo cuando el administrador las aprueba</strong>.</div>
+      </div>
+      <button onclick="abrirModalConvocatoria()"
+        style="padding:10px 20px;background:var(--azul);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
+        ➕ Publicar convocatoria
+      </button>
+    </div>
+
+    <?php if (empty($misConvocatorias)): ?>
+      <div style="text-align:center;padding:36px 20px;color:var(--ink3)">
+        <div style="font-size:40px;margin-bottom:10px">📋</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:6px">Aún no has publicado convocatorias</div>
+        <div style="font-size:13px">Publica una oferta y el administrador la revisará antes de activarla.</div>
+      </div>
+    <?php else: ?>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="background:#f8fafc">
+              <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1px solid var(--borde)">Título</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1px solid var(--borde)">Entidad</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1px solid var(--borde)">Vacantes</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1px solid var(--borde)">Vence</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1px solid var(--borde)">Estado</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1px solid var(--borde)">Enviada</th>
+              <th style="padding:10px 14px;border-bottom:1px solid var(--borde)"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($misConvocatorias as $cv): ?>
+              <?php
+                $estadoLabel = $cv['activo'] ? '✅ Publicada' : '⏳ Pendiente de aprobación';
+                $estadoColor = $cv['activo'] ? 'background:rgba(34,197,94,.12);color:#15803d' : 'background:rgba(245,158,11,.12);color:#b45309';
+              ?>
+              <tr>
+                <td style="padding:10px 14px;border-bottom:1px solid var(--borde);font-weight:600"><?= htmlspecialchars($cv['titulo']) ?></td>
+                <td style="padding:10px 14px;border-bottom:1px solid var(--borde);color:var(--ink2)"><?= htmlspecialchars($cv['entidad']) ?></td>
+                <td style="padding:10px 14px;border-bottom:1px solid var(--borde)"><?= (int)$cv['vacantes'] ?></td>
+                <td style="padding:10px 14px;border-bottom:1px solid var(--borde);color:var(--ink3)"><?= $cv['vence_fmt'] ?: '—' ?></td>
+                <td style="padding:10px 14px;border-bottom:1px solid var(--borde)">
+                  <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;<?= $estadoColor ?>"><?= $estadoLabel ?></span>
+                </td>
+                <td style="padding:10px 14px;border-bottom:1px solid var(--borde);color:var(--ink3);font-size:12px"><?= $cv['creado_fmt'] ?></td>
+                <td style="padding:10px 14px;border-bottom:1px solid var(--borde)">
+                  <?php if (!$cv['activo']): ?>
+                    <button onclick="eliminarConvocatoria(<?= $cv['id'] ?>, this)"
+                      style="padding:4px 10px;border:1px solid #fca5a5;background:#fff;border-radius:6px;color:#dc2626;font-size:11px;cursor:pointer;font-family:inherit">
+                      🗑 Retirar
+                    </button>
+                  <?php else: ?>
+                    <span style="font-size:11px;color:var(--ink3)">Activa en el sitio</span>
+                  <?php endif; ?>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    <?php endif; ?>
+  </div>
+
+</div><!-- /contenido -->
+
+<!-- ── MODAL EDITAR EMPRESA ── -->
+<div class="modal-ov" id="modalEditar">
+  <div class="modal-box">
+    <button class="mcerrar" onclick="cerrarModal()">✕</button>
+    <div class="modal-pad">
+      <div class="mtit">✏️ Editar perfil de empresa</div>
+      <p class="msub">Administra tus vacantes, revisa candidatos y gestiona tus procesos desde un solo lugar.</p>
+      <div class="mmsg" id="editMsg"></div>
+
+      <!-- LOGO -->
+      <div class="msec">Logo de la empresa</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+        <div id="logoPreview" style="width:72px;height:72px;border-radius:14px;background:linear-gradient(135deg,var(--azul),var(--azul2));display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:white;overflow:hidden;flex-shrink:0;cursor:pointer;border:3px solid rgba(26,86,219,.2)" onclick="document.getElementById('logoInput').click()">
+          <?php if ($logoUrl): ?>
+            <img src="<?= $logoUrl ?>" id="logoImgPreview" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
+          <?php else: ?>
+            <span><?= $iniciales ?></span>
+          <?php endif; ?>
+        </div>
+        <div>
+          <input type="file" id="logoInput" accept="image/jpeg,image/png,image/webp,image/svg+xml" style="display:none" onchange="subirLogo(this)">
+          <button onclick="document.getElementById('logoInput').click()" style="padding:8px 14px;border-radius:8px;background:var(--azul);color:white;border:none;font-size:13px;font-weight:700;cursor:pointer">🖼️ Cambiar logo</button>
+          <div style="font-size:11px;color:var(--ink3);margin-top:5px">JPG, PNG, WEBP o SVG · máx 2 MB</div>
+          <div id="logoMsg" style="font-size:12px;margin-top:4px"></div>
+        </div>
+      </div>
+
+      <!-- DATOS EMPRESA -->
+      <div class="msec">Datos de la empresa</div>
+      <div class="mfila">
+        <div class="mgr full">
+          <label>Nombre de la empresa *</label>
+          <input type="text" id="editNombreEmp" value="<?= htmlspecialchars($ep['nombre_empresa'] ?: $usuario['nombre'] ?? '') ?>" placeholder="Ej: Tech Chocó S.A.S.">
+        </div>
+      </div>
+      <div class="mfila">
+        <div class="mgr">
+          <label>Sector / Industria</label>
+          <select id="editSector">
+            <option value="">Selecciona un sector</option>
+            <?php
+            $sectores = [
+              'Tecnología','Salud','Educación','Construcción & Inmobiliaria',
+              'Comercio & Retail','Servicios & Turismo','Finanzas & Banca',
+              'Agro & Medio Ambiente','Minería','Transporte & Logística',
+              'Gastronomía','Arte & Cultura','Otro'
+            ];
+            foreach ($sectores as $s):
+              $sel = ($ep['sector'] === $s) ? 'selected' : '';
+            ?>
+              <option value="<?= $s ?>" <?= $sel ?>><?= $s ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="mgr">
+          <label>NIT / Identificación</label>
+          <input type="text" id="editNit" value="<?= htmlspecialchars($ep['nit'] ?? '') ?>" placeholder="900.123.456-7">
+        </div>
+      </div>
+      <div class="mfila">
+        <div class="mgr">
+          <label>Ciudad principal</label>
+          <input type="text" id="editCiudad" value="<?= htmlspecialchars($usuario['ciudad'] ?? '') ?>" placeholder="Quibdó">
+        </div>
+        <div class="mgr">
+          <label>Municipio del Chocó</label>
+          <input type="text" id="editMunicipio" value="<?= htmlspecialchars($ep['municipio'] ?? '') ?>" placeholder="Ej: Istmina, Condoto…">
+        </div>
+      </div>
+      <div class="mfila">
+        <div class="mgr">
+          <label>Teléfono empresa</label>
+          <input type="tel" id="editTelefonoEmp" value="<?= htmlspecialchars($ep['telefono_empresa'] ?? '') ?>" placeholder="(604) 123 4567">
+        </div>
+        <div class="mgr">
+          <label>Sitio web</label>
+          <input type="url" id="editSitioWeb" value="<?= htmlspecialchars($ep['sitio_web'] ?? '') ?>" placeholder="https://miempresa.com">
+        </div>
+      </div>
+      <div class="mfila">
+        <div class="mgr full">
+          <label>Descripción de la empresa</label>
+          <textarea id="editDescripcion" rows="4" placeholder="Cuéntanos qué hace tu empresa, su misión y por qué los mejores talentos del Chocó deberían trabajar con ustedes…"><?= htmlspecialchars($ep['descripcion'] ?? '') ?></textarea>
+        </div>
+      </div>
+
+      <button class="btn-save" id="btnGuardar" onclick="guardarEmpresa()">💾 Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── MODAL ──────────────────────────────────────────────────
+  function abrirModal() { document.getElementById('modalEditar').classList.add('open') }
+  function cerrarModal() { document.getElementById('modalEditar').classList.remove('open') }
+  document.getElementById('modalEditar').addEventListener('click', e => {
+    if (e.target === document.getElementById('modalEditar')) cerrarModal()
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal() });
+
+  // Animar barra de progreso al cargar
+  window.addEventListener('load', () => {
+    const b = document.getElementById('progBar');
+    if (b) setTimeout(() => { b.style.width = '<?= $pct ?>%' }, 400);
+  });
+
+  function mostrarMsg(t, c) {
+    const e = document.getElementById('editMsg');
+    e.textContent = t; e.className = 'mmsg ' + c; e.style.display = 'block';
+  }
+
+  // ── SUBIR LOGO ─────────────────────────────────────────────
+  async function subirLogo(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const msg = document.getElementById('logoMsg');
+    msg.textContent = '⏳ Subiendo logo…'; msg.style.color = 'var(--ink3)';
+    const fd = new FormData();
+    fd.append('_action', 'subir_logo');
+    fd.append('logo', file);
+    try {
+      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.ok) {
+        msg.textContent = '✅ Logo actualizado'; msg.style.color = 'var(--verde2)';
+        const imgTag = `<img src="${j.logo}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
+        ['logoPreview','heroAvatar','cpAvatar','navAvatar'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = imgTag;
+        });
+      } else {
+        msg.textContent = '❌ ' + (j.msg || 'Error'); msg.style.color = '#e74c3c';
+      }
+    } catch(e) { msg.textContent = '❌ Error de conexión'; msg.style.color = '#e74c3c'; }
+    input.value = '';
+  }
+
+  // ── GUARDAR EMPRESA ────────────────────────────────────────
+  async function guardarEmpresa() {
+    const btn = document.getElementById('btnGuardar');
+    const n = document.getElementById('editNombreEmp').value.trim();
+    if (!n) { mostrarMsg('El nombre de la empresa es obligatorio.', 'error'); return; }
+    btn.disabled = true; btn.textContent = '⏳ Guardando…';
+    const fd = new FormData();
+    fd.append('_action',          'editar_empresa');
+    fd.append('nombre_empresa',   n);
+    fd.append('sector',           document.getElementById('editSector').value);
+    fd.append('nit',              document.getElementById('editNit').value.trim());
+    fd.append('descripcion',      document.getElementById('editDescripcion').value.trim());
+    fd.append('sitio_web',        document.getElementById('editSitioWeb').value.trim());
+    fd.append('telefono_empresa', document.getElementById('editTelefonoEmp').value.trim());
+    fd.append('ciudad',           document.getElementById('editCiudad').value.trim());
+    fd.append('municipio',        document.getElementById('editMunicipio').value.trim());
+    try {
+      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.ok) {
+        mostrarMsg('¡Perfil actualizado correctamente!', 'success');
+        document.getElementById('dNombreEmp').textContent = j.nombre_empresa;
+        const ds = document.getElementById('dSector');
+        if (ds) ds.textContent = j.sector || 'Sector no definido';
+        const dc = document.getElementById('dCiudad');
+        if (dc) dc.textContent = j.ciudad || 'Ciudad no registrada';
+        setTimeout(cerrarModal, 1600);
+      } else {
+        mostrarMsg(j.msg || 'Error al guardar.', 'error');
+      }
+    } catch(e) { mostrarMsg('Error de conexión.', 'error'); }
+    btn.disabled = false; btn.textContent = '💾 Guardar cambios';
+  }
+
+  // ── TOGGLE VISIBILIDAD ─────────────────────────────────────
+  async function toggleVisibilidad(visible) {
+    const chip = document.getElementById('visChip');
+    const fd = new FormData();
+    fd.append('_action', 'toggle_visibilidad');
+    fd.append('visible', visible ? '1' : '0');
+    try {
+      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.ok) {
+        chip.textContent = visible ? '🟢 Visible' : '🟡 Oculto';
+        chip.className = 'pv-chip ' + (visible ? 'ok' : 'off');
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  // ── MODAL NUEVA CONVOCATORIA ──────────────────────────────────
+  function abrirModalConvocatoria() {
+    document.getElementById('modal-conv').classList.add('open');
+    document.getElementById('conv-msg').style.display = 'none';
+    document.getElementById('form-conv').reset();
+  }
+  function cerrarModalConvocatoria() {
+    document.getElementById('modal-conv').classList.remove('open');
+  }
+
+  async function enviarConvocatoria() {
+    const btn = document.getElementById('btn-conv-enviar');
+    const msg = document.getElementById('conv-msg');
+    const fd  = new FormData(document.getElementById('form-conv'));
+    fd.append('_action', 'crear_convocatoria');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    msg.style.display = 'none';
+    try {
+      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+      const d = await r.json();
+      msg.style.display = 'block';
+      if (d.ok) {
+        msg.style.color   = '#15803d';
+        msg.style.background = 'rgba(34,197,94,.1)';
+        msg.style.border  = '1px solid rgba(34,197,94,.3)';
+        msg.textContent   = '✅ ' + d.msg;
+        setTimeout(() => { cerrarModalConvocatoria(); location.reload(); }, 2000);
+      } else {
+        msg.style.color   = '#dc2626';
+        msg.style.background = 'rgba(220,38,38,.08)';
+        msg.style.border  = '1px solid rgba(220,38,38,.2)';
+        msg.textContent   = '❌ ' + (d.msg || 'Error al enviar');
+        btn.disabled = false; btn.textContent = '📤 Enviar para revisión';
+      }
+    } catch(e) {
+      msg.style.display = 'block'; msg.style.color = '#dc2626';
+      msg.textContent = '❌ Error de conexión';
+      btn.disabled = false; btn.textContent = '📤 Enviar para revisión';
+    }
+  }
+
+  async function eliminarConvocatoria(cid, btn) {
+    if (!confirm('¿Retirar esta convocatoria?')) return;
+    btn.disabled = true; btn.textContent = '…';
+    const fd = new FormData();
+    fd.append('_action', 'eliminar_convocatoria');
+    fd.append('conv_id', cid);
+    try {
+      const r = await fetch('dashboard_empresa.php', { method:'POST', body:fd });
+      const d = await r.json();
+      if (d.ok) { location.reload(); }
+      else { alert(d.msg || 'Error'); btn.disabled = false; btn.textContent = '🗑 Retirar'; }
+    } catch(e) { btn.disabled = false; btn.textContent = '🗑 Retirar'; }
+  }
+</script>
+
+<!-- ── MODAL NUEVA CONVOCATORIA ─────────────────────────────── -->
+<div class="modal-ov" id="modal-conv">
+  <div class="modal-box" style="max-width:620px">
+    <button class="mcerrar" onclick="cerrarModalConvocatoria()">✕</button>
+    <div class="modal-pad">
+      <div class="mtit">📢 Nueva convocatoria</div>
+      <div style="font-size:13px;color:var(--ink3);margin-bottom:20px;padding:10px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px">
+        ⚠️ Tu convocatoria será revisada por el administrador antes de aparecer en el sitio. Tiempo estimado: 24–48 horas.
+      </div>
+      <form id="form-conv">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div style="grid-column:1/-1">
+            <label class="mlabel">Título de la convocatoria *</label>
+            <input name="titulo" class="minput" placeholder="ej: Asesores comerciales" required>
+          </div>
+          <div>
+            <label class="mlabel">Nombre de la entidad / empresa *</label>
+            <input name="entidad" class="minput" placeholder="ej: Mi Empresa S.A.S." value="<?= htmlspecialchars($ep['nombre_empresa'] ?? $usuario['nombre'] ?? '') ?>" required>
+          </div>
+          <div>
+            <label class="mlabel">Categoría</label>
+            <select name="categoria" class="minput">
+              <option value="gobernacion">Gobernación</option>
+              <option value="alcaldia">Alcaldía</option>
+              <option value="salud">Salud</option>
+              <option value="educacion">Educación</option>
+              <option value="ambiente">Medio Ambiente</option>
+              <option value="sena">SENA</option>
+              <option value="privado" selected>Empresa Privada</option>
+            </select>
+          </div>
+          <div>
+            <label class="mlabel">N° de vacantes</label>
+            <input name="vacantes" type="number" min="1" class="minput" value="1">
+          </div>
+          <div>
+            <label class="mlabel">Modalidad</label>
+            <select name="modalidad" class="minput">
+              <option>Presencial</option>
+              <option>Remoto</option>
+              <option>Mixta</option>
+            </select>
+          </div>
+          <div>
+            <label class="mlabel">Nivel educativo requerido</label>
+            <select name="nivel" class="minput">
+              <option>Bachillerato</option>
+              <option>Técnico</option>
+              <option>Tecnólogo</option>
+              <option>Licenciatura</option>
+              <option>Profesional</option>
+              <option>Especialización</option>
+              <option>Sin requisito</option>
+            </select>
+          </div>
+          <div>
+            <label class="mlabel">Salario ofrecido</label>
+            <input name="salario" class="minput" placeholder="ej: $1.500.000/mes o A convenir">
+          </div>
+          <div>
+            <label class="mlabel">Ciudad / Lugar</label>
+            <input name="lugar" class="minput" value="Quibdó, Chocó">
+          </div>
+          <div>
+            <label class="mlabel">Fecha límite de postulación</label>
+            <input name="vence_en" type="date" class="minput">
+          </div>
+          <div>
+            <label class="mlabel">Ícono (emoji)</label>
+            <input name="icono" class="minput" value="🏢" maxlength="5" style="font-size:20px">
+          </div>
+          <div style="grid-column:1/-1">
+            <label class="mlabel">Requisitos y cómo postularse</label>
+            <textarea name="requisito" class="minput" rows="3" style="resize:vertical" placeholder="ej: Experiencia mínima 1 año · Enviar hoja de vida a rrhh@empresa.com"></textarea>
+          </div>
+        </div>
+        <p id="conv-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px"></p>
+        <button type="button" id="btn-conv-enviar" onclick="enviarConvocatoria()" class="btn-save" style="width:100%">
+          📤 Enviar para revisión
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
