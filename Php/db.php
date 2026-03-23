@@ -1,18 +1,4 @@
 <?php
-// ── Configuración de sesión larga (aplica a todos los archivos que incluyan db.php) ──
-if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.gc_maxlifetime', 86400);   // 24 horas
-    ini_set('session.cookie_lifetime', 86400);  // 24 horas
-    session_set_cookie_params([
-        'lifetime' => 86400,
-        'path'     => '/',
-        'samesite' => 'Lax',
-        'secure'   => isset($_SERVER['HTTPS']),
-        'httponly' => true,
-    ]);
-    session_start();
-}
-
 defined('DB_HOST') or define('DB_HOST', getenv('MYSQLHOST') ?: 'caboose.proxy.rlwy.net');
 defined('DB_NAME') or define('DB_NAME', getenv('MYSQLDATABASE') ?: 'railway');
 defined('DB_USER') or define('DB_USER', getenv('MYSQLUSER') ?: 'root');

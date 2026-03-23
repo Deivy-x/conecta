@@ -2,6 +2,15 @@
 // ============================================================
 // chat.php — Chat interno QuibdóConecta (todo en uno)
 // ============================================================
+ini_set('session.gc_maxlifetime', 604800);  // 1 semana
+ini_set('session.cookie_lifetime', 604800); // 1 semana
+session_set_cookie_params([
+    'lifetime' => 604800,
+    'path'     => '/',
+    'samesite' => 'Lax',
+    'httponly' => true,
+    'secure'   => isset($_SERVER['HTTPS']),
+]);
 session_start();
 require_once __DIR__ . '/Php/db.php';
 
