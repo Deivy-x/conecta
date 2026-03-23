@@ -53,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $whatsapp_neg     = preg_replace('/\D/', '', trim($_POST['whatsapp_neg'] ?? ''));
     $descripcion_neg  = trim($_POST['descripcion_neg'] ?? '');
     $precio_desde_neg = trim($_POST['precio_desde_neg']?? '');
+    $link_neg_virtual = trim($_POST['link_neg_virtual'] ?? '');
 
     // ── Validaciones base ──
     if (!$nombre || !$correo || !$pass) {
@@ -72,6 +73,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if ($tipo === 'candidato' && !$fecha_nac_val) {
         echo json_encode(['ok'=>false,'msg'=>'La fecha de nacimiento es obligatoria.']); exit;
+    }
+    // Validar edad mínima 16 años
+    if ($tipo === 'candidato' && $fecha_nac_val) {
+        $nacimiento = new DateTime($fecha_nac_val);
+        $hoy = new DateTime();
+        $edad = $hoy->diff($nacimiento)->y;
+        if ($edad < 16) {
+            echo json_encode(['ok'=>false,'msg'=>'Debes tener al menos 16 años para registrarte.']); exit;
+        }
     }
     if ($tipo === 'empresa' && !$nombre_empresa) {
         echo json_encode(['ok'=>false,'msg'=>'El nombre de la empresa es obligatorio.']); exit;
@@ -160,6 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'whatsapp_neg'     => $whatsapp_neg,
             'descripcion_neg'  => $descripcion_neg,
             'precio_desde_neg' => $precio_desde_neg,
+            'link_neg_virtual' => $link_neg_virtual,
         ]);
 
         // tipo BD: candidato | empresa | negocio → guardamos 'negocio' como 'empresa' para compatibilidad
@@ -382,7 +393,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="sec-title">🪪 Identidad & perfil</div>
       <div class="grupo full">
         <label>Fecha de nacimiento <span class="req">*</span></label>
-        <input type="date" id="fecha_nacimiento" max="2007-01-01" style="color-scheme:dark">
+        <input type="date" id="fecha_nacimiento" max="2009-03-23" style="color-scheme:dark">
       </div>
       <div class="row">
         <div class="grupo">
@@ -506,8 +517,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <option>Analista de Datos</option>
             <option>Editor(a) de Video</option>
           </optgroup>
-          <option value="otro">Otro (especificar en observaciones)</option>
+          <option value="otro">Otro (especificar)</option>
         </select>
+      </div>
+      <!-- Campo "Otro" visible solo cuando se elige Otro -->
+      <div class="grupo full" id="grupoOtraArea" style="display:none">
+        <label>Especifica tu área o perfil <span class="req">*</span></label>
+        <input type="text" id="otra_area" placeholder="Escribe tu área o profesión">
       </div>
     </div>
 
@@ -603,12 +619,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <input type="text" id="municipio_empresa" placeholder="Ej: Quibdó, Istmina…">
         </div>
         <div class="grupo">
-          <label>Sitio web</label>
+          <label>Sitio web / Red social <span class="req">*</span></label>
           <input type="url" id="sitio_web" placeholder="https://miempresa.com">
         </div>
       </div>
       <div class="grupo full">
-        <label>N.º Cámara de Comercio</label>
+        <label>N.º Cámara de Comercio <span class="req">*</span></label>
         <input type="text" id="camara_comercio" placeholder="Matrícula mercantil">
       </div>
       <div class="info-box">
@@ -625,7 +641,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <!-- Tipo de negocio -->
       <div class="grupo full">
         <label>¿Qué tipo de negocio tienes? <span class="req">*</span></label>
-        <div style="display:flex;gap:10px;margin-top:4px">
+        <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap">
           <label style="flex:1;cursor:pointer;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.12);border-radius:12px;padding:14px;text-align:center;transition:all .25s" id="lbl-neg-emp">
             <input type="radio" name="tipo_negocio_reg" id="neg_emp" value="emp" checked onchange="toggleNegocioTipo()" style="display:none">
             <span style="font-size:22px;display:block;margin-bottom:4px">🏪</span>
@@ -637,6 +653,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span style="font-size:22px;display:block;margin-bottom:4px">🏬</span>
             <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.8)">Local C.C. El Caraño</span>
             <span style="font-size:11px;color:rgba(255,255,255,.4);display:block;margin-top:3px">Tienes un local dentro del C.C.</span>
+          </label>
+          <label style="flex:1;cursor:pointer;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.12);border-radius:12px;padding:14px;text-align:center;transition:all .25s" id="lbl-neg-virtual">
+            <input type="radio" name="tipo_negocio_reg" id="neg_virtual" value="virtual" onchange="toggleNegocioTipo()" style="display:none">
+            <span style="font-size:22px;display:block;margin-bottom:4px">💻</span>
+            <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.8)">Negocio Virtual</span>
+            <span style="font-size:11px;color:rgba(255,255,255,.4);display:block;margin-top:3px">Solo online / redes sociales</span>
           </label>
         </div>
       </div>
@@ -733,9 +755,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label>Descripción breve</label>
         <textarea id="descripcion_neg" rows="3" placeholder="¿Qué ofreces? ¿Qué te hace especial?"></textarea>
       </div>
-      <div class="grupo full">
-        <label>Precio desde (COP) — opcional</label>
-        <input type="number" id="precio_desde_neg" placeholder="Ej: 15000">
+      <!-- Fotos del local (solo para negocios físicos) -->
+      <div id="camposFotoLocal">
+        <div class="sec-title">📸 Fotos del negocio</div>
+        <div class="info-box">📌 <strong>Para negocios físicos:</strong> sube una foto de la fachada y una del interior del local. Son obligatorias para la verificación.</div>
+        <div class="grupo full">
+          <label>Foto de la fachada (frente del negocio) <span class="req">*</span></label>
+          <div class="upload-doc-area" id="uploadFachadaArea" onclick="document.getElementById('foto_fachada').click()" style="cursor:pointer">
+            <div id="uploadFachadaPlaceholder" style="text-align:center">
+              <div style="font-size:32px;margin-bottom:6px">🏪</div>
+              <div style="font-weight:600;font-size:14px">Foto del frente</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">JPG, PNG · máx 5MB</div>
+            </div>
+            <div id="uploadFachadaPreview" style="display:none;align-items:center;gap:10px">
+              <span style="font-size:22px">🖼️</span>
+              <div><div style="font-weight:600;font-size:13px" id="fachadaNombre"></div></div>
+              <button type="button" onclick="quitarFoto('fachada',event)" style="margin-left:auto;background:rgba(255,68,68,.2);border:none;color:#ff4444;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px">✕</button>
+            </div>
+          </div>
+          <input type="file" id="foto_fachada" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="previsualizarFoto(this,'fachada')">
+        </div>
+        <div class="grupo full">
+          <label>Foto del interior del local <span class="req">*</span></label>
+          <div class="upload-doc-area" id="uploadInteriorArea" onclick="document.getElementById('foto_interior').click()" style="cursor:pointer">
+            <div id="uploadInteriorPlaceholder" style="text-align:center">
+              <div style="font-size:32px;margin-bottom:6px">🏬</div>
+              <div style="font-weight:600;font-size:14px">Foto del interior</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">JPG, PNG · máx 5MB</div>
+            </div>
+            <div id="uploadInteriorPreview" style="display:none;align-items:center;gap:10px">
+              <span style="font-size:22px">🖼️</span>
+              <div><div style="font-weight:600;font-size:13px" id="interiorNombre"></div></div>
+              <button type="button" onclick="quitarFoto('interior',event)" style="margin-left:auto;background:rgba(255,68,68,.2);border:none;color:#ff4444;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px">✕</button>
+            </div>
+          </div>
+          <input type="file" id="foto_interior" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="previsualizarFoto(this,'interior')">
+        </div>
+      </div>
+      <!-- Info negocio virtual (solo para virtual) -->
+      <div id="camposNegVirtual" style="display:none">
+        <div class="sec-title">🌐 Negocio virtual</div>
+        <div class="info-box">💻 <strong>Negocio 100% virtual:</strong> ingresa el link de tu red social o tienda online principal.</div>
+        <div class="grupo full">
+          <label>Link de red social / tienda online <span class="req">*</span></label>
+          <input type="url" id="link_neg_virtual" placeholder="https://instagram.com/minegocio">
+        </div>
       </div>
       <!-- Documento del dueño -->
       <div class="sec-title">🪪 Documento del propietario</div>
@@ -850,7 +914,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
       <div class="grupo full">
         <label>Fecha de nacimiento <span class="req">*</span></label>
-        <input type="date" id="fecha_nac_serv" max="2007-01-01" style="color-scheme:dark">
+        <input type="date" id="fecha_nac_serv" max="2009-03-23" style="color-scheme:dark">
       </div>
       <div class="info-box">
         🎧 <strong>¿Cómo funciona?</strong> Regístrate, el administrador revisará tu perfil y activará tu tarjeta en la sección "Servicios para Eventos" con tu precio y géneros.
@@ -908,14 +972,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     updateProgress();
   }
 
-  // TIPO NEGOCIO (cc vs independiente)
+  // TIPO NEGOCIO (cc vs independiente vs virtual)
   function toggleNegocioTipo() {
-    const esCC = document.getElementById('neg_cc').checked;
+    const esCC      = document.getElementById('neg_cc').checked;
+    const esVirtual = document.getElementById('neg_virtual').checked;
+    const esFisico  = !esVirtual; // emp o cc
+
     document.getElementById('camposCC').style.display = esCC ? 'block' : 'none';
-    document.getElementById('lbl-neg-emp').style.borderColor = esCC ? 'rgba(255,255,255,.12)' : '#b45309';
-    document.getElementById('lbl-neg-cc').style.borderColor  = esCC ? '#b45309' : 'rgba(255,255,255,.12)';
+    document.getElementById('camposFotoLocal').style.display  = esFisico ? 'block' : 'none';
+    document.getElementById('camposNegVirtual').style.display = esVirtual ? 'block' : 'none';
+
+    // Estilo bordes botones
+    document.getElementById('lbl-neg-emp').style.borderColor     = (!esCC && !esVirtual) ? '#b45309' : 'rgba(255,255,255,.12)';
+    document.getElementById('lbl-neg-cc').style.borderColor      = esCC      ? '#b45309' : 'rgba(255,255,255,.12)';
+    document.getElementById('lbl-neg-virtual').style.borderColor = esVirtual ? '#1a56db' : 'rgba(255,255,255,.12)';
   }
   toggleNegocioTipo(); // Init
+
+  // MOSTRAR/OCULTAR campo "Otra área" en candidato
+  document.getElementById('profesion_tipo').addEventListener('change', function() {
+    const esOtro = this.value === 'otro';
+    document.getElementById('grupoOtraArea').style.display = esOtro ? 'block' : 'none';
+    if (!esOtro) document.getElementById('otra_area').value = '';
+  });
+
+  // FOTOS DEL LOCAL
+  function previsualizarFoto(input, tipo) {
+    const file = input.files[0]; if (!file) return;
+    if (file.size > 5*1024*1024) { showMsg('La foto no debe superar 5MB.','error'); input.value=''; return; }
+    const nombre = file.name;
+    if (tipo === 'fachada') {
+      document.getElementById('uploadFachadaPlaceholder').style.display = 'none';
+      document.getElementById('uploadFachadaPreview').style.display = 'flex';
+      document.getElementById('fachadaNombre').textContent = nombre;
+      document.getElementById('uploadFachadaArea').classList.add('tiene-archivo');
+    } else {
+      document.getElementById('uploadInteriorPlaceholder').style.display = 'none';
+      document.getElementById('uploadInteriorPreview').style.display = 'flex';
+      document.getElementById('interiorNombre').textContent = nombre;
+      document.getElementById('uploadInteriorArea').classList.add('tiene-archivo');
+    }
+  }
+  function quitarFoto(tipo, e) {
+    e.stopPropagation();
+    if (tipo === 'fachada') {
+      document.getElementById('foto_fachada').value = '';
+      document.getElementById('uploadFachadaPlaceholder').style.display = 'block';
+      document.getElementById('uploadFachadaPreview').style.display = 'none';
+      document.getElementById('uploadFachadaArea').classList.remove('tiene-archivo');
+    } else {
+      document.getElementById('foto_interior').value = '';
+      document.getElementById('uploadInteriorPlaceholder').style.display = 'block';
+      document.getElementById('uploadInteriorPreview').style.display = 'none';
+      document.getElementById('uploadInteriorArea').classList.remove('tiene-archivo');
+    }
+  }
 
   // DOCUMENTO CANDIDATO
   const docConfig = {
@@ -985,14 +1096,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if(!document.getElementById('tipo_documento').value){showMsg('Selecciona el tipo de documento.','error');return;}
       if(!document.getElementById('cedula').value.trim()){showMsg('El número de documento es obligatorio.','error');return;}
       if(!document.getElementById('doc_cedula').files[0]){showMsg('Debes subir la foto o PDF de tu documento.','error');return;}
+      // Si eligió "Otro" en área, validar el campo
+      if(document.getElementById('profesion_tipo').value==='otro' && !document.getElementById('otra_area').value.trim()){
+        showMsg('Especifica tu área o perfil.','error');return;
+      }
     }
     if(tipoReal==='negocio'){
       if(!document.getElementById('nombre_negocio').value.trim()){showMsg('El nombre del negocio es obligatorio.','error');return;}
       if(!document.getElementById('categoria_neg').value){showMsg('Selecciona la categoría del negocio.','error');return;}
+      const esVirtualNeg = document.getElementById('neg_virtual').checked;
+      if(!esVirtualNeg){
+        if(!document.getElementById('foto_fachada').files[0]){showMsg('Sube la foto de la fachada del negocio.','error');return;}
+        if(!document.getElementById('foto_interior').files[0]){showMsg('Sube la foto del interior del local.','error');return;}
+      } else {
+        if(!document.getElementById('link_neg_virtual').value.trim()){showMsg('El link del negocio virtual es obligatorio.','error');return;}
+      }
     }
     if(tipoReal==='empresa'){
       if(!document.getElementById('nombre_empresa').value.trim()){showMsg('El nombre de la empresa es obligatorio.','error');return;}
       if(!document.getElementById('sector').value){showMsg('Selecciona el sector económico.','error');return;}
+      if(!document.getElementById('camara_comercio').value.trim()){showMsg('El N.º de Cámara de Comercio es obligatorio.','error');return;}
+      if(!document.getElementById('sitio_web').value.trim()){showMsg('El sitio web o red social es obligatorio para empresas.','error');return;}
     }
 
     const btn = document.getElementById('btnRegistro');
@@ -1005,7 +1129,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Campos por tipo
     if(tipoReal==='candidato'){
-      ['fecha_nacimiento','cedula','profesion_tipo'].forEach(id=>{const el=document.getElementById(id);if(el) data.append(id,el.value);});
+      ['fecha_nacimiento','cedula'].forEach(id=>{const el=document.getElementById(id);if(el) data.append(id,el.value);});
+      // Si eligió "Otro" en área, usar el campo de texto
+      const areaVal = document.getElementById('profesion_tipo').value;
+      if(areaVal==='otro'){
+        data.append('profesion_tipo', document.getElementById('otra_area').value.trim());
+      } else {
+        data.append('profesion_tipo', areaVal);
+      }
       const f=document.getElementById('doc_cedula'); if(f&&f.files[0]) data.append('doc_cedula',f.files[0]);
     }
     if(tipoReal==='empresa'){
@@ -1014,11 +1145,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       ].forEach(id=>{const el=document.getElementById(id);if(el) data.append(id,el.value);});
     }
     if(tipoReal==='negocio'){
-      const tipoNeg = document.getElementById('neg_cc').checked ? 'cc' : 'emp';
+      const esVirtualNeg = document.getElementById('neg_virtual').checked;
+      const esCC_neg     = document.getElementById('neg_cc').checked;
+      const tipoNeg = esVirtualNeg ? 'virtual' : (esCC_neg ? 'cc' : 'emp');
       data.append('tipo_negocio_reg', tipoNeg);
       ['nombre_negocio','categoria_neg','nombre_cc','local_numero','barrio_negocio',
-       'whatsapp_neg','descripcion_neg','precio_desde_neg'
+       'whatsapp_neg','descripcion_neg'
       ].forEach(id=>{const el=document.getElementById(id);if(el) data.append(id,el.value);});
+      // Fotos del local físico
+      if(!esVirtualNeg){
+        const ff=document.getElementById('foto_fachada'); if(ff&&ff.files[0]) data.append('foto_fachada',ff.files[0]);
+        const fi=document.getElementById('foto_interior'); if(fi&&fi.files[0]) data.append('foto_interior',fi.files[0]);
+      } else {
+        const lv=document.getElementById('link_neg_virtual'); if(lv) data.append('link_neg_virtual',lv.value);
+      }
+      // Área de candidato si eligió "Otro"
+      if(document.getElementById('profesion_tipo')?.value==='otro'){
+        data.append('profesion_tipo', document.getElementById('otra_area').value.trim());
+      }
       // Documento del negocio
       const tipDocNeg=document.getElementById('tipo_documento_neg').value;
       const cedulaNeg=document.getElementById('cedula_neg').value;
