@@ -1,6 +1,6 @@
-﻿<?php
+<?php
 // ============================================================
-// chat.php — Chat interno QuibdóConecta (todo en uno)
+// chat.php ? Chat interno Quibd?Conecta (todo en uno)
 // ============================================================
 ini_set('session.gc_maxlifetime', 604800);
 ini_set('session.cookie_lifetime', 604800);
@@ -8,9 +8,9 @@ session_set_cookie_params(['lifetime'=>604800,'path'=>'/','samesite'=>'Lax','htt
 session_start();
 require_once __DIR__ . '/Php/db.php';
 
-// ─── MANEJO DE ACCIONES AJAX ────────────────────────────────
+// ??? MANEJO DE ACCIONES AJAX ????????????????????????????????
 // InfinityFree bloquea fetch() a archivos separados,
-// así que todo va por ?action= dentro del mismo chat.php
+// as? que todo va por ?action= dentro del mismo chat.php
 $action = $_GET['action'] ?? '';
 
 if ($action) {
@@ -18,14 +18,14 @@ if ($action) {
 
     if (!isset($_SESSION['usuario_id'])) {
         http_response_code(401);
-        echo json_encode(['ok' => false, 'msg' => 'Sesión expirada.']);
+        echo json_encode(['ok' => false, 'msg' => 'Sesi?n expirada.']);
         exit;
     }
 
     $yo = (int) $_SESSION['usuario_id'];
     $db = getDB();
 
-    // ── CONVERSACIONES ──────────────────────────────────────
+    // ?? CONVERSACIONES ??????????????????????????????????????
     if ($action === 'conversaciones') {
         $stmt = $db->prepare("
             SELECT u.id, u.nombre, u.apellido, u.foto, u.tipo,
@@ -68,7 +68,7 @@ if ($action) {
         exit;
     }
 
-    // ── MENSAJES ────────────────────────────────────────────
+    // ?? MENSAJES ????????????????????????????????????????????
     if ($action === 'mensajes') {
         $con = (int) ($_GET['con'] ?? 0);
         if (!$con) {
@@ -94,17 +94,17 @@ if ($action) {
         exit;
     }
 
-    // ── ENVIAR ──────────────────────────────────────────────
+    // ?? ENVIAR ??????????????????????????????????????????????
     if ($action === 'enviar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $para = (int) ($_POST['para_usuario'] ?? 0);
         $mensaje = trim($_POST['mensaje'] ?? '');
 
         if (!$para || $para === $yo) {
-            echo json_encode(['ok' => false, 'msg' => 'Destinatario inválido.']);
+            echo json_encode(['ok' => false, 'msg' => 'Destinatario inv?lido.']);
             exit;
         }
         if ($mensaje === '') {
-            echo json_encode(['ok' => false, 'msg' => 'Mensaje vacío.']);
+            echo json_encode(['ok' => false, 'msg' => 'Mensaje vac?o.']);
             exit;
         }
         if (mb_strlen($mensaje) > 2000) {
@@ -126,7 +126,7 @@ if ($action) {
         exit;
     }
 
-    // ── BUSCAR USUARIOS ─────────────────────────────────────
+    // ?? BUSCAR USUARIOS ?????????????????????????????????????
     if ($action === 'buscar') {
         $q = trim($_GET['q'] ?? '');
         if (mb_strlen($q) < 2) {
@@ -145,11 +145,11 @@ if ($action) {
         exit;
     }
 
-    echo json_encode(['ok' => false, 'msg' => 'Acción desconocida.']);
+    echo json_encode(['ok' => false, 'msg' => 'Acci?n desconocida.']);
     exit;
 }
 
-// ─── CARGA NORMAL DE LA PÁGINA ──────────────────────────────
+// ??? CARGA NORMAL DE LA P?GINA ??????????????????????????????
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: inicio_sesion.php');
     exit;
@@ -180,14 +180,14 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mensajes – QuibdóConecta</title>
+    <title>Mensajes ? Quibd?Conecta</title>
     <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap"
         rel="stylesheet">
     <style>
-        /* ══════════════════════════════════════════
-           VARIABLES — mismo sistema que dashboard.php
-        ══════════════════════════════════════════ */
+        /* ??????????????????????????????????????????
+           VARIABLES ? mismo sistema que dashboard.php
+        ?????????????????????????????????????????? */
         :root {
             --v2: #1a7a3c;
             --v3: #27a855;
@@ -232,7 +232,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             display: flex;
         }
 
-        /* ── SCROLLBAR PERSONALIZADO ── */
+        /* ?? SCROLLBAR PERSONALIZADO ?? */
         ::-webkit-scrollbar {
             width: 5px;
         }
@@ -250,9 +250,9 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             background: rgba(255, 255, 255, .22);
         }
 
-        /* ══════════════════════════════════════════
+        /* ??????????????????????????????????????????
            SIDEBAR
-        ══════════════════════════════════════════ */
+        ?????????????????????????????????????????? */
         .sidebar {
             width: 260px;
             flex-shrink: 0;
@@ -412,9 +412,9 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             color: #ff6b6b;
         }
 
-        /* ══════════════════════════════════════════
+        /* ??????????????????????????????????????????
            MAIN AREA
-        ══════════════════════════════════════════ */
+        ?????????????????????????????????????????? */
         .main {
             flex: 1;
             display: flex;
@@ -423,7 +423,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             overflow: hidden;
         }
 
-        /* ── TOPBAR ── */
+        /* ?? TOPBAR ?? */
         .topbar {
             background: rgba(6, 14, 7, .96);
             backdrop-filter: blur(20px);
@@ -491,16 +491,16 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             border: 2px solid rgba(163, 240, 181, .2);
         }
 
-        /* ══════════════════════════════════════════
+        /* ??????????????????????????????????????????
            CHAT LAYOUT
-        ══════════════════════════════════════════ */
+        ?????????????????????????????????????????? */
         .chat-container {
             flex: 1;
             display: flex;
             overflow: hidden;
         }
 
-        /* ── LISTA DE CONVERSACIONES ── */
+        /* ?? LISTA DE CONVERSACIONES ?? */
         .chat-list {
             width: 320px;
             flex-shrink: 0;
@@ -639,7 +639,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
         }
 
         .conv-preview.yo::before {
-            content: 'Tú: ';
+            content: 'T?: ';
             font-weight: 600;
             color: var(--ink3);
         }
@@ -669,9 +669,9 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             text-align: center;
         }
 
-        /* ══════════════════════════════════════════
-           ÁREA DE CHAT
-        ══════════════════════════════════════════ */
+        /* ??????????????????????????????????????????
+           ?REA DE CHAT
+        ?????????????????????????????????????????? */
         .chat-area {
             flex: 1;
             display: flex;
@@ -712,7 +712,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             color: var(--ink3);
         }
 
-        /* ── CABECERA DEL CHAT ── */
+        /* ?? CABECERA DEL CHAT ?? */
         .chat-header {
             padding: 14px 24px;
             background: rgba(6, 14, 7, .96);
@@ -761,7 +761,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             color: var(--ink2);
         }
 
-        /* ── MENSAJES ── */
+        /* ?? MENSAJES ?? */
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -835,7 +835,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             color: var(--ink3);
         }
 
-        /* ── INPUT ── */
+        /* ?? INPUT ?? */
         .chat-input-area {
             padding: 14px 24px;
             background: rgba(6, 14, 7, .96);
@@ -897,7 +897,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             box-shadow: none;
         }
 
-        /* ── BOTÓN NUEVO CHAT ── */
+        /* ?? BOT?N NUEVO CHAT ?? */
         .new-chat-btn {
             display: flex;
             align-items: center;
@@ -922,9 +922,9 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             box-shadow: 0 0 14px rgba(163, 240, 181, .12);
         }
 
-        /* ══════════════════════════════════════════
+        /* ??????????????????????????????????????????
            MODAL NUEVO MENSAJE
-        ══════════════════════════════════════════ */
+        ?????????????????????????????????????????? */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -1069,9 +1069,9 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             color: var(--ink3);
         }
 
-        /* ══════════════════════════════════════════
+        /* ??????????????????????????????????????????
            RESPONSIVE
-        ══════════════════════════════════════════ */
+        ?????????????????????????????????????????? */
         @media(max-width:900px) {
             .sidebar {
                 width: 66px;
@@ -1197,42 +1197,42 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
     <aside class="sidebar">
         <div class="sidebar-brand">
             <img src="Imagenes/Quibdo.png" alt="Logo">
-            <span>Quibdó<em>Conecta</em></span>
+            <span>Quibd?<em>Conecta</em></span>
         </div>
         <div class="sidebar-user">
             <div class="s-avatar"><?= $inicial ?></div>
             <div class="s-user-info">
                 <div class="s-user-name"><?= htmlspecialchars($usuario['nombre']) ?></div>
-                <div class="s-user-tipo"><?= $tipo === 'empresa' ? '🏢 Empresa' : '👤 Candidato' ?></div>
+                <div class="s-user-tipo"><?= $tipo === 'empresa' ? '?? Empresa' : '?? Candidato' ?></div>
             </div>
         </div>
         <nav class="sidebar-nav">
             <div class="nav-section-title">Principal</div>
-            <a href="dashboard.php" class="nav-item"><span class="ni">🏠</span><span>Panel</span></a>
-            <a href="Empleo.html" class="nav-item"><span class="ni">💼</span><span>Empleos</span></a>
-            <a href="talentos.html" class="nav-item"><span class="ni">🌟</span><span>Talentos</span></a>
-            <a href="Empresas.html" class="nav-item"><span class="ni">🏢</span><span>Empresas</span></a>
+            <a href="dashboard.php" class="nav-item"><span class="ni">??</span><span>Panel</span></a>
+            <a href="Empleo.html" class="nav-item"><span class="ni">??</span><span>Empleos</span></a>
+            <a href="talentos.html" class="nav-item"><span class="ni">??</span><span>Talentos</span></a>
+            <a href="Empresas.html" class="nav-item"><span class="ni">??</span><span>Empresas</span></a>
             <a href="chat.php" class="nav-item active"><span
-                    class="ni">💬</span><span>Mensajes</span><?php if ($totalNoLeidos > 0): ?><span
+                    class="ni">??</span><span>Mensajes</span><?php if ($totalNoLeidos > 0): ?><span
                         class="nav-badge"><?= $totalNoLeidos ?></span><?php endif; ?></a>
-            <a href="verificar_cuenta.php" class="nav-item"><span class="ni">✅</span><span>Verificar cuenta</span></a>
+            <a href="verificar_cuenta.php" class="nav-item"><span class="ni">?</span><span>Verificar cuenta</span></a>
             <div class="nav-section-title">Soporte</div>
-            <a href="Ayuda.html" class="nav-item"><span class="ni">❓</span><span>Ayuda</span></a>
+            <a href="Ayuda.html" class="nav-item"><span class="ni">?</span><span>Ayuda</span></a>
         </nav>
         <div class="sidebar-bottom">
-            <a href="Php/logout.php" class="btn-logout-s"><span class="ni">🚪</span><span>Cerrar sesión</span></a>
+            <a href="Php/logout.php" class="btn-logout-s"><span class="ni">??</span><span>Cerrar sesi?n</span></a>
         </div>
     </aside>
 
     <div class="main">
         <header class="topbar">
             <div class="topbar-left">
-                <h2>💬 Mensajes</h2>
+                <h2>?? Mensajes</h2>
                 <p>Chatea con empresas, candidatos y artistas</p>
             </div>
             <div class="topbar-right">
-                <a href="dashboard.php" class="topbar-btn" title="Mi Panel">🏠</a>
-                <a href="index.html" class="topbar-btn" title="Inicio">🌐</a>
+                <a href="dashboard.php" class="topbar-btn" title="Mi Panel">??</a>
+                <a href="index.html" class="topbar-btn" title="Inicio">??</a>
                 <div class="t-avatar"><?= $inicial ?></div>
             </div>
         </header>
@@ -1241,26 +1241,26 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             <div class="chat-list" id="chatList">
                 <div class="chat-list-header">
                     <h3>Conversaciones</h3>
-                    <input type="text" class="chat-search" id="searchConv" placeholder="🔍 Buscar conversación...">
-                    <button class="new-chat-btn" onclick="abrirNuevoChat()">✉️ Nuevo mensaje</button>
+                    <input type="text" class="chat-search" id="searchConv" placeholder="?? Buscar conversaci?n...">
+                    <button class="new-chat-btn" onclick="abrirNuevoChat()">?? Nuevo mensaje</button>
                 </div>
                 <div class="chat-list-body" id="convListBody">
                     <div class="conv-empty" id="convEmpty">
-                        <span class="ce-icon">💬</span>
-                        Aún no tienes conversaciones.<br>¡Envía tu primer mensaje!
+                        <span class="ce-icon">??</span>
+                        A?n no tienes conversaciones.<br>?Env?a tu primer mensaje!
                     </div>
                 </div>
             </div>
 
             <div class="chat-area" id="chatArea">
                 <div class="chat-area-empty" id="chatEmpty">
-                    <span class="cae-icon">💬</span>
-                    <h3>Selecciona una conversación</h3>
-                    <p>Elige una conversación o envía un nuevo mensaje para comenzar</p>
+                    <span class="cae-icon">??</span>
+                    <h3>Selecciona una conversaci?n</h3>
+                    <p>Elige una conversaci?n o env?a un nuevo mensaje para comenzar</p>
                 </div>
                 <div id="chatActive" style="display:none; flex-direction:column; height:100%;">
                     <div class="chat-header" id="chatHeader">
-                        <button class="ch-back" onclick="volverALista()">←</button>
+                        <button class="ch-back" onclick="volverALista()">?</button>
                         <div class="ch-avatar" id="chAvatar">?</div>
                         <div class="ch-info">
                             <h4 id="chNombre">Cargando...</h4>
@@ -1271,7 +1271,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
                     <div class="chat-input-area">
                         <input type="text" class="chat-input" id="chatInput" placeholder="Escribe un mensaje..."
                             maxlength="2000" autocomplete="off">
-                        <button class="chat-send" id="chatSendBtn" onclick="enviarMensaje()" title="Enviar">➤</button>
+                        <button class="chat-send" id="chatSendBtn" onclick="enviarMensaje()" title="Enviar">?</button>
                     </div>
                 </div>
             </div>
@@ -1280,9 +1280,9 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
 
     <div class="modal-overlay" id="modalNuevo">
         <div class="modal-box">
-            <button class="modal-close" onclick="cerrarNuevoChat()">✕</button>
-            <h3>✉️ Nuevo mensaje</h3>
-            <p class="modal-sub">Busca un usuario para iniciar una conversación</p>
+            <button class="modal-close" onclick="cerrarNuevoChat()">?</button>
+            <h3>?? Nuevo mensaje</h3>
+            <p class="modal-sub">Busca un usuario para iniciar una conversaci?n</p>
             <input type="text" class="user-search-input" id="userSearchInput" placeholder="Escribe un nombre..."
                 oninput="buscarUsuarios()">
             <div class="user-list" id="userSearchResults">
@@ -1298,7 +1298,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
         let pollingInterval = null;
         let conversaciones = [];
 
-        // ── TODAS las llamadas usan ?action= dentro del mismo chat.php ──
+        // ?? TODAS las llamadas usan ?action= dentro del mismo chat.php ??
         const API = url => 'chat.php?' + url;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1333,7 +1333,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             const filtered = conversaciones.filter(c => (c.nombre + ' ' + (c.apellido || '')).toLowerCase().includes(search));
 
             if (!filtered.length) {
-                body.innerHTML = '<div class="conv-empty"><span class="ce-icon">💬</span>Sin conversaciones</div>';
+                body.innerHTML = '<div class="conv-empty"><span class="ce-icon">??</span>Sin conversaciones</div>';
                 return;
             }
             body.innerHTML = filtered.map(c => {
@@ -1392,7 +1392,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
                 }
                 if (data.usuario) {
                     document.getElementById('chNombre').textContent = data.usuario.nombre + ' ' + (data.usuario.apellido || '');
-                    document.getElementById('chTipo').textContent = data.usuario.tipo === 'empresa' ? '🏢 Empresa' : data.usuario.tipo === 'artista' ? '🎵 Artista' : '👤 Candidato';
+                    document.getElementById('chTipo').textContent = data.usuario.tipo === 'empresa' ? '?? Empresa' : data.usuario.tipo === 'artista' ? '?? Artista' : '?? Candidato';
                     const av = document.getElementById('chAvatar');
                     av.textContent = data.usuario.nombre.charAt(0).toUpperCase();
                     av.style.background = data.usuario.tipo === 'empresa' ? 'linear-gradient(135deg,#1f9d55,#2ecc71)' : data.usuario.tipo === 'artista' ? 'linear-gradient(135deg,#d4a017,#f0c040)' : 'linear-gradient(135deg,#667eea,#764ba2)';
@@ -1400,7 +1400,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
                 renderMensajes(data.mensajes);
                 if (!silent) cargarConversaciones();
             } catch (e) {
-                if (!silent) mostrarError('Error de conexión. Verifica tu internet.');
+                if (!silent) mostrarError('Error de conexi?n. Verifica tu internet.');
                 console.error(e);
             }
         }
@@ -1441,7 +1441,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
                     container.scrollTop = container.scrollHeight;
                     cargarConversaciones();
                 } else { mostrarError(json.msg || 'Error al enviar'); input.value = msg; }
-            } catch (e) { mostrarError('Error de conexión'); input.value = msg; }
+            } catch (e) { mostrarError('Error de conexi?n'); input.value = msg; }
             btn.disabled = false;
             input.focus();
         }
@@ -1465,7 +1465,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
                     <div class="ui-avatar">${u.nombre.charAt(0).toUpperCase()}</div>
                     <div class="ui-info">
                         <h4>${esc(u.nombre + ' ' + (u.apellido || ''))}</h4>
-                        <p>${u.tipo === 'empresa' ? '🏢 Empresa' : u.tipo === 'artista' ? '🎵 Artista' : '👤 Candidato'}</p>
+                        <p>${u.tipo === 'empresa' ? '?? Empresa' : u.tipo === 'artista' ? '?? Artista' : '?? Candidato'}</p>
                     </div>
                 </div>`).join('');
                 } catch (e) { console.error(e); }
@@ -1505,7 +1505,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             const diff = Math.floor((hoy - d) / 86400000);
             if (diff === 0) return d.toTimeString().substring(0, 5);
             if (diff === 1) return 'Ayer';
-            if (diff < 7) return ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][d.getDay()];
+            if (diff < 7) return ['Dom', 'Lun', 'Mar', 'Mi?', 'Jue', 'Vie', 'S?b'][d.getDay()];
             return `${d.getDate()}/${d.getMonth() + 1}`;
         }
 
@@ -1522,3 +1522,4 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
 </body>
 
 </html>
+
