@@ -2,7 +2,7 @@
 defined('DB_HOST') or define('DB_HOST', getenv('MYSQLHOST') ?: 'caboose.proxy.rlwy.net');
 defined('DB_NAME') or define('DB_NAME', getenv('MYSQLDATABASE') ?: 'railway');
 defined('DB_USER') or define('DB_USER', getenv('MYSQLUSER') ?: 'root');
-defined('DB_PASS') or define('DB_PASS', getenv('MYSQLPASSWORD') ?: ''));
+defined('DB_PASS') or define('DB_PASS', getenv('MYSQLPASSWORD') ?: '');
 defined('DB_PORT') or define('DB_PORT', getenv('MYSQLPORT') ?: '20815');
 defined('DB_CHARSET') or define('DB_CHARSET', 'utf8mb4');
 defined('BASE_URL') or define('BASE_URL', 'https://conecta-production-818e.up.railway.app');
