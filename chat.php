@@ -1368,12 +1368,15 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             renderConversaciones();
             document.getElementById('chatEmpty').style.display = 'none';
             document.getElementById('chatActive').style.display = 'flex';
+            document.getElementById('chNombre').textContent = 'Cargando...';
+            document.getElementById('chTipo').textContent = '...';
+            document.getElementById('chatMessages').innerHTML = '';
             if (window.innerWidth <= 768) {
                 document.getElementById('chatList').classList.add('mobile-hide');
                 document.getElementById('chatArea').classList.add('mobile-show');
             }
+            if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
             await cargarMensajes(userId);
-            if (pollingInterval) clearInterval(pollingInterval);
             pollingInterval = setInterval(() => cargarMensajes(userId, true), 5000);
             document.getElementById('chatInput').focus();
         }
