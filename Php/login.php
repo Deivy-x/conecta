@@ -2,6 +2,7 @@
 // ============================================
 // Php/login.php — Procesar inicio de sesión
 // ============================================
+session_start();
 require_once __DIR__ . '/db.php';
 header('Content-Type: application/json');
 

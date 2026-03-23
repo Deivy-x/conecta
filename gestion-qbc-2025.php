@@ -1001,19 +1001,67 @@ if ($action && $logueado) {
 
   // Mensajes recientes
   if ($action === 'mensajes_recientes') {
-    if (!$ajaxPerms['mensajes']) {
-      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
-      exit;
+    if (!$ajaxPerms['mensajes']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
+    $page  = max(1, (int)($_GET['page'] ?? 1));
+    $limit = 50;
+    $offset = ($page - 1) * $limit;
+    $q = trim($_GET['q'] ?? '');
+    $where = '1=1';
+    $params = [];
+    if ($q !== '') {
+      $where = "(m.mensaje LIKE ? OR u1.nombre LIKE ? OR u1.apellido LIKE ? OR u2.nombre LIKE ? OR u2.apellido LIKE ?)";
+      $lq = "%$q%";
+      $params = [$lq,$lq,$lq,$lq,$lq];
     }
-    $stmt = $db->query("
-            SELECT m.id, m.mensaje, m.creado_en,
-                   u1.nombre as de_nombre, u2.nombre as para_nombre
-            FROM mensajes m
-            INNER JOIN usuarios u1 ON u1.id = m.de_usuario
-            INNER JOIN usuarios u2 ON u2.id = m.para_usuario
-            ORDER BY m.creado_en DESC LIMIT 30
-        ");
-    echo json_encode(['ok' => true, 'mensajes' => $stmt->fetchAll()]);
+    $total = $db->prepare("SELECT COUNT(*) FROM mensajes m INNER JOIN usuarios u1 ON u1.id=m.de_usuario INNER JOIN usuarios u2 ON u2.id=m.para_usuario WHERE $where");
+    $total->execute($params);
+    $totalRows = (int)$total->fetchColumn();
+    $stmt = $db->prepare("
+      SELECT m.id, m.mensaje, m.creado_en, m.leido,
+             m.de_usuario, m.para_usuario,
+             u1.nombre as de_nombre, u1.apellido as de_apellido,
+             u2.nombre as para_nombre, u2.apellido as para_apellido
+      FROM mensajes m
+      INNER JOIN usuarios u1 ON u1.id = m.de_usuario
+      INNER JOIN usuarios u2 ON u2.id = m.para_usuario
+      WHERE $where
+      ORDER BY m.creado_en DESC LIMIT $limit OFFSET $offset
+    ");
+    $stmt->execute($params);
+    echo json_encode(['ok'=>true,'mensajes'=>$stmt->fetchAll(),'total'=>$totalRows,'page'=>$page,'pages'=>ceil($totalRows/$limit)]);
+    exit;
+  }
+
+  if ($action === 'chat_conversacion') {
+    if (!$ajaxPerms['mensajes']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
+    $u1 = (int)($_GET['u1'] ?? 0);
+    $u2 = (int)($_GET['u2'] ?? 0);
+    if (!$u1 || !$u2) { echo json_encode(['ok'=>false,'msg'=>'Faltan IDs']); exit; }
+    $stmt = $db->prepare("
+      SELECT m.id, m.mensaje, m.creado_en, m.leido, m.de_usuario,
+             u1.nombre as de_nombre, u1.apellido as de_apellido
+      FROM mensajes m
+      INNER JOIN usuarios u1 ON u1.id = m.de_usuario
+      WHERE (m.de_usuario=? AND m.para_usuario=?) OR (m.de_usuario=? AND m.para_usuario=?)
+      ORDER BY m.creado_en ASC
+    ");
+    $stmt->execute([$u1,$u2,$u2,$u1]);
+    $infoU1 = $db->prepare("SELECT id,nombre,apellido,tipo FROM usuarios WHERE id=?");
+    $infoU1->execute([$u1]); $user1 = $infoU1->fetch();
+    $infoU2 = $db->prepare("SELECT id,nombre,apellido,tipo FROM usuarios WHERE id=?");
+    $infoU2->execute([$u2]); $user2 = $infoU2->fetch();
+    echo json_encode(['ok'=>true,'mensajes'=>$stmt->fetchAll(),'user1'=>$user1,'user2'=>$user2]);
+    exit;
+  }
+
+  if ($action === 'chat_stats') {
+    if (!$ajaxPerms['mensajes']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
+    $total   = $db->query("SELECT COUNT(*) FROM mensajes")->fetchColumn();
+    $hoy     = $db->query("SELECT COUNT(*) FROM mensajes WHERE DATE(creado_en)=CURDATE()")->fetchColumn();
+    $semana  = $db->query("SELECT COUNT(*) FROM mensajes WHERE creado_en >= DATE_SUB(NOW(),INTERVAL 7 DAY)")->fetchColumn();
+    $convs   = $db->query("SELECT COUNT(DISTINCT LEAST(de_usuario,para_usuario)*100000+GREATEST(de_usuario,para_usuario)) FROM mensajes")->fetchColumn();
+    $top     = $db->query("SELECT u.nombre,u.apellido,COUNT(*) as total FROM mensajes m INNER JOIN usuarios u ON u.id=m.de_usuario GROUP BY m.de_usuario ORDER BY total DESC LIMIT 5")->fetchAll();
+    echo json_encode(['ok'=>true,'total'=>$total,'hoy'=>$hoy,'semana'=>$semana,'conversaciones'=>$convs,'top_usuarios'=>$top]);
     exit;
   }
 
@@ -2064,6 +2112,29 @@ if ($action) {
       margin-bottom: 20px;
       gap: 12px;
       flex-wrap: wrap
+    }
+
+    .stat-mini {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .stat-mini .sm-val {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--green);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .stat-mini .sm-lbl {
+      font-size: 11px;
+      color: var(--text3);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
     }
 
     .section-header h2 {
@@ -3818,28 +3889,72 @@ if ($action) {
           <div class="pagination" id="auditoria-pagination"></div>
         </div>
 
-        <!-- ═══ MENSAJES ═══ -->
+        <!-- ═══ MENSAJES / HISTORIAL BACKUP ═══ -->
         <div class="section" id="section-mensajes">
           <div class="section-header">
-            <h2>💬 Mensajes recientes</h2>
+            <h2>💬 Historial de Chat — Backup</h2>
           </div>
+
+          <!-- Stats cards -->
+          <div id="chat-stats-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;">
+            <div class="stat-mini" id="cs-total"><span class="sm-val">…</span><span class="sm-lbl">Total mensajes</span></div>
+            <div class="stat-mini" id="cs-hoy"><span class="sm-val">…</span><span class="sm-lbl">Hoy</span></div>
+            <div class="stat-mini" id="cs-semana"><span class="sm-val">…</span><span class="sm-lbl">Esta semana</span></div>
+            <div class="stat-mini" id="cs-convs"><span class="sm-val">…</span><span class="sm-lbl">Conversaciones</span></div>
+          </div>
+
+          <!-- Buscador -->
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+            <input id="msg-search" type="text" placeholder="🔍 Buscar por usuario o contenido…"
+              oninput="clearTimeout(window._msgT);window._msgT=setTimeout(()=>cargarMensajes(1),400)"
+              style="flex:1;min-width:200px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text1);font-size:13px;outline:none;">
+            <button onclick="exportarCSV()" style="padding:10px 16px;background:var(--green);color:white;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">⬇ Exportar CSV</button>
+          </div>
+
+          <!-- Tabla principal -->
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th style="width:60px">ID</th>
                   <th>De</th>
                   <th>Para</th>
                   <th>Mensaje</th>
-                  <th>Fecha</th>
+                  <th style="width:90px">Leído</th>
+                  <th style="width:130px">Fecha</th>
+                  <th style="width:80px">Ver chat</th>
                 </tr>
               </thead>
               <tbody id="mensajes-tbody">
-                <tr>
-                  <td colspan="5" class="loading"><span class="spin">⚙️</span></td>
-                </tr>
+                <tr><td colspan="7" class="loading"><span class="spin">⚙️</span></td></tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Paginación -->
+          <div id="msg-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap;"></div>
+
+          <!-- Top usuarios -->
+          <div style="margin-top:28px;">
+            <h3 style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:12px;">🏆 Usuarios más activos</h3>
+            <div id="top-usuarios" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+          </div>
+        </div>
+
+        <!-- Modal conversación completa -->
+        <div id="modal-conv" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:900;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:18px;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 40px 100px rgba(0,0,0,.6);">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+              <div>
+                <div id="conv-title" style="font-size:15px;font-weight:800;color:var(--text1);">Conversación</div>
+                <div id="conv-sub" style="font-size:12px;color:var(--text3);margin-top:2px;"></div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <button id="conv-export-btn" onclick="exportarConvCSV()" style="padding:7px 13px;background:var(--green);color:white;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;">⬇ CSV</button>
+                <button onclick="document.getElementById('modal-conv').style.display='none'" style="background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+              </div>
+            </div>
+            <div id="conv-messages" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:8px;"></div>
           </div>
         </div>
 
@@ -4496,7 +4611,7 @@ if ($action) {
         if (s === 'usuarios') cargarUsuarios();
         if (s === 'empleos') cargarEmpleos();
         if (s === 'convocatorias') cargarConvocatorias();
-        if (s === 'mensajes') cargarMensajes();
+        if (s === 'mensajes') { cargarMensajes(); cargarChatStats(); }
         if (s === 'actividad') cargarActividad();
         if (s === 'badges') cargarBadgesCatalogo();
         if (s === 'estadisticas') cargarEstadisticas();
@@ -5188,23 +5303,112 @@ if ($action) {
         } catch(e) { mostrarToast('❌ Error de red','red'); btn.disabled=false; btn.textContent='?'; }
       }
 
-      // ── MENSAJES ──
-      async function cargarMensajes() {
+      // ── MENSAJES / HISTORIAL BACKUP ──
+      let _convData = null;
+
+      async function cargarMensajes(page = 1) {
         const tbody = document.getElementById('mensajes-tbody');
-        tbody.innerHTML = '<tr><td colspan="5" class="loading"><span class="spin">⚙️</span></td></tr>';
+        const q = document.getElementById('msg-search')?.value.trim() || '';
+        tbody.innerHTML = '<tr><td colspan="7" class="loading"><span class="spin">⚙️</span></td></tr>';
         try {
-          const r = await fetch('gestion-qbc-2025.php?action=mensajes_recientes');
+          const r = await fetch(`gestion-qbc-2025.php?action=mensajes_recientes&page=${page}&q=${encodeURIComponent(q)}`);
           const d = await r.json();
-          if (!d.mensajes.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><p>Sin mensajes</p></td></tr>'; return; }
+          if (!d.ok || !d.mensajes.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><p>Sin mensajes</p></td></tr>';
+            document.getElementById('msg-pagination').innerHTML = '';
+            return;
+          }
           tbody.innerHTML = d.mensajes.map(m => `
-      <tr>
-        <td style="font-family:'JetBrains Mono',monospace;color:var(--text3);font-size:11px">#${m.id}</td>
-        <td style="font-weight:600;font-size:12px">${esc(m.de_nombre)}</td>
-        <td style="font-size:12px;color:var(--text2)">${esc(m.para_nombre)}</td>
-        <td style="font-size:12px;color:var(--text2);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.mensaje)}</td>
-        <td style="font-size:11px;color:var(--text3)">${fFecha(m.creado_en)}</td>
-      </tr>`).join('');
-        } catch (e) { console.error(e); }
+            <tr>
+              <td style="font-family:'JetBrains Mono',monospace;color:var(--text3);font-size:11px">#${m.id}</td>
+              <td style="font-weight:600;font-size:12px">${esc(m.de_nombre)} ${esc(m.de_apellido||'')}</td>
+              <td style="font-size:12px;color:var(--text2)">${esc(m.para_nombre)} ${esc(m.para_apellido||'')}</td>
+              <td style="font-size:12px;color:var(--text2);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(m.mensaje)}">${esc(m.mensaje)}</td>
+              <td style="text-align:center;font-size:14px">${parseInt(m.leido) ? '✅' : '🔵'}</td>
+              <td style="font-size:11px;color:var(--text3)">${fFecha(m.creado_en)}</td>
+              <td style="text-align:center"><button onclick="verConversacion(${m.de_usuario},${m.para_usuario})" style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">👁 Ver</button></td>
+            </tr>`).join('');
+
+          // Paginación
+          const pg = document.getElementById('msg-pagination');
+          pg.innerHTML = '';
+          for (let i = 1; i <= d.pages; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.onclick = () => cargarMensajes(i);
+            btn.style.cssText = `padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);${i === d.page ? 'background:var(--green);color:white;border-color:var(--green)' : 'background:var(--bg2);color:var(--text2)'}`;
+            pg.appendChild(btn);
+          }
+        } catch(e) { console.error(e); }
+      }
+
+      async function cargarChatStats() {
+        try {
+          const r = await fetch('gestion-qbc-2025.php?action=chat_stats');
+          const d = await r.json();
+          if (!d.ok) return;
+          document.querySelector('#cs-total .sm-val').textContent = d.total.toLocaleString();
+          document.querySelector('#cs-hoy .sm-val').textContent = d.hoy.toLocaleString();
+          document.querySelector('#cs-semana .sm-val').textContent = d.semana.toLocaleString();
+          document.querySelector('#cs-convs .sm-val').textContent = d.conversaciones.toLocaleString();
+          const top = document.getElementById('top-usuarios');
+          top.innerHTML = d.top_usuarios.map((u,i) => `
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:18px">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</span>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text1)">${esc(u.nombre)} ${esc(u.apellido||'')}</div>
+                <div style="font-size:11px;color:var(--text3)">${u.total} mensajes</div>
+              </div>
+            </div>`).join('');
+        } catch(e) { console.error(e); }
+      }
+
+      async function verConversacion(u1, u2) {
+        const modal = document.getElementById('modal-conv');
+        const msgs  = document.getElementById('conv-messages');
+        modal.style.display = 'flex';
+        msgs.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3)"><span class="spin">⚙️</span></div>';
+        try {
+          const r = await fetch(`gestion-qbc-2025.php?action=chat_conversacion&u1=${u1}&u2=${u2}`);
+          const d = await r.json();
+          if (!d.ok) { msgs.innerHTML = '<p style="color:var(--red);padding:20px">Error cargando</p>'; return; }
+          _convData = d;
+          document.getElementById('conv-title').textContent = `${d.user1.nombre} ${d.user1.apellido||''} ↔ ${d.user2.nombre} ${d.user2.apellido||''}`;
+          document.getElementById('conv-sub').textContent = `${d.mensajes.length} mensajes totales`;
+          let lastDate = '';
+          msgs.innerHTML = d.mensajes.map(m => {
+            const esDe1 = parseInt(m.de_usuario) === parseInt(u1);
+            const fecha = m.creado_en.split(' ')[0];
+            const hora  = m.creado_en.split(' ')[1]?.substring(0,5) || '';
+            let sep = '';
+            if (fecha !== lastDate) { lastDate = fecha; sep = `<div style="text-align:center;font-size:10px;color:var(--text3);padding:10px 0;font-weight:600">${fecha}</div>`; }
+            return `${sep}<div style="display:flex;flex-direction:column;align-items:${esDe1?'flex-end':'flex-start'};gap:2px;margin-bottom:2px;">
+              <div style="font-size:10px;color:var(--text3);padding:0 4px">${esc(m.de_nombre)}</div>
+              <div style="max-width:75%;padding:9px 14px;border-radius:16px;font-size:13px;line-height:1.5;word-wrap:break-word;${esDe1?'background:linear-gradient(135deg,#1a7a3c,#27a855);color:white;border-bottom-right-radius:4px':'background:var(--bg3,#1a1a2e);border:1px solid var(--border);color:var(--text1);border-bottom-left-radius:4px'}">
+                ${esc(m.mensaje)}<span style="font-size:10px;opacity:.6;margin-left:8px">${hora}</span>
+              </div>
+            </div>`;
+          }).join('');
+          msgs.scrollTop = msgs.scrollHeight;
+        } catch(e) { msgs.innerHTML = '<p style="color:var(--red);padding:20px">Error de red</p>'; }
+      }
+
+      function exportarCSV() {
+        window.location.href = 'gestion-qbc-2025.php?action=mensajes_recientes&page=1&q=&export=csv';
+      }
+
+      function exportarConvCSV() {
+        if (!_convData) return;
+        const rows = [['ID','De','Para','Mensaje','Fecha','Leido']];
+        _convData.mensajes.forEach(m => {
+          const esU1 = parseInt(m.de_usuario) === parseInt(_convData.user1.id);
+          rows.push([m.id, esc(m.de_nombre), esU1 ? `${_convData.user2.nombre} ${_convData.user2.apellido||''}` : `${_convData.user1.nombre} ${_convData.user1.apellido||''}`, `"${m.mensaje.replace(/"/g,'""')}"`, m.creado_en, m.leido ? 'Sí' : 'No']);
+        });
+        const csv = rows.map(r => r.join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF' + csv);
+        a.download = `chat_${_convData.user1.nombre}_${_convData.user2.nombre}.csv`;
+        a.click();
       }
 
       // ── CONTRASEÑA USUARIOS (superadmin + admin delegado) ──

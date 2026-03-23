@@ -2,6 +2,7 @@
 // ============================================================
 // chat.php — Chat interno QuibdóConecta (todo en uno)
 // ============================================================
+session_start();
 require_once __DIR__ . '/Php/db.php';
 
 // ─── MANEJO DE ACCIONES AJAX ────────────────────────────────
@@ -1346,7 +1347,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
                 const tipoLabel = c.tipo === 'empresa' ? 'Empresa' : c.tipo === 'artista' ? 'Artista' : '';
                 const tipoBadge = tipoLabel ? `<span class="conv-tipo-badge">${tipoLabel}</span>` : '';
                 return `
-            <div class="conv-item ${active}" onclick="abrirChat(${c.id})">
+            <div class="conv-item ${active}" data-userid="${c.id}">
                 <div class="conv-avatar ${avatarClass}">${ini}</div>
                 <div class="conv-info">
                     <div class="conv-name">${esc(nombre)} ${tipoBadge}</div>
