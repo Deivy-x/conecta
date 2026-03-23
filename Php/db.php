@@ -1,11 +1,11 @@
 <?php
-defined('DB_HOST') or define('DB_HOST', getenv('MYSQLHOST') ?: 'mysql.railway.internal');
+defined('DB_HOST') or define('DB_HOST', getenv('MYSQLHOST') ?: 'caboose.proxy.rlwy.net');
 defined('DB_NAME') or define('DB_NAME', getenv('MYSQLDATABASE') ?: 'railway');
 defined('DB_USER') or define('DB_USER', getenv('MYSQLUSER') ?: 'root');
-defined('DB_PASS') or define('DB_PASS', getenv('MYSQLPASSWORD') ?: '');
-defined('DB_PORT') or define('DB_PORT', getenv('MYSQLPORT') ?: '3306');
+defined('DB_PASS') or define('DB_PASS', getenv('MYSQLPASSWORD') ?: ''));
+defined('DB_PORT') or define('DB_PORT', getenv('MYSQLPORT') ?: '20815');
 defined('DB_CHARSET') or define('DB_CHARSET', 'utf8mb4');
-defined('BASE_URL') or define('BASE_URL', 'https://conecta-production-31b5.up.railway.app');
+defined('BASE_URL') or define('BASE_URL', 'https://conecta-production-818e.up.railway.app');
 
 function getDB(): PDO
 {
@@ -20,7 +20,7 @@ function getDB(): PDO
             ]);
         } catch (PDOException $e) {
             http_response_code(500);
-            die(json_encode(['ok' => false, 'msg' => 'Error de conexión a la base de datos.']));
+            die(json_encode(['ok' => false, 'msg' => $e->getMessage()]));
         }
     }
     return $pdo;
