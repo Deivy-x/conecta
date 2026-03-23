@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // ============================================================
 // chat.php — Chat interno QuibdóConecta (todo en uno)
 // ============================================================
@@ -1333,12 +1333,9 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             const filtered = conversaciones.filter(c => (c.nombre + ' ' + (c.apellido || '')).toLowerCase().includes(search));
 
             if (!filtered.length) {
-                body.innerHTML = '';
-                empty.style.display = 'block';
-                body.appendChild(empty);
+                body.innerHTML = '<div class="conv-empty"><span class="ce-icon">💬</span>Sin conversaciones</div>';
                 return;
             }
-            empty.style.display = 'none';
             body.innerHTML = filtered.map(c => {
                 const nombre = c.nombre + ' ' + (c.apellido || '');
                 const ini = c.nombre.charAt(0).toUpperCase();
