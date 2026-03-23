@@ -742,11 +742,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </select>
       </div>
       <div class="row">
-        <!-- <div class="grupo">
+        <div class="grupo" id="grupoBarrioNegocio">
           <label>Barrio / Dirección</label>
           <input type="text" id="barrio_negocio" placeholder="Barrio Kennedy, Calle 27…">
         </div>
-        <div class="grupo"> -->
+        <div class="grupo">
           <label>WhatsApp del negocio</label>
           <input type="tel" id="whatsapp_neg" placeholder="3001234567">
         </div>
@@ -981,6 +981,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     document.getElementById('camposCC').style.display = esCC ? 'block' : 'none';
     document.getElementById('camposFotoLocal').style.display  = esFisico ? 'block' : 'none';
     document.getElementById('camposNegVirtual').style.display = esVirtual ? 'block' : 'none';
+    document.getElementById('grupoBarrioNegocio').style.display = esVirtual ? 'none' : 'block';
 
     // Estilo bordes botones
     document.getElementById('lbl-neg-emp').style.borderColor     = (!esCC && !esVirtual) ? '#b45309' : 'rgba(255,255,255,.12)';
