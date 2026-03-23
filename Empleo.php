@@ -37,7 +37,8 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         // Total empresas
         $totalEmpresas = (int)$db->query("SELECT COUNT(*) FROM usuarios WHERE tipo='empresa' AND activo=1")->fetchColumn();
     } catch (Exception $e) {
-        $vacantesDB = [];
+        // DEBUG: mostrar error real
+        die(json_encode(['ok' => false, 'msg' => $e->getMessage(), 'trace' => $e->getTraceAsString()]));
     }
 }
 
@@ -373,7 +374,6 @@ function catIcono($cat, $iconos) {
           $ciudad  = htmlspecialchars($v['ciudad'] ?: 'Quibdó, Chocó');
           $desc    = htmlspecialchars($v['descripcion'] ?: 'Vacante publicada por empresa local del Chocó.');
           $cat     = strtolower(trim($v['categoria'] ?? 'administrativo'));
-          // Normalize cat for filter
           $catFilter = str_replace(['á','é','í','ó','ú'],['a','e','i','o','u'], $cat);
           $catFilter = preg_replace('/[^a-z]/', '', $catFilter);
           $modalidad = strtolower($v['modalidad'] ?? 'presencial');
@@ -601,7 +601,7 @@ function switchTab(tab, btn) {
   document.getElementById('panel-' + tab).classList.add('activo');
 }
 
-// CATEGORÍAS — calcular conteos dinámicamente
+// CATEGORÍAS
 const allCards = Array.from(document.querySelectorAll('.empleo-card'));
 const catMap = { 'administrativo':'cnt-adm','tecnologia':'cnt-tec','arte':'cnt-art','educacion':'cnt-edu','salud':'cnt-sal','gastronomia':'cnt-gas','tecnico':'cnt-tec2','transporte':'cnt-tra' };
 Object.entries(catMap).forEach(([cat, id]) => {
@@ -652,7 +652,6 @@ document.querySelectorAll('.filtro-btn').forEach(btn => {
 function buscar() {
   textoBusqueda = (document.getElementById('searchCargo').value.trim() + ' ' + document.getElementById('searchLugar').value.trim()).trim().toLowerCase();
   aplicarFiltros();
-  // Switch to vacantes tab if searching
   document.querySelector('.tab-link').click();
   document.getElementById('sec-empleos').scrollIntoView({ behavior: 'smooth' });
 }
