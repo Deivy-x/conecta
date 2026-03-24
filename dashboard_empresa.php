@@ -200,16 +200,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode(['ok' => false, 'msg' => 'Acción desconocida.']); exit;
 }
 
+// ── LOGOUT — debe estar ANTES de cualquier output HTML ───────
+if (isset($_GET['salir'])) {
+    if (isset($_COOKIE['qc_remember'])) {
+        try { $db->prepare("DELETE FROM sesiones WHERE token=?")->execute([$_COOKIE['qc_remember']]); } catch(Exception $e) {}
+        setcookie('qc_remember', '', time() - 3600, '/');
+    }
+    $_SESSION = [];
+    session_destroy();
+    header('Location: inicio_sesion.php');
+    exit;
+}
+
 // ── CARGAR DATOS EMPRESA ──────────────────────────────────────
 $epStmt = $db->prepare("SELECT * FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
 $epStmt->execute([$usuario['id']]);
-$ep = $epStmt->fetch() ?: [
-    'nombre_empresa' => $usuario['nombre'] ?? '',
-    'sector' => '', 'nit' => '', 'descripcion' => '',
-    'logo' => '', 'sitio_web' => '', 'telefono_empresa' => '',
-    'municipio' => '', 'avatar_color' => 'linear-gradient(135deg,#1a56db,#3b82f6)',
-    'visible' => 1, 'visible_admin' => 1, 'destacado' => 0, 'vacantes_activas' => 0
-];
+$ep = $epStmt->fetch();
+
+// Si la fila más reciente no tiene logo, buscar una que sí tenga
+if ($ep && empty($ep['logo'])) {
+    $epLogo = $db->prepare("SELECT logo FROM perfiles_empresa WHERE usuario_id=? AND logo != '' AND logo IS NOT NULL ORDER BY id DESC LIMIT 1");
+    $epLogo->execute([$usuario['id']]);
+    $logoGuardado = $epLogo->fetchColumn();
+    if ($logoGuardado) {
+        $ep['logo'] = $logoGuardado;
+        // También actualizar la fila principal para que queden sincronizadas
+        $db->prepare("UPDATE perfiles_empresa SET logo=? WHERE usuario_id=? ORDER BY id DESC LIMIT 1")->execute([$logoGuardado, $usuario['id']]);
+    }
+}
+
+if (!$ep) {
+    $ep = [
+        'nombre_empresa' => $usuario['nombre'] ?? '',
+        'sector' => '', 'nit' => '', 'descripcion' => '',
+        'logo' => '', 'sitio_web' => '', 'telefono_empresa' => '',
+        'municipio' => '', 'avatar_color' => 'linear-gradient(135deg,#1a56db,#3b82f6)',
+        'visible' => 1, 'visible_admin' => 1, 'destacado' => 0, 'vacantes_activas' => 0
+    ];
+}
 
 require_once __DIR__ . '/Php/badges_helper.php';
 $badgesUsuario = getBadgesUsuario($db, $usuario['id']);
@@ -507,14 +535,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     <a href="?salir=1" class="nav-salir">Salir</a>
   </div>
 </header>
-
-<?php
-// Logout
-if (isset($_GET['salir'])) {
-    session_destroy();
-    header('Location: inicio_sesion.php'); exit;
-}
-?>
 
 <!-- ── HERO ── -->
 <div class="hero">
