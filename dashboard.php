@@ -531,7 +531,7 @@ if ($tipo === 'empresa') {
     $vs = $db->prepare("SELECT COUNT(*) FROM empleos WHERE empresa_id=? AND activo=1");
     $vs->execute([$usuario['id']]);
     $vacantesActivas = (int) $vs->fetchColumn();
-    $vh = $db->prepare("SELECT titulo,ciudad,activo,creado_en FROM empleos WHERE empresa_id=? ORDER BY creado_en DESC LIMIT 6");
+    $vh = $db->prepare("SELECT id, titulo, ciudad, activo, modalidad, tipo_contrato, creado_en FROM empleos WHERE empresa_id=? ORDER BY creado_en DESC LIMIT 10");
     $vh->execute([$usuario['id']]);
     $historialVacantes = $vh->fetchAll();
   } catch (Exception $e) {
@@ -656,14 +656,14 @@ if ($subTipo === 'servicio') {
       --r3: #1a56db;
       --r4: #5b8eff;
       --rcielo: #b8d4ff;
-      --bg: #f0faf2;
-      --bg2: #e6f5ea;
-      --bg3: #d8eedd;
-      --card: rgba(255, 255, 255, .97);
-      --borde: rgba(39, 168, 85, .18);
-      --ink: rgba(10, 30, 15, .88);
-      --ink2: rgba(10, 30, 15, .55);
-      --ink3: rgba(10, 30, 15, .38);
+      --bg: #f4f7f5;
+      --bg2: #eaf2ec;
+      --bg3: #dceee0;
+      --card: #ffffff;
+      --borde: rgba(39, 168, 85, .22);
+      --ink: #0d1f12;
+      --ink2: #3a5a42;
+      --ink3: #6b8f74;
     }
 
     *,
@@ -717,7 +717,8 @@ if ($subTipo === 'servicio') {
       position: sticky;
       top: 3px;
       z-index: 200;
-      background: rgba(240, 250, 242, .97);
+      background: rgba(244, 247, 245, .98);
+      border-bottom: 1px solid rgba(39, 168, 85, .18);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--borde);
       display: flex;
@@ -742,7 +743,7 @@ if ($subTipo === 'servicio') {
     .nav-marca-txt {
       font-family: 'Fraunces', serif;
       font-size: 18px;
-      color: var(--ink)
+      color: #0d1f12
     }
 
     .nav-marca-txt em {
@@ -777,8 +778,8 @@ if ($subTipo === 'servicio') {
     }
 
     .nl.on {
-      background: rgba(163, 240, 181, .1);
-      color: var(--vlima)
+      background: rgba(39, 168, 85, .1);
+      color: var(--v2)
     }
 
     .nl-dot {
@@ -827,7 +828,7 @@ if ($subTipo === 'servicio') {
     }
 
     .nav-av:hover {
-      border-color: var(--vlima)
+      border-color: var(--v2)
     }
 
     .nav-notif {
@@ -899,7 +900,7 @@ if ($subTipo === 'servicio') {
       padding: 12px 16px;
       font-size: 11px;
       font-weight: 800;
-      color: var(--vlima);
+      color: var(--v2);
       border-bottom: 1px solid var(--borde);
       text-transform: uppercase;
       letter-spacing: .06em
@@ -1021,7 +1022,7 @@ if ($subTipo === 'servicio') {
     }
 
     .hero-av:hover {
-      border-color: var(--vlima);
+      border-color: var(--v2);
       transform: scale(1.03)
     }
 
@@ -1082,24 +1083,24 @@ if ($subTipo === 'servicio') {
     .hero-nombre {
       font-family: 'Fraunces', serif;
       font-size: clamp(28px, 3vw, 40px);
-      color: var(--ink);
+      color: #fff;
       line-height: 1.1;
       margin-bottom: 6px
     }
 
     .hero-nombre em {
-      color: var(--v2);
+      color: #a3f0b5;
       font-style: normal
     }
 
     .hero-sub {
       font-size: 14px;
-      color: var(--ink2);
+      color: rgba(255, 255, 255, .75);
       font-weight: 500
     }
 
     .hero-sub strong {
-      color: var(--ink)
+      color: #fff
     }
 
     .hero-stats {
@@ -1110,14 +1111,16 @@ if ($subTipo === 'servicio') {
 
     .hs {
       text-align: center;
-      min-width: 70px
+      min-width: 70px;
+      border-right: 1px solid rgba(255, 255, 255, .15);
+      padding-right: 20px
     }
 
     .hs-val {
       font-family: 'Fraunces', serif;
       font-size: 24px;
       font-weight: 900;
-      color: var(--v2);
+      color: #fff;
       line-height: 1
     }
 
@@ -1207,7 +1210,7 @@ if ($subTipo === 'servicio') {
     }
 
     .alerta.av .a-txt strong {
-      color: var(--vlima)
+      color: var(--v2)
     }
 
     .a-txt span {
@@ -1258,14 +1261,14 @@ if ($subTipo === 'servicio') {
     .card {
       background: var(--card);
       border-radius: 20px;
-      border: 1px solid var(--borde);
-      box-shadow: 0 2px 16px rgba(0, 0, 0, .3);
+      border: 1px solid rgba(39, 168, 85, .2);
+      box-shadow: 0 2px 12px rgba(39, 168, 85, .08);
       overflow: hidden;
       transition: box-shadow .25s, transform .25s
     }
 
     .card:hover {
-      box-shadow: 0 8px 32px rgba(0, 0, 0, .4);
+      box-shadow: 0 8px 28px rgba(39, 168, 85, .16);
       transform: translateY(-2px)
     }
 
@@ -1313,7 +1316,7 @@ if ($subTipo === 'servicio') {
       font-family: 'Fraunces', serif;
       font-size: 26px;
       font-weight: 900;
-      color: var(--v2);
+      color: #fff;
       line-height: 1
     }
 
@@ -1328,7 +1331,7 @@ if ($subTipo === 'servicio') {
 
     .m-sub {
       font-size: 10px;
-      color: var(--v4);
+      color: var(--v2);
       margin-top: 3px;
       font-weight: 800
     }
@@ -1384,7 +1387,7 @@ if ($subTipo === 'servicio') {
 
     .ac-desc {
       font-size: 11px;
-      color: var(--ink3);
+      color: #6b8f74;
       text-align: center
     }
 
@@ -1418,7 +1421,7 @@ if ($subTipo === 'servicio') {
     .ce-ver {
       font-size: 12px;
       font-weight: 700;
-      color: var(--vlima);
+      color: var(--v2);
       text-decoration: none
     }
 
@@ -1476,7 +1479,7 @@ if ($subTipo === 'servicio') {
 
     .ce-met {
       font-size: 11px;
-      color: var(--vlima);
+      color: var(--v2);
       font-weight: 600;
       margin-top: 2px
     }
@@ -1487,7 +1490,7 @@ if ($subTipo === 'servicio') {
       padding: 3px 9px;
       border-radius: 10px;
       background: rgba(163, 240, 181, .1);
-      color: var(--vlima);
+      color: var(--v2);
       white-space: nowrap;
       flex-shrink: 0;
       border: 1px solid rgba(163, 240, 181, .15)
@@ -1519,10 +1522,14 @@ if ($subTipo === 'servicio') {
       background: #94a3b8
     }
 
+    .hdot.pen {
+      background: #f59e0b
+    }
+
     .hnom {
       font-size: 13px;
       font-weight: 700;
-      color: var(--ink);
+      color: #0d1f12;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis
@@ -1530,13 +1537,13 @@ if ($subTipo === 'servicio') {
 
     .hmeta {
       font-size: 11px;
-      color: var(--ink3);
+      color: #6b8f74;
       margin-top: 2px
     }
 
     .hfecha {
       font-size: 11px;
-      color: var(--ink3);
+      color: #6b8f74;
       flex-shrink: 0;
       white-space: nowrap
     }
@@ -1570,7 +1577,7 @@ if ($subTipo === 'servicio') {
     }
 
     .cp-av:hover {
-      border-color: var(--vlima)
+      border-color: var(--v2)
     }
 
     .cp-nom {
@@ -1582,7 +1589,7 @@ if ($subTipo === 'servicio') {
 
     .cp-pro {
       font-size: 13px;
-      color: var(--vlima);
+      color: var(--v2);
       font-weight: 600
     }
 
@@ -1683,7 +1690,7 @@ if ($subTipo === 'servicio') {
 
     .pv-chip.ok {
       background: rgba(39, 168, 85, .15);
-      color: var(--vlima);
+      color: var(--v2);
       border: 1px solid rgba(39, 168, 85, .25)
     }
 
@@ -1751,7 +1758,7 @@ if ($subTipo === 'servicio') {
       padding: 11px;
       border-radius: 14px;
       background: transparent;
-      color: var(--vlima);
+      color: var(--v2);
       border: 1.5px solid rgba(163, 240, 181, .25);
       font-size: 13px;
       font-weight: 700;
@@ -1964,7 +1971,7 @@ if ($subTipo === 'servicio') {
     .mmsg.success {
       background: rgba(163, 240, 181, .12);
       border: 1px solid rgba(163, 240, 181, .25);
-      color: var(--vlima)
+      color: var(--v2)
     }
 
     .mmsg.error {
@@ -2204,8 +2211,8 @@ if ($subTipo === 'servicio') {
     }
 
     .psec-credencial:hover {
-      border-color: var(--vlima);
-      color: var(--vlima);
+      border-color: var(--v2);
+      color: var(--v2);
       background: rgba(163, 240, 181, .06)
     }
 
@@ -2293,7 +2300,7 @@ if ($subTipo === 'servicio') {
     }
 
     .psec-ver-mas:hover {
-      color: var(--vlima)
+      color: var(--v2)
     }
 
     /* Aptitudes */
@@ -2483,7 +2490,7 @@ if ($subTipo === 'servicio') {
       padding: 10px;
       background: rgba(39, 168, 85, .1);
       border: 1.5px dashed rgba(39, 168, 85, .3);
-      color: var(--v4);
+      color: var(--v2);
       border-radius: 12px;
       font-size: 13px;
       font-weight: 700;
@@ -2592,7 +2599,7 @@ if ($subTipo === 'servicio') {
             class="nl-dot"></span><?php endif; ?></a>
       <a href="convocatorias.php" class="nl">📢 Convocatorias</a>
       <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
-        <a href="#" class="nl" onclick="abrirPublicarVacante();return false;" style="color:var(--v4)">➕ Publicar
+        <a href="#" class="nl" onclick="abrirPublicarVacante();return false;" style="color:var(--v2)">➕ Publicar
           vacante</a>
       <?php elseif ($tipo === 'candidato' || $subTipo === 'servicio' || !empty($talento['precio_desde'])): ?>
         <a href="#" class="nl" onclick="abrirHoja();return false;" style="color:var(--a4)">📄 Mi CV</a>
@@ -2857,7 +2864,7 @@ if ($subTipo === 'servicio') {
             <a href="#" class="ac" onclick="abrirPublicarVacante();return false;"
               style="border-color:rgba(39,168,85,.3);background:rgba(39,168,85,.06)">
               <div class="ac-ico">➕</div>
-              <div class="ac-tit" style="color:var(--v4)">Publicar vacante</div>
+              <div class="ac-tit" style="color:var(--v2)">Publicar vacante</div>
               <div class="ac-desc">Nueva oferta de empleo</div>
             </a>
             <a href="talentos.php" class="ac">
@@ -2874,7 +2881,7 @@ if ($subTipo === 'servicio') {
             <a href="#" class="ac" onclick="abrirPublicarVacante();return false;"
               style="border-color:rgba(39,168,85,.3);background:rgba(39,168,85,.06)">
               <div class="ac-ico">➕</div>
-              <div class="ac-tit" style="color:var(--v4)">Publicar vacante</div>
+              <div class="ac-tit" style="color:var(--v2)">Publicar vacante</div>
               <div class="ac-desc">Nueva oferta de empleo</div>
             </a>
             <a href="negocios.php" class="ac">
@@ -2977,12 +2984,26 @@ if ($subTipo === 'servicio') {
         <?php if ($tipo === 'empresa' && !empty($historialVacantes)): ?>
           <div class="ce-list">
             <?php foreach ($historialVacantes as $v): ?>
+              <?php
+              // activo=1 → Activa, activo=0 → Pendiente de aprobación o Cerrada
+              // Distinguimos: si fue creada hace menos de 72h y activo=0 → Pendiente
+              $horas = (time() - strtotime($v['creado_en'])) / 3600;
+              $esPendiente = !$v['activo'] && $horas < 72;
+              $estadoLabel = $v['activo']
+                ? '<span style="color:#16a34a;font-weight:700">✅ Activa</span>'
+                : ($esPendiente
+                  ? '<span style="color:#d97706;font-weight:700">⏳ Pendiente aprobación</span>'
+                  : '<span style="color:#6b8f74;font-weight:700">🔒 Cerrada</span>');
+              $modalidad = htmlspecialchars(ucfirst($v['modalidad'] ?? $v['tipo_contrato'] ?? ''));
+              ?>
               <div class="hist-item">
-                <div class="hdot <?= $v['activo'] ? 'act' : 'cer' ?>"></div>
+                <div class="hdot <?= $v['activo'] ? 'act' : ($esPendiente ? 'pen' : 'cer') ?>"></div>
                 <div style="flex:1;min-width:0">
                   <div class="hnom"><?= htmlspecialchars($v['titulo']) ?></div>
-                  <div class="hmeta">📍 <?= htmlspecialchars($v['ciudad'] ?? 'Quibdó') ?> ·
-                    <?= $v['activo'] ? '<span style="color:#4ade80;font-weight:700">Activa</span>' : '<span style="color:#94a3b8">Cerrada</span>' ?>
+                  <div class="hmeta">
+                    📍 <?= htmlspecialchars($v['ciudad'] ?? 'Quibdó') ?>
+                    <?= $modalidad ? ' · ' . $modalidad : '' ?>
+                    · <?= $estadoLabel ?>
                   </div>
                 </div>
                 <div class="hfecha"><?= date('d/m/Y', strtotime($v['creado_en'])) ?></div>
@@ -3314,7 +3335,7 @@ if ($subTipo === 'servicio') {
               <div style="font-size:32px;margin-bottom:8px">🎓</div>
               Agrega tu educación para que las empresas conozcan tu formación.
               <br><button onclick="abrirFormEdu()"
-                style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(163,240,181,.3);border-radius:20px;background:none;color:var(--vlima);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
+                style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
                 Agregar educación</button>
             </div>
           </div>
@@ -3334,7 +3355,7 @@ if ($subTipo === 'servicio') {
               <div style="font-size:32px;margin-bottom:8px">🏅</div>
               Agrega tus certificaciones y cursos para destacar tus habilidades.
               <br><button onclick="abrirFormCert()"
-                style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(163,240,181,.3);border-radius:20px;background:none;color:var(--vlima);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
+                style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
                 Agregar certificación</button>
             </div>
           </div>
@@ -3370,7 +3391,7 @@ if ($subTipo === 'servicio') {
                 <div style="font-size:32px;margin-bottom:8px">⚡</div>
                 Agrega tus aptitudes y habilidades clave.
                 <br><button onclick="abrirFormApt()"
-                  style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(163,240,181,.3);border-radius:20px;background:none;color:var(--vlima);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
+                  style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
                   Agregar aptitudes</button>
               </div>
             <?php endif; ?>
@@ -3394,7 +3415,7 @@ if ($subTipo === 'servicio') {
               ➕</div>
             <div>
               <div class="mtit" style="margin:0;font-size:20px">Publicar <em
-                  style="color:var(--vlima);font-style:normal">Vacante</em></div>
+                  style="color:var(--v2);font-style:normal">Vacante</em></div>
               <p class="msub" style="margin:0;font-size:12px">Conecta con el mejor talento del Chocó en minutos</p>
             </div>
           </div>
@@ -3501,7 +3522,7 @@ if ($subTipo === 'servicio') {
               📄</div>
             <div>
               <div class="mtit" style="margin:0;font-size:20px">Mi Hoja de <em
-                  style="color:var(--vlima);font-style:normal">Vida</em></div>
+                  style="color:var(--v2);font-style:normal">Vida</em></div>
               <p class="msub" style="margin:0;font-size:12px">Completa tu perfil y sé encontrado por empresas del Chocó
               </p>
             </div>
@@ -3636,7 +3657,7 @@ if ($subTipo === 'servicio') {
         <!-- Modal recorte -->
         <div class="crop-modal" id="cropModal" style="display:none">
           <div class="crop-inner">
-            <div style="font-size:16px;font-weight:800;color:var(--vlima);margin-bottom:14px;text-align:center">✂️
+            <div style="font-size:16px;font-weight:800;color:var(--v2);margin-bottom:14px;text-align:center">✂️
               Encuadra tu foto</div>
             <div
               style="position:relative;width:100%;height:280px;overflow:hidden;border-radius:12px;background:#000;display:flex;align-items:center;justify-content:center">
@@ -3672,7 +3693,7 @@ if ($subTipo === 'servicio') {
         <!-- Info extra según tipo -->
         <?php if ($tipo === 'empresa'): ?>
           <div
-            style="background:rgba(26,86,219,.08);border:1px solid rgba(26,86,219,.2);border-radius:12px;padding:12px 16px;font-size:12px;color:var(--rcielo);margin:8px 0">
+            style="background:rgba(26,86,219,.08);border:1px solid rgba(26,86,219,.2);border-radius:12px;padding:12px 16px;font-size:12px;color:var(--r2);margin:8px 0">
             🏢 Los datos de empresa (razón social, NIT, sector, cámara de comercio) son actualizados por el administrador
             desde el panel de gestión.
           </div>
@@ -3692,13 +3713,13 @@ if ($subTipo === 'servicio') {
           <?php endif; ?>
         <?php elseif ($tipo === 'negocio'): ?>
           <div
-            style="background:rgba(245,200,0,.07);border:1px solid rgba(245,200,0,.2);border-radius:12px;padding:12px 16px;font-size:12px;color:var(--acrem);margin:8px 0">
+            style="background:rgba(245,200,0,.07);border:1px solid rgba(245,200,0,.2);border-radius:12px;padding:12px 16px;font-size:12px;color:#7a5e00;margin:8px 0">
             🏪 Los datos del negocio (nombre, categoría, WhatsApp) son actualizados desde el panel de gestión o por el
             administrador.
           </div>
         <?php elseif ($subTipo === 'servicio'): ?>
           <div
-            style="background:rgba(245,200,0,.07);border:1px solid rgba(245,200,0,.2);border-radius:12px;padding:12px 16px;font-size:12px;color:var(--acrem);margin:8px 0">
+            style="background:rgba(245,200,0,.07);border:1px solid rgba(245,200,0,.2);border-radius:12px;padding:12px 16px;font-size:12px;color:#7a5e00;margin:8px 0">
             🎧 Tu precio, géneros y tipo de servicio son activados por el administrador. Para actualizar tu perfil de
             servicios contacta al equipo de QuibdóConecta.
           </div>
@@ -4145,7 +4166,7 @@ if ($subTipo === 'servicio') {
         list.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--ink3);font-size:13px">
         <div style="font-size:32px;margin-bottom:8px">🎓</div>
         Agrega tu educación para que las empresas conozcan tu formación.
-        <br><button onclick="abrirFormEdu()" style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(163,240,181,.3);border-radius:20px;background:none;color:var(--vlima);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar educación</button>
+        <br><button onclick="abrirFormEdu()" style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar educación</button>
       </div>`;
         return;
       }
@@ -4178,7 +4199,7 @@ if ($subTipo === 'servicio') {
         list.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--ink3);font-size:13px">
         <div style="font-size:32px;margin-bottom:8px">🏅</div>
         Agrega tus certificaciones y cursos para destacar tus habilidades.
-        <br><button onclick="abrirFormCert()" style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(163,240,181,.3);border-radius:20px;background:none;color:var(--vlima);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar certificación</button>
+        <br><button onclick="abrirFormCert()" style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar certificación</button>
       </div>`;
         return;
       }
@@ -4220,7 +4241,7 @@ if ($subTipo === 'servicio') {
         list.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--ink3);font-size:13px">
         <div style="font-size:32px;margin-bottom:8px">⚡</div>
         Agrega tus aptitudes y habilidades clave.
-        <br><button onclick="abrirFormApt()" style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(163,240,181,.3);border-radius:20px;background:none;color:var(--vlima);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar aptitudes</button>
+        <br><button onclick="abrirFormApt()" style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar aptitudes</button>
       </div>`;
         return;
       }

@@ -96,11 +96,17 @@
 
         .nav-left { display: flex; align-items: center; gap: 12px; }
 
-        .logo {
-            width: 52px;
-            height: auto;
-            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
-        }
+        .logo-navbar{
+height: 48px;
+width: auto;
+object-fit: contain;
+}
+
+.nav-left{
+display:flex;
+align-items:center;
+height:100%;
+}
 
         .brand { font-size: 22px; font-weight: 800; color: #111; }
         .brand span { color: var(--verde); }
@@ -1567,10 +1573,9 @@
 
     <!-- NAVBAR -->
     <header class="navbar" id="navbar">
-        <div class="nav-left">
-            <img src="Imagenes/QuibConec.png" alt="Quibdó Conecta" class="logo">
-            <span class="brand">Quibdó<span>Conecta</span></span>
-        </div>
+<div class="nav-left">
+    <img src="Imagenes/QuibConec.png" alt="Quibdó Conecta" class="logo-navbar">
+</div>
         <nav class="nav-center">
             <a href="index.html" class="active">Inicio</a>
             <a href="Empleo.php">Empleos</a>
