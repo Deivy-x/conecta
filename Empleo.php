@@ -203,22 +203,26 @@ function catIcono($cat, $iconos) {
     .btn-cult:hover{background:rgba(163,230,53,.15);border-color:#a3e635}
 
     /* ── MODAL ── */
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
     .modal-overlay.open{display:flex}
-    .modal-box{background:white;border-radius:24px;max-width:560px;width:100%;padding:40px;box-shadow:0 30px 80px rgba(0,0,0,.2);animation:fadeUp .3s ease both;position:relative;max-height:90vh;overflow-y:auto}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-    .modal-close{position:absolute;top:18px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:#888}
-    .modal-close:hover{color:#333}
-    .modal-icon{font-size:44px;margin-bottom:12px;display:block}
-    .modal-badge-tag{display:inline-block;background:#edfaf3;color:#1f9d55;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:14px}
-    .modal-box h2{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:6px}
-    .modal-empresa-nm{color:#1f9d55;font-weight:600;font-size:15px;margin-bottom:4px}
-    .modal-loc{color:#888;font-size:13px;margin-bottom:20px}
-    .modal-info-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-    .modal-chip{background:#f1f5f9;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:#444}
-    .modal-desc{font-size:14px;color:#555;line-height:1.7;margin-bottom:24px}
-    .modal-btn{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:white;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 6px 20px rgba(31,157,85,.4);transition:transform .2s}
-    .modal-btn:hover{transform:translateY(-2px)}
+    .modal-box{background:white;border-radius:24px;max-width:580px;width:100%;padding:36px;box-shadow:0 30px 80px rgba(0,0,0,.22);animation:fadeUp .3s ease both;position:relative;max-height:90vh;overflow-y:auto}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    .modal-close{position:absolute;top:16px;right:18px;background:#f1f5f9;border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;color:#666;display:flex;align-items:center;justify-content:center;transition:background .2s}
+    .modal-close:hover{background:#e2e8f0;color:#333}
+    .modal-badge-tag{display:inline-block;background:#edfaf3;color:#1f9d55;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.3px}
+    .modal-box h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#111;line-height:1.2}
+    .modal-empresa-nm{color:#1f9d55;font-weight:700;font-size:14px;margin-bottom:3px;display:flex;align-items:center;gap:5px}
+    .modal-loc{color:#888;font-size:13px;margin-bottom:0}
+    .modal-info-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:0}
+    .modal-chip{background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;color:#444;display:inline-flex;align-items:center;gap:5px}
+    /* Secciones de descripción */
+    .md-seccion{margin-bottom:18px}
+    .md-seccion-tit{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:8px}
+    .md-seccion-body{font-size:14px;color:#444;line-height:1.75}
+    .md-req-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:14px;color:#444;line-height:1.5}
+    .md-req-dot{width:6px;height:6px;border-radius:50%;background:#1f9d55;flex-shrink:0;margin-top:7px}
+    .modal-btn{display:block;width:100%;padding:15px;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:white;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 6px 20px rgba(31,157,85,.35);transition:transform .2s,box-shadow .2s}
+    .modal-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(31,157,85,.45)}
 
     /* ── MODAL CULTURAL ── */
     .modal-box.cult-modal{background:#16213e;color:white}
@@ -566,18 +570,37 @@ function catIcono($cat, $iconos) {
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box" id="modalBox">
     <button class="modal-close" id="modalClose">✕</button>
-    <span class="modal-icon" id="modalIcon">💼</span>
-    <span class="modal-badge-tag" id="modalTipo">Tiempo completo</span>
-    <h2 id="modalTitulo">Cargo</h2>
+
+    <!-- CABECERA -->
+    <div id="modalCabecera" style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+      <div id="modalIconWrap" style="width:56px;height:56px;border-radius:14px;background:#edfaf3;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">💼</div>
+      <div style="flex:1;min-width:0">
+        <span class="modal-badge-tag" id="modalTipo">Tiempo completo</span>
+        <h2 id="modalTitulo" style="margin-top:4px">Cargo</h2>
+      </div>
+    </div>
+
+    <!-- EMPRESA + LUGAR -->
     <p class="modal-empresa-nm" id="modalEmpresa">Empresa</p>
-    <div id="modalBadgesRow" style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px"></div>
     <p class="modal-loc" id="modalLoc">📍 Ubicación</p>
-    <div class="modal-info-row">
+
+    <!-- BADGES VERIFICADA -->
+    <div id="modalBadgesRow" style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px"></div>
+
+    <!-- CHIPS INFO -->
+    <div class="modal-info-row" id="modalInfoRow">
       <span class="modal-chip" id="modalSalario">💰 A convenir</span>
       <span class="modal-chip" id="modalModalidad">Presencial</span>
     </div>
-    <p class="modal-desc" id="modalDesc">Descripción</p>
-    <a href="registro.php" class="modal-btn" id="modalBtn">🚀 Postularme ahora</a>
+
+    <!-- SEPARADOR -->
+    <div style="height:1px;background:#f1f5f9;margin:16px 0"></div>
+
+    <!-- DESCRIPCIÓN ESTRUCTURADA -->
+    <div id="modalDescBloque"></div>
+
+    <!-- BTN -->
+    <a href="registro.php" class="modal-btn" id="modalBtn" style="margin-top:8px">🚀 Postularme ahora</a>
   </div>
 </div>
 
@@ -672,22 +695,112 @@ document.getElementById('modalClose').addEventListener('click', () => overlay.cl
 overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
 
-const iconosMap = { 'administrativo':'💼','tecnologia':'💻','tecnología':'💻','arte':'🎵','educacion':'📚','educación':'📚','salud':'🏥','gastronomia':'🍽️','gastronomía':'🍽️','tecnico':'🔧','técnico':'🔧','transporte':'🚗' };
 
 function abrirModal(card) {
   const cat = (card.dataset.cat || '').toLowerCase();
-  document.getElementById('modalIcon').textContent = iconosMap[cat] || '💼';
+  const iconosMap2 = { 'administrativo':'💼','tecnologia':'💻','tecnología':'💻','arte':'🎵','educacion':'📚','educación':'📚','salud':'🏥','gastronomia':'🍽️','gastronomía':'🍽️','tecnico':'🔧','técnico':'🔧','transporte':'🚗','comercio':'🛍️','construccion':'🏗️','finanzas':'📊','agro':'🌿','servicios':'⚙️' };
+  const icono = iconosMap2[cat] || '💼';
+
+  // Icono
+  document.getElementById('modalIconWrap').textContent = icono;
+
+  // Tipo badge
   document.getElementById('modalTipo').textContent = ucfirst(card.dataset.tipo || 'Vacante');
+
+  // Titulo
   document.getElementById('modalTitulo').textContent = card.dataset.titulo || '';
-  document.getElementById('modalEmpresa').textContent = '🏢 ' + (card.dataset.empresa || '');
+
+  // Empresa y lugar
+  document.getElementById('modalEmpresa').innerHTML = '🏢 ' + (card.dataset.empresa || '');
   document.getElementById('modalLoc').textContent = '📍 ' + (card.dataset.lugar || '');
-  document.getElementById('modalSalario').textContent = '💰 ' + (card.dataset.salario || 'A convenir');
-  document.getElementById('modalModalidad').textContent = ucfirst(card.dataset.modalidad || 'Presencial');
-  document.getElementById('modalDesc').textContent = card.dataset.desc || '';
+
+  // Chips info
+  const salario = card.dataset.salario || 'A convenir';
+  const modalidad = ucfirst(card.dataset.modalidad || 'Presencial');
+  document.getElementById('modalSalario').innerHTML = '💰 ' + salario;
+  document.getElementById('modalModalidad').innerHTML = '📋 ' + modalidad;
+  document.getElementById('modalInfoRow').style.display = 'flex';
+
+  // Badge verificada
   const row = document.getElementById('modalBadgesRow');
   row.innerHTML = '';
-  const bs = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;';
-  if (card.dataset.verificada === '1') row.innerHTML += `<span style="${bs}background:#e8f5e9;color:#1c5c32;border:1px solid #a5d6a7">✅ Empresa Verificada</span>`;
+  if (card.dataset.verificada === '1') {
+    row.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:#e8f5e9;color:#1c5c32;border:1px solid #a5d6a7">✅ Empresa Verificada</span>`;
+  }
+
+  // Parsear descripción en bloques
+  const rawDesc = card.dataset.desc || '';
+  const bloque = document.getElementById('modalDescBloque');
+  bloque.innerHTML = '';
+
+  // Separar por los marcadores que metemos en el INSERT
+  const partes = rawDesc.split(/\n\n/);
+  let descripcion = '', requisitos = '', salarioTexto = '', tipoContrato = '';
+
+  partes.forEach(p => {
+    const t = p.trim();
+    if (t.startsWith('Requisitos:')) {
+      requisitos = t.replace('Requisitos:', '').trim();
+    } else if (t.startsWith('Salario:')) {
+      salarioTexto = t.replace('Salario:', '').trim();
+      // también puede tener Modalidad de contrato en misma línea
+      const lines = salarioTexto.split('\n');
+      salarioTexto = lines[0].trim();
+      if (lines[1] && lines[1].startsWith('Modalidad de contrato:')) {
+        tipoContrato = lines[1].replace('Modalidad de contrato:', '').trim();
+      }
+    } else if (t) {
+      descripcion = t;
+    }
+  });
+
+  // Bloque descripción
+  if (descripcion) {
+    const d = document.createElement('div');
+    d.className = 'md-seccion';
+    d.innerHTML = `<div class="md-seccion-tit">📄 Descripción del cargo</div><div class="md-seccion-body">${descripcion.replace(/\n/g,'<br>')}</div>`;
+    bloque.appendChild(d);
+  }
+
+  // Bloque requisitos — convertir en lista si tiene · o saltos
+  if (requisitos) {
+    const d = document.createElement('div');
+    d.className = 'md-seccion';
+    let reqHtml = '';
+    const items = requisitos.split(/·|\n/).map(s => s.trim()).filter(Boolean);
+    if (items.length > 1) {
+      reqHtml = items.map(i => `<div class="md-req-item"><div class="md-req-dot"></div><span>${i}</span></div>`).join('');
+    } else {
+      reqHtml = `<div class="md-seccion-body">${requisitos.replace(/\n/g,'<br>')}</div>`;
+    }
+    d.innerHTML = `<div class="md-seccion-tit">✅ Requisitos y cómo postularse</div>${reqHtml}`;
+    bloque.appendChild(d);
+  }
+
+  // Chips adicionales si vienen de descripcion
+  if (salarioTexto || tipoContrato) {
+    const chipRow = document.createElement('div');
+    chipRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px';
+    if (salarioTexto) chipRow.innerHTML += `<span class="modal-chip">💰 ${salarioTexto}</span>`;
+    if (tipoContrato) chipRow.innerHTML += `<span class="modal-chip">📋 ${tipoContrato}</span>`;
+    // Solo mostrar si difieren de lo que ya mostramos arriba
+    if (salarioTexto !== salario || tipoContrato) {
+      const d = document.createElement('div');
+      d.className = 'md-seccion';
+      d.innerHTML = `<div class="md-seccion-tit">💼 Condiciones</div>`;
+      d.appendChild(chipRow);
+      bloque.appendChild(d);
+    }
+  }
+
+  // Si no había nada estructurado, mostrar el texto tal cual mejorado
+  if (!descripcion && !requisitos) {
+    const d = document.createElement('div');
+    d.className = 'md-seccion';
+    d.innerHTML = `<div class="md-seccion-body">${rawDesc.replace(/\n/g,'<br>') || 'Vacante publicada por empresa local del Chocó.'}</div>`;
+    bloque.appendChild(d);
+  }
+
   document.getElementById('modalBox').className = 'modal-box';
   overlay.classList.add('open');
 }
