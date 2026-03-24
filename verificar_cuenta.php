@@ -169,7 +169,7 @@ $esEmpresa = $tipo === 'empresa';
 </head>
 <body>
 <div class="container">
-    <a href="dashboard.php" class="btn-back">← Volver a mi panel</a>
+    <a href="<?= $esEmpresa ? 'dashboard_empresa.php' : 'dashboard.php' ?>" class="btn-back">← Volver a mi panel</a>
 
     <h1>Verifica tu <span>cuenta</span></h1>
     <p class="subtitulo">

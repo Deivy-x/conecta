@@ -178,10 +178,10 @@ $stmtV->execute([$usuario['id']]);
 $verifDoc = $stmtV->fetch();
 $estadoVerif = $verifDoc ? $verifDoc['estado'] : null;
 
-// Vacantes activas (si existe tabla empleos)
+// Vacantes publicadas (activas + en revisión)
 $vacantesActivas = 0;
 try {
-    $vStmt = $db->prepare("SELECT COUNT(*) FROM empleos WHERE empresa_id=? AND activo=1");
+    $vStmt = $db->prepare("SELECT COUNT(*) FROM empleos WHERE empresa_id=?");
     $vStmt->execute([$usuario['id']]);
     $vacantesActivas = (int)$vStmt->fetchColumn();
 } catch(Exception $e) { $vacantesActivas = 0; }
@@ -189,7 +189,7 @@ try {
 // Historial de vacantes publicadas
 $historialVacantes = [];
 try {
-    $hvStmt = $db->prepare("SELECT titulo, ciudad, tipo_contrato, activo, creado_en FROM empleos WHERE empresa_id=? ORDER BY creado_en DESC LIMIT 10");
+    $hvStmt = $db->prepare("SELECT titulo, ciudad, modalidad, activo, creado_en FROM empleos WHERE empresa_id=? ORDER BY creado_en DESC LIMIT 10");
     $hvStmt->execute([$usuario['id']]);
     $historialVacantes = $hvStmt->fetchAll();
 } catch(Exception $e) { $historialVacantes = []; }
@@ -632,7 +632,7 @@ if (isset($_GET['salir'])) {
               <div class="hist-dot <?= $v['activo'] ? 'dot-activo' : 'dot-inactivo' ?>"></div>
               <div class="hist-info">
                 <div class="hist-nom"><?= htmlspecialchars($v['titulo']) ?></div>
-                <div class="hist-meta">📍 <?= htmlspecialchars($v['ciudad'] ?? 'Chocó') ?> · <?= htmlspecialchars($v['tipo_contrato'] ?? '') ?> · <?= $v['activo'] ? '<span style="color:#22c55e;font-weight:700">Activa</span>' : '<span style="color:#94a3b8">Cerrada</span>' ?></div>
+                <div class="hist-meta">📍 <?= htmlspecialchars($v['ciudad'] ?? 'Chocó') ?> · <?= htmlspecialchars($v['modalidad'] ?? '') ?> · <?= $v['activo'] ? '<span style="color:#22c55e;font-weight:700">Activa</span>' : '<span style="color:#f59e0b;font-weight:600">En revisión</span>' ?></div>
               </div>
               <div class="hist-fecha"><?= date('d/m/Y', strtotime($v['creado_en'])) ?></div>
             </div>
