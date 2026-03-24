@@ -263,6 +263,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
+
+  // ── GUARDAR EDUCACIÓN ─────────────────────────────────────
+  if ($action === 'guardar_educacion') {
+    try {
+      $db->exec("CREATE TABLE IF NOT EXISTS talento_educacion (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        usuario_id INT NOT NULL,
+        institucion VARCHAR(200) NOT NULL DEFAULT '',
+        titulo VARCHAR(200) NOT NULL DEFAULT '',
+        fecha_inicio VARCHAR(20) DEFAULT '',
+        fecha_fin VARCHAR(20) DEFAULT '',
+        logo_url TEXT DEFAULT NULL,
+        orden TINYINT DEFAULT 0,
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_u (usuario_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+      $items = json_decode($_POST['items'] ?? '[]', true);
+      if (!is_array($items)) { echo json_encode(['ok'=>false,'msg'=>'Datos invalidos']); exit; }
+      $db->prepare("DELETE FROM talento_educacion WHERE usuario_id=?")->execute([$usuario['id']]);
+      $stmt = $db->prepare("INSERT INTO talento_educacion (usuario_id,institucion,titulo,fecha_inicio,fecha_fin,logo_url,orden) VALUES (?,?,?,?,?,?,?)");
+      foreach (array_values($items) as $i => $e) {
+        $stmt->execute([$usuario['id'], substr(trim($e['inst']??''),0,200), substr(trim($e['titulo']??''),0,200), substr(trim($e['inicio']??''),0,20), substr(trim($e['fin']??''),0,20), $e['logo']??null, $i]);
+      }
+      echo json_encode(['ok'=>true,'total'=>count($items)]);
+    } catch(Exception $e) { echo json_encode(['ok'=>false,'msg'=>$e->getMessage()]); }
+    exit;
+  }
+
+  // ── GUARDAR CERTIFICACIONES ──────────────────────────────
+  if ($action === 'guardar_certificaciones') {
+    try {
+      $db->exec("CREATE TABLE IF NOT EXISTS talento_certificaciones (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        usuario_id INT NOT NULL,
+        nombre VARCHAR(250) NOT NULL DEFAULT '',
+        organizacion VARCHAR(200) NOT NULL DEFAULT '',
+        fecha_expedicion VARCHAR(20) DEFAULT '',
+        url_credencial TEXT DEFAULT NULL,
+        archivo_url TEXT DEFAULT NULL,
+        archivo_nombre VARCHAR(200) DEFAULT NULL,
+        orden TINYINT DEFAULT 0,
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_u (usuario_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+      $items = json_decode($_POST['items'] ?? '[]', true);
+      if (!is_array($items)) { echo json_encode(['ok'=>false,'msg'=>'Datos invalidos']); exit; }
+      $db->prepare("DELETE FROM talento_certificaciones WHERE usuario_id=?")->execute([$usuario['id']]);
+      $stmt = $db->prepare("INSERT INTO talento_certificaciones (usuario_id,nombre,organizacion,fecha_expedicion,url_credencial,archivo_url,archivo_nombre,orden) VALUES (?,?,?,?,?,?,?,?)");
+      foreach (array_values($items) as $i => $c) {
+        $stmt->execute([$usuario['id'], substr(trim($c['nom']??''),0,250), substr(trim($c['org']??''),0,200), substr(trim($c['fecha']??''),0,20), $c['url']??null, $c['archivo']??null, substr($c['archivoNom']??'',0,200), $i]);
+      }
+      echo json_encode(['ok'=>true,'total'=>count($items)]);
+    } catch(Exception $e) { echo json_encode(['ok'=>false,'msg'=>$e->getMessage()]); }
+    exit;
+  }
+
+  // ── GUARDAR APTITUDES EXTRA ───────────────────────────────
+  if ($action === 'guardar_aptitudes_extra') {
+    try {
+      $bland   = substr(trim($_POST['aptitudes_bland']??''),0,500);
+      $idiomas = substr(trim($_POST['aptitudes_idiomas']??''),0,300);
+      try {
+        $db->exec("ALTER TABLE talento_perfil ADD COLUMN IF NOT EXISTS aptitudes_bland VARCHAR(500) DEFAULT ''");
+        $db->exec("ALTER TABLE talento_perfil ADD COLUMN IF NOT EXISTS aptitudes_idiomas VARCHAR(300) DEFAULT ''");
+      } catch(Exception $e2) {}
+      $chk = $db->prepare("SELECT id FROM talento_perfil WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+      $chk->execute([$usuario['id']]);
+      $row = $chk->fetch();
+      if ($row) {
+        $db->prepare("UPDATE talento_perfil SET aptitudes_bland=?, aptitudes_idiomas=? WHERE id=?")->execute([$bland,$idiomas,$row['id']]);
+      } else {
+        $db->prepare("INSERT INTO talento_perfil (usuario_id,aptitudes_bland,aptitudes_idiomas,visible,visible_admin) VALUES (?,?,?,0,1)")->execute([$usuario['id'],$bland,$idiomas]);
+      }
+      echo json_encode(['ok'=>true]);
+    } catch(Exception $e) { echo json_encode(['ok'=>false,'msg'=>$e->getMessage()]); }
+    exit;
+  }
+
   echo json_encode(['ok' => false, 'msg' => 'Acción desconocida.']);
   exit;
 }
@@ -3932,8 +4010,8 @@ if ($subTipo === 'servicio') {
     function cerrarFormApt() { document.getElementById('modal-apt').classList.remove('open'); }
 
     // Eliminar
-    function eliminarEdu(i) { perfilData.educacion.splice(i, 1); savePerfilData(); renderEdu(); }
-    function eliminarCert(i) { perfilData.certificaciones.splice(i, 1); savePerfilData(); renderCert(); }
+    function eliminarEdu(i) { perfilData.educacion.splice(i, 1); savePerfilData(); renderEdu(); syncEduServidor(); }
+    function eliminarCert(i) { perfilData.certificaciones.splice(i, 1); savePerfilData(); renderCert(); syncCertServidor(); }
 
     // Guardar educación
     function guardarEdu() {
@@ -3946,7 +4024,7 @@ if ($subTipo === 'servicio') {
       const logoFile = document.getElementById('edu-logo').files[0];
       const guardar = (logoUrl) => {
         perfilData.educacion.push({ inst, titulo, inicio, fin, logo: logoUrl || '' });
-        savePerfilData(); renderEdu(); cerrarFormEdu();
+        savePerfilData(); syncEduServidor(); renderEdu(); cerrarFormEdu();
         document.getElementById('edu-inst').value = ''; document.getElementById('edu-titulo').value = '';
         document.getElementById('edu-inicio').value = ''; document.getElementById('edu-fin').value = '';
         document.getElementById('edu-logo').value = '';
@@ -3969,7 +4047,7 @@ if ($subTipo === 'servicio') {
       const archFile = document.getElementById('cert-archivo').files[0];
       const guardar = (archivoUrl, archivoNom) => {
         perfilData.certificaciones.push({ nom, org, fecha, url, archivo: archivoUrl, archivoNom });
-        savePerfilData(); renderCert(); cerrarFormCert();
+        savePerfilData(); syncCertServidor(); renderCert(); cerrarFormCert();
         document.getElementById('cert-nom').value = ''; document.getElementById('cert-org').value = '';
         document.getElementById('cert-fecha').value = ''; document.getElementById('cert-url').value = '';
         document.getElementById('cert-archivo').value = '';
@@ -3990,6 +4068,14 @@ if ($subTipo === 'servicio') {
       perfilData.aptitudes_bland = bland;
       perfilData.aptitudes_idiomas = idiomas;
       savePerfilData();
+      // Sync aptitudes_bland e idiomas al servidor
+      try {
+        const fdApt = new FormData();
+        fdApt.append('_action','guardar_aptitudes_extra');
+        fdApt.append('aptitudes_bland', bland);
+        fdApt.append('aptitudes_idiomas', idiomas);
+        fetch('dashboard.php',{method:'POST',body:fdApt}).catch(()=>{});
+      } catch(e) {}
       // Sync habilidades técnicas al servidor via editar_perfil
       const fd = new FormData();
       fd.append('_action', 'editar_perfil');

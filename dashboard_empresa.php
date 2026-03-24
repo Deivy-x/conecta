@@ -747,7 +747,7 @@ if (isset($_GET['salir'])) {
       </div>
       <div style="margin-top:16px;padding:14px;background:var(--azul-claro);border-radius:12px;border:1px solid #bfdbfe">
         <div style="font-size:12px;font-weight:800;color:var(--azul);margin-bottom:6px">¿Quieres más visibilidad?</div>
-        <div style="font-size:12px;color:#1e40af;line-height:1.5">Los badges <strong>Premium</strong> y <strong>Destacada</strong> son asignados por el administrador. Contacta al equipo para más información.</div>
+        <div style="font-size:12px;color:#1e40af;line-height:1.5">Para adquirir Los badges de <strong>Pago</strong> y tener mas visibilidad debes comprar un plan apartir de <strong>Verde Selva</strong>.</div>
       </div>
     </div>
 

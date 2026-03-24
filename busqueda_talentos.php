@@ -27,11 +27,15 @@ $offset   = ($page - 1) * $perPage;
 
 // ── Perfil individual ─────────────────────────────────────────
 $verPerfil = (int)($_GET['ver'] ?? 0);
-$perfilData = null;
-$perfilTp   = null;
-$perfilGal  = [];
-$perfilEp   = null;
-$perfilNp   = null;
+$perfilData  = null;
+$perfilTp    = null;
+$perfilGal   = [];
+$perfilEp    = null;
+$perfilNp    = null;
+$perfilEdu   = [];
+$perfilCert  = [];
+$perfilAptBland   = '';
+$perfilAptIdiomas = '';
 
 if ($verPerfil && $db) {
     try {
@@ -64,6 +68,27 @@ if ($verPerfil && $db) {
             $s = $db->prepare("SELECT * FROM talento_galeria WHERE usuario_id=? AND activo=1 ORDER BY orden ASC, id ASC LIMIT 30");
             $s->execute([$verPerfil]); $perfilGal = $s->fetchAll();
         } catch(Exception $e) { $perfilGal = []; }
+
+        // educación
+        try {
+            $s = $db->prepare("SELECT * FROM talento_educacion WHERE usuario_id=? ORDER BY orden ASC, id ASC");
+            $s->execute([$verPerfil]); $perfilEdu = $s->fetchAll();
+        } catch(Exception $e) { $perfilEdu = []; }
+
+        // certificaciones
+        try {
+            $s = $db->prepare("SELECT * FROM talento_certificaciones WHERE usuario_id=? ORDER BY orden ASC, id ASC");
+            $s->execute([$verPerfil]); $perfilCert = $s->fetchAll();
+        } catch(Exception $e) { $perfilCert = []; }
+
+        // aptitudes extra (bland + idiomas desde talento_perfil)
+        try {
+            $s = $db->prepare("SELECT aptitudes_bland, aptitudes_idiomas FROM talento_perfil WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+            $s->execute([$verPerfil]);
+            $aptRow = $s->fetch();
+            $perfilAptBland   = $aptRow['aptitudes_bland']   ?? '';
+            $perfilAptIdiomas = $aptRow['aptitudes_idiomas'] ?? '';
+        } catch(Exception $e) { $perfilAptBland = ''; $perfilAptIdiomas = ''; }
 
         // vistas
         $visitorId = $_SESSION['usuario_id'] ?? null;
@@ -448,7 +473,7 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
   .info-table td:first-child { color: var(--muted); width: 40%; }
   .info-table td:last-child { font-weight: 600; }
 
-  /* educacion/cert desde localStorage — vacío si no hay */
+  /* educacion/cert — tarjetas del perfil */
   .edu-card, .cert-card {
     background: var(--bg3); border: 1px solid var(--border);
     border-radius: 10px; padding: 14px 16px; margin-bottom: 8px;
@@ -726,19 +751,74 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
       </div>
       <?php endif; ?>
 
-      <!-- educacion + certificados desde localStorage (se renderizan vía JS) -->
-      <div id="seccion-educacion" class="section" style="display:none">
+      <!-- EDUCACIÓN desde MySQL -->
+      <?php if (!empty($perfilEdu)): ?>
+      <div class="section">
         <div class="section-title">🎓 Educación</div>
-        <div id="edu-list"></div>
+        <?php foreach($perfilEdu as $edu): ?>
+        <div class="edu-card">
+          <?php if (!empty($edu['logo_url'])): ?>
+            <img src="<?= htmlspecialchars($edu['logo_url']) ?>" alt="logo" style="width:36px;height:36px;border-radius:8px;object-fit:cover;margin-bottom:6px;">
+          <?php endif; ?>
+          <div class="edu-card-title"><?= htmlspecialchars($edu['titulo']) ?></div>
+          <div class="edu-card-inst"><?= htmlspecialchars($edu['institucion']) ?></div>
+          <?php if ($edu['fecha_inicio'] || $edu['fecha_fin']): ?>
+          <div class="edu-card-fecha">
+            <?= htmlspecialchars($edu['fecha_inicio']) ?>
+            <?php if ($edu['fecha_inicio'] && ($edu['fecha_fin'] || true)): ?> —
+              <?= $edu['fecha_fin'] ? htmlspecialchars($edu['fecha_fin']) : 'Actualidad' ?>
+            <?php endif; ?>
+          </div>
+          <?php endif; ?>
+        </div>
+        <?php endforeach; ?>
       </div>
-      <div id="seccion-certificados" class="section" style="display:none">
+      <?php endif; ?>
+
+      <!-- CERTIFICACIONES desde MySQL -->
+      <?php if (!empty($perfilCert)): ?>
+      <div class="section">
         <div class="section-title">📜 Certificados y Cursos</div>
-        <div id="cert-list"></div>
+        <?php foreach($perfilCert as $cert): ?>
+        <div class="cert-card">
+          <div class="cert-nom"><?= htmlspecialchars($cert['nombre']) ?></div>
+          <div class="cert-org">
+            <?= htmlspecialchars($cert['organizacion']) ?>
+            <?php if ($cert['fecha_expedicion']): ?>
+              · <?= htmlspecialchars($cert['fecha_expedicion']) ?>
+            <?php endif; ?>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <?php if (!empty($cert['url_credencial'])): ?>
+              <a class="cert-link" href="<?= htmlspecialchars($cert['url_credencial']) ?>" target="_blank">🔗 Ver credencial</a>
+            <?php endif; ?>
+            <?php if (!empty($cert['archivo_url'])): ?>
+              <a class="cert-link" href="<?= htmlspecialchars($cert['archivo_url']) ?>" target="_blank">
+                📄 <?= htmlspecialchars($cert['archivo_nombre'] ?: 'Ver documento') ?>
+              </a>
+            <?php endif; ?>
+          </div>
+        </div>
+        <?php endforeach; ?>
       </div>
-      <div id="seccion-aptitudes" class="section" style="display:none">
+      <?php endif; ?>
+
+      <!-- APTITUDES EXTRA desde MySQL -->
+      <?php
+        $aptBlandArr   = array_filter(array_map('trim', explode(',', $perfilAptBland)));
+        $aptIdiomasArr = array_filter(array_map('trim', explode(',', $perfilAptIdiomas)));
+        $todasApt      = array_merge($aptBlandArr, $aptIdiomasArr);
+      ?>
+      <?php if (!empty($todasApt)): ?>
+      <div class="section">
         <div class="section-title">🌟 Aptitudes adicionales</div>
-        <div id="apt-list" class="skills-wrap"></div>
+        <div class="skills-wrap">
+          <?php foreach($todasApt as $apt): ?>
+            <span class="skill-tag"><?= htmlspecialchars($apt) ?></span>
+          <?php endforeach; ?>
+        </div>
       </div>
+      <?php endif; ?>
 
       <!-- CTA -->
       <div class="cta-bar">
@@ -754,72 +834,9 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
   </div>
 
   <script>
-    // Leer datos de localStorage del usuario <?= $verPerfil ?> si están disponibles
-    // (solo funciona si el navegador del visitante es el mismo que el del propietario)
-    const STORE_KEY = 'qc_perfil_<?= $verPerfil ?>';
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      if (raw) {
-        const d = JSON.parse(raw);
-
-        // Educación
-        if (d.educacion && d.educacion.length) {
-          document.getElementById('seccion-educacion').style.display = '';
-          const list = document.getElementById('edu-list');
-          d.educacion.forEach(e => {
-            const div = document.createElement('div');
-            div.className = 'edu-card';
-            div.innerHTML = `
-              <div class="edu-card-title">${escH(e.titulo||'')}</div>
-              <div class="edu-card-inst">${escH(e.inst||'')}</div>
-              <div class="edu-card-fecha">${escH(e.inicio||'')}${e.fin?' — '+escH(e.fin):''}</div>
-            `;
-            list.appendChild(div);
-          });
-        }
-
-        // Certificados
-        if (d.certificaciones && d.certificaciones.length) {
-          document.getElementById('seccion-certificados').style.display = '';
-          const list = document.getElementById('cert-list');
-          d.certificaciones.forEach(c => {
-            const div = document.createElement('div');
-            div.className = 'cert-card';
-            let extra = '';
-            if (c.url) extra += `<a class="cert-link" href="${escH(c.url)}" target="_blank">🔗 Ver credencial</a>`;
-            if (c.archivo) extra += `<a class="cert-link" href="${escH(c.archivo)}" target="_blank">📄 Ver archivo</a>`;
-            div.innerHTML = `
-              <div class="cert-nom">${escH(c.nom||'')}</div>
-              <div class="cert-org">${escH(c.org||'')}${c.fecha?' · '+escH(c.fecha):''}</div>
-              ${extra}
-            `;
-            list.appendChild(div);
-          });
-        }
-
-        // Aptitudes
-        const bland = (d.aptitudes_bland||'').split(',').map(s=>s.trim()).filter(Boolean);
-        const idiomas = (d.aptitudes_idiomas||'').split(',').map(s=>s.trim()).filter(Boolean);
-        const todas = [...bland, ...idiomas];
-        if (todas.length) {
-          document.getElementById('seccion-aptitudes').style.display = '';
-          const list = document.getElementById('apt-list');
-          todas.forEach(a => {
-            const sp = document.createElement('span');
-            sp.className = 'skill-tag';
-            sp.textContent = a;
-            list.appendChild(sp);
-          });
-        }
-      }
-    } catch(e){}
-
-    function escH(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-
     function abrirLbox(src, titulo) {
-      const lb = document.getElementById('lbox');
       document.getElementById('lbox-img').src = src;
-      lb.classList.add('open');
+      document.getElementById('lbox').classList.add('open');
     }
   </script>
 
