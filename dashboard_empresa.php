@@ -43,20 +43,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Actualizar tabla usuarios
         $db->prepare("UPDATE usuarios SET nombre=?, telefono=?, ciudad=? WHERE id=?")
            ->execute([$nombreEmp, $telefonoEmp, $ciudad, $usuario['id']]);
-        // Upsert perfiles_empresa
-        $db->prepare("INSERT INTO perfiles_empresa
-            (usuario_id, nombre_empresa, sector, nit, descripcion, sitio_web, telefono_empresa, municipio)
-            VALUES (?,?,?,?,?,?,?,?)
-            ON DUPLICATE KEY UPDATE
-              nombre_empresa    = VALUES(nombre_empresa),
-              sector            = VALUES(sector),
-              nit               = VALUES(nit),
-              descripcion       = VALUES(descripcion),
-              sitio_web         = VALUES(sitio_web),
-              telefono_empresa  = VALUES(telefono_empresa),
-              municipio         = VALUES(municipio),
-              actualizado_en    = NOW()")
-           ->execute([$usuario['id'], $nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio]);
+
+        // Verificar si ya existe fila en perfiles_empresa
+        $existeStmt = $db->prepare("SELECT id FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+        $existeStmt->execute([$usuario['id']]);
+        $filaExistente = $existeStmt->fetchColumn();
+
+        if ($filaExistente) {
+            // UPDATE: nunca tocar la columna logo
+            $db->prepare("UPDATE perfiles_empresa SET
+                nombre_empresa   = ?,
+                sector           = ?,
+                nit              = ?,
+                descripcion      = ?,
+                sitio_web        = ?,
+                telefono_empresa = ?,
+                municipio        = ?,
+                actualizado_en   = NOW()
+              WHERE usuario_id = ? ORDER BY id DESC LIMIT 1")
+               ->execute([$nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio, $usuario['id']]);
+        } else {
+            // INSERT solo si no existe fila — logo queda vacío hasta que suba uno
+            $db->prepare("INSERT INTO perfiles_empresa
+                (usuario_id, nombre_empresa, sector, nit, descripcion, sitio_web, telefono_empresa, municipio)
+                VALUES (?,?,?,?,?,?,?,?)")
+               ->execute([$usuario['id'], $nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio]);
+        }
         echo json_encode(['ok' => true, 'nombre_empresa' => $nombreEmp, 'sector' => $sector, 'ciudad' => $ciudad]);
         exit;
     }
