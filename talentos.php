@@ -807,7 +807,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       align-items: center;
       justify-content: center;
       padding: 20px;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
     }
 
     .modal-overlay.open {
@@ -817,9 +817,9 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     .modal-box {
       background: white;
       border-radius: 24px;
-      max-width: 580px;
+      max-width: 560px;
       width: 100%;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.22);
       animation: fadeUp 0.3s ease both;
       position: relative;
       max-height: 90vh;
@@ -827,62 +827,60 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px)
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0)
-      }
+      from { opacity: 0; transform: translateY(24px) }
+      to   { opacity: 1; transform: translateY(0) }
     }
 
     .modal-close {
       position: absolute;
-      top: 18px;
-      right: 20px;
-      background: none;
+      top: 16px;
+      right: 16px;
+      background: #f1f5f9;
       border: none;
-      font-size: 22px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 15px;
       cursor: pointer;
-      color: #888;
-      line-height: 1;
+      color: #666;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
       z-index: 1;
     }
 
-    .modal-close:hover {
-      color: #333;
-    }
+    .modal-close:hover { background: #e2e8f0; color: #333; }
 
     .modal-header {
-      padding: 36px 36px 24px;
+      padding: 32px 32px 22px;
       display: flex;
-      gap: 20px;
+      gap: 18px;
       align-items: flex-start;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      border-bottom: 1px solid #f1f5f9;
     }
 
     .modal-avatar {
-      width: 80px;
-      height: 80px;
+      width: 76px;
+      height: 76px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 800;
       color: white;
       flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
     }
 
     .modal-info h2 {
       font-family: 'Syne', sans-serif;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       margin-bottom: 4px;
-      letter-spacing: -0.5px;
       line-height: 1.2;
+      color: #111;
     }
 
     .modal-info .m-profesion {
@@ -890,7 +888,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       font-weight: 700;
       font-size: 14px;
       margin-bottom: 4px;
-      letter-spacing: 0.1px;
     }
 
     .modal-info .m-ubicacion {
@@ -899,42 +896,43 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .modal-body {
-      padding: 24px 36px 36px;
-    }
-
-    .modal-badge-t {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      margin-bottom: 16px;
+      padding: 22px 32px 32px;
     }
 
     .modal-habilidades {
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .modal-habilidades h4 {
-      font-size: 13px;
-      font-weight: 700;
-      color: #888;
+      font-size: 11px;
+      font-weight: 800;
+      color: #94a3b8;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: .8px;
       margin-bottom: 10px;
     }
 
     .modal-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 7px;
+    }
+
+    .modal-tags .tag {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #444;
+      font-size: 12px;
+      padding: 5px 13px;
+      border-radius: 20px;
+      font-weight: 600;
     }
 
     .modal-desc {
       font-size: 14px;
       color: #555;
-      line-height: 1.7;
-      margin-bottom: 24px;
+      line-height: 1.75;
+      margin-bottom: 0;
     }
 
     .modal-btn {
@@ -951,12 +949,41 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       cursor: pointer;
       text-align: center;
       text-decoration: none;
-      box-shadow: 0 6px 20px rgba(31, 157, 85, 0.4);
-      transition: transform 0.2s;
+      box-shadow: 0 6px 20px rgba(31, 157, 85, 0.35);
+      transition: transform .2s, box-shadow .2s;
     }
 
-    .modal-btn:hover {
-      transform: translateY(-2px);
+    .modal-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(31,157,85,.45); }
+
+    .modal-btn-sec {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      background: transparent;
+      color: #444;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: border-color .2s, color .2s;
+    }
+
+    .modal-btn-sec:hover { border-color: #1f9d55; color: #1f9d55; }
+
+    /* Badge items en el modal */
+    .modal-badge-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
     }
 
     /* DJ SECTION */
@@ -1533,7 +1560,12 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
           <div class="talento-card" data-cat="<?= detectarCategoria($talento['profesion'], $talento['skills']) ?>"
             data-tipo="disponible" data-uid="<?= $talento['id'] ?>" data-nombre="<?= $nb ?>" data-profesion="<?= $pro ?>" data-ubicacion="<?= $ciu ?>"
             data-skills="<?= $ski ?>" data-grad="<?= $grd ?>" data-initials="<?= $ini ?>" data-desc="<?= $bio ?>"
-            data-foto="<?= !empty($talento['foto']) ? 'uploads/fotos/' . htmlspecialchars($talento['foto']) : '' ?>">
+            data-foto="<?= !empty($talento['foto']) ? 'uploads/fotos/' . htmlspecialchars($talento['foto']) : '' ?>"
+            data-badges-json="<?= htmlspecialchars(json_encode($talento['badges'] ?? []), ENT_QUOTES) ?>"
+            data-tiene-verificado="<?= $talento['tiene_verificado'] ? '1' : '0' ?>"
+            data-tiene-premium="<?= $talento['tiene_premium'] ? '1' : '0' ?>"
+            data-tiene-destacado="<?= $talento['tiene_destacado'] ? '1' : '0' ?>"
+            data-tiene-top="<?= $talento['tiene_top'] ? '1' : '0' ?>">
             <?= $badgePrincipalLabel ?>
 
             <div class="talento-avatar" style="background:<?= $grd ?>;overflow:hidden">
@@ -1644,6 +1676,8 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
       <button class="modal-close" id="modalClose">✕</button>
+
+      <!-- HEADER con avatar + nombre -->
       <div class="modal-header">
         <div class="modal-avatar" id="mAvatar"></div>
         <div class="modal-info">
@@ -1652,27 +1686,42 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
           <p class="m-ubicacion" id="mUbicacion"></p>
         </div>
       </div>
+
       <div class="modal-body">
-        <span class="modal-badge-t" id="mBadge"></span>
-        <div class="modal-habilidades">
-          <h4>Habilidades</h4>
+
+        <!-- BADGES del admin (todos los asignados) -->
+        <div id="mBadgesWrap" style="margin-bottom:16px;display:none">
+          <div id="mBadgesRow" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+        </div>
+
+        <!-- SEPARADOR -->
+        <div style="height:1px;background:#f1f5f9;margin-bottom:18px"></div>
+
+        <!-- HABILIDADES -->
+        <div class="modal-habilidades" id="mHabilidadesWrap">
+          <h4>🛠 Habilidades</h4>
           <div class="modal-tags" id="mTags"></div>
         </div>
-        <p class="modal-desc" id="mDesc"></p>
-        <!-- Galería rápida en modal -->
-        <div id="mGaleriaLoadT" style="display:none;color:rgba(255,255,255,.4);font-size:12px;margin-bottom:12px">⚙️ Cargando galería…</div>
-        <div id="mGaleriaWrapT" style="display:none;margin-bottom:16px">
-          <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">📸 Evidencias</div>
-          <div id="mGaleriaGridT" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+
+        <!-- BIO -->
+        <div id="mBioWrap" style="margin-bottom:20px">
+          <h4 style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">📝 Sobre mí</h4>
+          <p class="modal-desc" id="mDesc"></p>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+
+        <!-- Galería rápida -->
+        <div id="mGaleriaLoadT" style="display:none;color:#aaa;font-size:12px;margin-bottom:12px">⚙️ Cargando galería…</div>
+        <div id="mGaleriaWrapT" style="display:none;margin-bottom:20px">
+          <h4 style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">📸 Evidencias</h4>
+          <div id="mGaleriaGridT" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-radius:12px;overflow:hidden"></div>
+        </div>
+
+        <!-- BOTONES -->
+        <div style="display:flex;flex-direction:column;gap:10px">
           <a href="chat.php" id="mContactar" class="modal-btn">💬 Contactar por chat</a>
-          <a href="#" id="mBtnPerfil"
-             style="display:inline-flex;align-items:center;gap:5px;padding:12px 18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:30px;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:700;transition:background .2s"
-             onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">
-            👤 Ver perfil completo
-          </a>
+          <a href="#" id="mBtnPerfil" class="modal-btn-sec">👤 Ver perfil completo</a>
         </div>
+
       </div>
     </div>
   </div>
@@ -1794,38 +1843,76 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       document.getElementById('mProfesion').textContent = card.dataset.profesion || '';
       document.getElementById('mUbicacion').textContent = '📍 ' + (card.dataset.ubicacion || '');
       document.getElementById('mDesc').textContent = card.dataset.desc || '';
-      // badge
-      const badge = card.querySelector('.badge-t');
-      const mBadge = document.getElementById('mBadge');
-      if (badge) {
-        mBadge.textContent = badge.textContent;
-        mBadge.className = 'modal-badge-t ' + badge.className.replace('badge-t', '').trim();
-        mBadge.style.background = badge.classList.contains('badge-artista') ? '#f3e8ff' : badge.classList.contains('badge-disponible') ? '#fef9c3' : '#edfaf3';
-        mBadge.style.color = badge.classList.contains('badge-artista') ? '#7c3aed' : badge.classList.contains('badge-disponible') ? '#b45309' : '#1f9d55';
-      } else { mBadge.textContent = ''; }
-      // tags
-      const skills = (card.dataset.skills || '').split(',');
-      document.getElementById('mTags').innerHTML = skills.map(s => `<span class="tag">${s.trim()}</span>`).join('');
-      // enlace chat con usuario destino
+
+      // ── BADGES desde JSON del servidor ──────────────────────
+      const badgesWrap = document.getElementById('mBadgesWrap');
+      const badgesRow  = document.getElementById('mBadgesRow');
+      badgesRow.innerHTML = '';
+      let badgesData = [];
+      try { badgesData = JSON.parse(card.dataset.badgesJson || '[]'); } catch(e) {}
+
+      const esVerificado = card.dataset.tieneVerificado === '1';
+      const esPremium    = card.dataset.tienePremium    === '1';
+      const esDestacado  = card.dataset.tieneDestacado  === '1';
+      const esTop        = card.dataset.tieneTop        === '1';
+
+      if (badgesData.length > 0) {
+        badgesData.forEach(b => {
+          const color = b.color || '#1f9d55';
+          const span = document.createElement('span');
+          span.className = 'modal-badge-item';
+          span.title = b.descripcion || '';
+          span.style.cssText = `background:${color}22;border:1px solid ${color}55;color:${color}`;
+          span.textContent = (b.emoji || '🏅') + ' ' + (b.nombre || '');
+          badgesRow.appendChild(span);
+        });
+        badgesWrap.style.display = 'block';
+      } else if (esVerificado || esPremium || esDestacado || esTop) {
+        const fallbacks = [];
+        if (esTop)        fallbacks.push({emoji:'👑', nombre:'Top',        color:'#ff4444'});
+        if (esPremium)    fallbacks.push({emoji:'⭐', nombre:'Premium',    color:'#ffab00'});
+        if (esDestacado)  fallbacks.push({emoji:'🏅', nombre:'Destacado',  color:'#aa44ff'});
+        if (esVerificado) fallbacks.push({emoji:'✓',  nombre:'Verificado', color:'#1f9d55'});
+        fallbacks.forEach(b => {
+          const span = document.createElement('span');
+          span.className = 'modal-badge-item';
+          span.style.cssText = `background:${b.color}22;border:1px solid ${b.color}55;color:${b.color}`;
+          span.textContent = b.emoji + ' ' + b.nombre;
+          badgesRow.appendChild(span);
+        });
+        badgesWrap.style.display = 'block';
+      } else {
+        badgesWrap.style.display = 'none';
+      }
+
+      // ── HABILIDADES ──────────────────────────────────────────
+      const skills = (card.dataset.skills || '').split(',').map(s=>s.trim()).filter(Boolean);
+      const mTags = document.getElementById('mTags');
+      if (skills.length > 0) {
+        mTags.innerHTML = skills.map(s => `<span class="tag">${s}</span>`).join('');
+        document.getElementById('mHabilidadesWrap').style.display = 'block';
+      } else {
+        document.getElementById('mHabilidadesWrap').style.display = 'none';
+      }
+
+      // ── ENLACES ──────────────────────────────────────────────
       const uid = card.dataset.uid || '';
-      const btnContactar = document.getElementById('mContactar');
-      btnContactar.href = uid ? `chat.php?con=${uid}` : 'chat.php';
-      // Botón Ver perfil completo
+      document.getElementById('mContactar').href = uid ? `chat.php?con=${uid}` : 'chat.php';
       const btnPerfil = document.getElementById('mBtnPerfil');
       if (btnPerfil) btnPerfil.href = uid ? `perfil.php?id=${uid}&tipo=talento` : '#';
-      // Galería rápida
+
+      // ── GALERÍA ──────────────────────────────────────────────
       const galeriaWrap = document.getElementById('mGaleriaWrapT');
       const galeriaGrid = document.getElementById('mGaleriaGridT');
       const galeriaLoad = document.getElementById('mGaleriaLoadT');
       if (galeriaWrap) { galeriaWrap.style.display='none'; galeriaGrid.innerHTML=''; galeriaLoad.style.display='block'; }
-      // registrar vista al perfil
+
       if (uid) {
         const fd = new FormData();
         fd.append('_action', 'registrar_vista');
         fd.append('usuario_id', uid);
         fd.append('seccion', 'talentos');
-        fetch('dashboard.php', { method: 'POST', body: fd }).catch(() => {});
-        // cargar galería
+        fetch('dashboard.php', { method:'POST', body:fd }).catch(()=>{});
         if (galeriaWrap) {
           fetch(`galeria_publica.php?id=${uid}`)
             .then(r=>r.json())
@@ -1846,6 +1933,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
             }).catch(()=>{ galeriaLoad.style.display='none'; });
         }
       } else { if(galeriaLoad) galeriaLoad.style.display='none'; }
+
       overlay.classList.add('open');
     }
 
