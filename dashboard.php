@@ -2084,29 +2084,30 @@ if ($subTipo === 'servicio') {
     /* ── SECCIONES DE PERFIL (Educación, Certificaciones, Aptitudes) ── */
     .psec {
       background: var(--card);
-      border: 1px solid var(--borde);
-      border-radius: 20px;
+      border: 1px solid rgba(39, 168, 85, .18);
+      border-radius: 14px;
       overflow: hidden;
-      margin-top: 20px;
+      margin-top: 12px;
+      box-shadow: 0 2px 8px rgba(39, 168, 85, .06);
       transition: box-shadow .25s
     }
 
     .psec:hover {
-      box-shadow: 0 8px 32px rgba(0, 0, 0, .4)
+      box-shadow: 0 6px 20px rgba(39, 168, 85, .14)
     }
 
     .psec-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 22px 0
+      padding: 13px 18px 0
     }
 
     .psec-tit {
       font-family: 'Fraunces', serif;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 700;
-      color: var(--ink)
+      color: #0d1f12
     }
 
     .psec-btns {
@@ -2132,15 +2133,15 @@ if ($subTipo === 'servicio') {
     }
 
     .psec-list {
-      padding: 14px 22px 8px
+      padding: 10px 18px 6px
     }
 
     .psec-item {
       display: flex;
       align-items: flex-start;
-      gap: 14px;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--borde);
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(39, 168, 85, .12);
       position: relative
     }
 
@@ -2149,15 +2150,15 @@ if ($subTipo === 'servicio') {
     }
 
     .psec-logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
       background: rgba(39, 168, 85, .06);
-      border: 1px solid var(--borde);
+      border: 1px solid rgba(39, 168, 85, .18);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 18px;
       flex-shrink: 0;
       overflow: hidden
     }
@@ -2175,22 +2176,22 @@ if ($subTipo === 'servicio') {
     }
 
     .psec-nom {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
-      color: var(--ink);
+      color: #0d1f12;
       line-height: 1.3
     }
 
     .psec-sub {
-      font-size: 13px;
-      color: var(--ink2);
-      margin-top: 2px
+      font-size: 12px;
+      color: #3a5a42;
+      margin-top: 1px
     }
 
     .psec-meta {
-      font-size: 12px;
-      color: var(--ink3);
-      margin-top: 3px
+      font-size: 11px;
+      color: #6b8f74;
+      margin-top: 2px
     }
 
     .psec-credencial {
@@ -3229,15 +3230,15 @@ if ($subTipo === 'servicio') {
       ?>
       <!-- ══ GALERÍA DE EVIDENCIAS ══════════════════════════════════ -->
       <div
-        style="margin-top:28px;background:var(--card);border:1px solid var(--bord,#e5e7eb);border-radius:18px;padding:28px">
+        style="margin-top:18px;background:var(--card);border:1px solid rgba(39,168,85,.2);border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(39,168,85,.07)">
         <div
-          style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+          style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
           <div>
             <div
-              style="font-size:13px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">
-              📸 Mi galería de evidencias</div>
-            <div style="font-size:13px;color:#374151">
-              Fotos y videos de tus servicios — para que los clientes vean tu trabajo.
+              style="font-size:12px;font-weight:800;color:#6b8f74;text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">
+              📸 Galería de evidencias</div>
+            <div style="font-size:12px;color:#3a5a42">
+              Fotos y videos de tus servicios para que los clientes vean tu trabajo.
               <?php if (!$tieneSelvaVerde): ?>
                 <strong style="color:<?= $galeriaTotal >= 15 ? '#dc2626' : '#374151' ?>"><?= $galeriaTotal ?>/15
                   usados</strong>
@@ -3250,8 +3251,8 @@ if ($subTipo === 'servicio') {
           </div>
           <?php if ($puedeSubir): ?>
             <button onclick="abrirModalEvidencia()"
-              style="padding:10px 20px;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
-              ➕ Subir foto / video
+              style="padding:7px 14px;background:linear-gradient(135deg,#1a7a3c,#27a855);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
+              ➕ Subir
             </button>
           <?php else: ?>
             <div
@@ -3264,14 +3265,14 @@ if ($subTipo === 'servicio') {
         </div>
 
         <?php if (empty($galeriaItems)): ?>
-          <div style="text-align:center;padding:40px 20px;border:2px dashed #e5e7eb;border-radius:12px;color:#9ca3af">
-            <div style="font-size:48px;margin-bottom:12px">📷</div>
-            <div style="font-size:15px;font-weight:600;margin-bottom:6px">Aún no tienes evidencias subidas</div>
-            <div style="font-size:13px">Sube fotos de tus eventos o videos de tus presentaciones para atraer más clientes.
-            </div>
+          <div
+            style="text-align:center;padding:24px 16px;border:1.5px dashed rgba(39,168,85,.25);border-radius:10px;color:#6b8f74">
+            <div style="font-size:32px;margin-bottom:8px">📷</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">Aún no tienes evidencias subidas</div>
+            <div style="font-size:12px">Sube fotos o videos de tu trabajo para atraer más clientes.</div>
           </div>
         <?php else: ?>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px" id="galeriaGrid">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px" id="galeriaGrid">
             <?php foreach ($galeriaItems as $gi):
               $isVideo = $gi['tipo'] === 'video';
               $thumb = $isVideo && $gi['url_video']
@@ -3319,7 +3320,7 @@ if ($subTipo === 'servicio') {
 
     <?php if ($tipo === 'candidato' || $subTipo === 'servicio' || !empty($talento['precio_desde'])): ?>
       <!-- ══ SECCIONES DE PERFIL EXTENDIDO ══════════════════════ -->
-      <div style="max-width:1200px;margin:0 auto;padding:0 36px 40px">
+      <div style="max-width:1200px;margin:0 auto;padding:0 36px 28px">
 
         <!-- ── EDUCACIÓN ── -->
         <div class="psec" id="psec-educacion">
@@ -3331,8 +3332,8 @@ if ($subTipo === 'servicio') {
             </div>
           </div>
           <div class="psec-list" id="edu-list">
-            <div style="text-align:center;padding:30px 0;color:var(--ink3);font-size:13px">
-              <div style="font-size:32px;margin-bottom:8px">🎓</div>
+            <div style="text-align:center;padding:18px 0;color:#6b8f74;font-size:12px">
+              <div style="font-size:24px;margin-bottom:6px">🎓</div>
               Agrega tu educación para que las empresas conozcan tu formación.
               <br><button onclick="abrirFormEdu()"
                 style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
@@ -3351,8 +3352,8 @@ if ($subTipo === 'servicio') {
             </div>
           </div>
           <div class="psec-list" id="cert-list">
-            <div style="text-align:center;padding:30px 0;color:var(--ink3);font-size:13px">
-              <div style="font-size:32px;margin-bottom:8px">🏅</div>
+            <div style="text-align:center;padding:18px 0;color:#6b8f74;font-size:12px">
+              <div style="font-size:24px;margin-bottom:6px">🏅</div>
               Agrega tus certificaciones y cursos para destacar tus habilidades.
               <br><button onclick="abrirFormCert()"
                 style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
@@ -4027,6 +4028,18 @@ if ($subTipo === 'servicio') {
           const dt = document.getElementById('dTelefono'); if (dt) dt.textContent = document.getElementById('editTelefono').value.trim() || 'Teléfono no registrado';
           // Actualizar profesión visible en el hero si existe
           if (j.profesion) { const dp = document.querySelector('.hero-pro'); if (dp) dp.textContent = j.profesion; }
+          // Preservar foto: sincronizar fotoPreview → heroAvatar, cpAvatar, navAvatar
+          const fotoPreviewEl = document.getElementById('fotoPreview');
+          if (fotoPreviewEl) {
+            const imgEl = fotoPreviewEl.querySelector('img');
+            if (imgEl) {
+              const syncedImg = `<img src="${imgEl.src}" style="width:100%;height:100%;object-fit:cover;border-radius:18px">`;
+              ['heroAvatar', 'cpAvatar', 'navAvatar'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = syncedImg;
+              });
+            }
+          }
           setTimeout(cerrarModal, 1500);
         } else mostrarMsg(j.msg || 'Error al guardar.', 'error');
       } catch (e) { mostrarMsg('Error de conexión.', 'error'); }
