@@ -127,8 +127,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     try {
       // Borrar tablas sin CASCADE
-      foreach (['perfiles_empresa','talento_galeria','talento_educacion','talento_certificaciones','talento_experiencia','perfil_vistas','sesiones','negocios_locales'] as $tabla) {
-        try { $db->prepare("DELETE FROM $tabla WHERE usuario_id=?")->execute([$usuario['id']]); } catch(Exception $e) {}
+      foreach (['perfiles_empresa', 'talento_galeria', 'talento_educacion', 'talento_certificaciones', 'talento_experiencia', 'perfil_vistas', 'sesiones', 'negocios_locales'] as $tabla) {
+        try {
+          $db->prepare("DELETE FROM $tabla WHERE usuario_id=?")->execute([$usuario['id']]);
+        } catch (Exception $e) {
+        }
       }
       // Borrar foto de disco
       if (!empty($usuario['foto']) && !str_starts_with($usuario['foto'], 'http')) {
@@ -314,14 +317,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INDEX idx_u (usuario_id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
       $items = json_decode($_POST['items'] ?? '[]', true);
-      if (!is_array($items)) { echo json_encode(['ok'=>false,'msg'=>'Datos invalidos']); exit; }
+      if (!is_array($items)) {
+        echo json_encode(['ok' => false, 'msg' => 'Datos invalidos']);
+        exit;
+      }
       $db->prepare("DELETE FROM talento_educacion WHERE usuario_id=?")->execute([$usuario['id']]);
       $stmt = $db->prepare("INSERT INTO talento_educacion (usuario_id,institucion,titulo,fecha_inicio,fecha_fin,logo_url,orden) VALUES (?,?,?,?,?,?,?)");
       foreach (array_values($items) as $i => $e) {
-        $stmt->execute([$usuario['id'], substr(trim($e['inst']??''),0,200), substr(trim($e['titulo']??''),0,200), substr(trim($e['inicio']??''),0,20), substr(trim($e['fin']??''),0,20), $e['logo']??null, $i]);
+        $stmt->execute([$usuario['id'], substr(trim($e['inst'] ?? ''), 0, 200), substr(trim($e['titulo'] ?? ''), 0, 200), substr(trim($e['inicio'] ?? ''), 0, 20), substr(trim($e['fin'] ?? ''), 0, 20), $e['logo'] ?? null, $i]);
       }
-      echo json_encode(['ok'=>true,'total'=>count($items)]);
-    } catch(Exception $e) { echo json_encode(['ok'=>false,'msg'=>$e->getMessage()]); }
+      echo json_encode(['ok' => true, 'total' => count($items)]);
+    } catch (Exception $e) {
+      echo json_encode(['ok' => false, 'msg' => $e->getMessage()]);
+    }
     exit;
   }
 
@@ -342,36 +350,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INDEX idx_u (usuario_id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
       $items = json_decode($_POST['items'] ?? '[]', true);
-      if (!is_array($items)) { echo json_encode(['ok'=>false,'msg'=>'Datos invalidos']); exit; }
+      if (!is_array($items)) {
+        echo json_encode(['ok' => false, 'msg' => 'Datos invalidos']);
+        exit;
+      }
       $db->prepare("DELETE FROM talento_certificaciones WHERE usuario_id=?")->execute([$usuario['id']]);
       $stmt = $db->prepare("INSERT INTO talento_certificaciones (usuario_id,nombre,organizacion,fecha_expedicion,url_credencial,archivo_url,archivo_nombre,orden) VALUES (?,?,?,?,?,?,?,?)");
       foreach (array_values($items) as $i => $c) {
-        $stmt->execute([$usuario['id'], substr(trim($c['nom']??''),0,250), substr(trim($c['org']??''),0,200), substr(trim($c['fecha']??''),0,20), $c['url']??null, $c['archivo']??null, substr($c['archivoNom']??'',0,200), $i]);
+        $stmt->execute([$usuario['id'], substr(trim($c['nom'] ?? ''), 0, 250), substr(trim($c['org'] ?? ''), 0, 200), substr(trim($c['fecha'] ?? ''), 0, 20), $c['url'] ?? null, $c['archivo'] ?? null, substr($c['archivoNom'] ?? '', 0, 200), $i]);
       }
-      echo json_encode(['ok'=>true,'total'=>count($items)]);
-    } catch(Exception $e) { echo json_encode(['ok'=>false,'msg'=>$e->getMessage()]); }
+      echo json_encode(['ok' => true, 'total' => count($items)]);
+    } catch (Exception $e) {
+      echo json_encode(['ok' => false, 'msg' => $e->getMessage()]);
+    }
     exit;
   }
 
   // ── GUARDAR APTITUDES EXTRA ───────────────────────────────
   if ($action === 'guardar_aptitudes_extra') {
     try {
-      $bland   = substr(trim($_POST['aptitudes_bland']??''),0,500);
-      $idiomas = substr(trim($_POST['aptitudes_idiomas']??''),0,300);
+      $bland = substr(trim($_POST['aptitudes_bland'] ?? ''), 0, 500);
+      $idiomas = substr(trim($_POST['aptitudes_idiomas'] ?? ''), 0, 300);
       try {
         $db->exec("ALTER TABLE talento_perfil ADD COLUMN IF NOT EXISTS aptitudes_bland VARCHAR(500) DEFAULT ''");
         $db->exec("ALTER TABLE talento_perfil ADD COLUMN IF NOT EXISTS aptitudes_idiomas VARCHAR(300) DEFAULT ''");
-      } catch(Exception $e2) {}
+      } catch (Exception $e2) {
+      }
       $chk = $db->prepare("SELECT id FROM talento_perfil WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
       $chk->execute([$usuario['id']]);
       $row = $chk->fetch();
       if ($row) {
-        $db->prepare("UPDATE talento_perfil SET aptitudes_bland=?, aptitudes_idiomas=? WHERE id=?")->execute([$bland,$idiomas,$row['id']]);
+        $db->prepare("UPDATE talento_perfil SET aptitudes_bland=?, aptitudes_idiomas=? WHERE id=?")->execute([$bland, $idiomas, $row['id']]);
       } else {
-        $db->prepare("INSERT INTO talento_perfil (usuario_id,aptitudes_bland,aptitudes_idiomas,visible,visible_admin) VALUES (?,?,?,0,1)")->execute([$usuario['id'],$bland,$idiomas]);
+        $db->prepare("INSERT INTO talento_perfil (usuario_id,aptitudes_bland,aptitudes_idiomas,visible,visible_admin) VALUES (?,?,?,0,1)")->execute([$usuario['id'], $bland, $idiomas]);
       }
-      echo json_encode(['ok'=>true]);
-    } catch(Exception $e) { echo json_encode(['ok'=>false,'msg'=>$e->getMessage()]); }
+      echo json_encode(['ok' => true]);
+    } catch (Exception $e) {
+      echo json_encode(['ok' => false, 'msg' => $e->getMessage()]);
+    }
     exit;
   }
 
@@ -522,6 +538,36 @@ if ($tipo === 'empresa') {
   }
 }
 
+// Vacantes disponibles para candidatos (desde la BD)
+$vacantesDisponibles = [];
+if ($tipo === 'candidato' || $subTipo === 'servicio') {
+  try {
+    $vq = $db->prepare("
+      SELECT
+        e.id,
+        e.titulo,
+        e.ciudad,
+        e.modalidad,
+        e.tipo_contrato,
+        e.salario_texto,
+        e.categoria,
+        e.creado_en,
+        COALESCE(pe.nombre_empresa, u.nombre) AS empresa
+      FROM empleos e
+      LEFT JOIN perfiles_empresa pe ON pe.usuario_id = e.empresa_id
+      LEFT JOIN usuarios u ON u.id = e.empresa_id
+      WHERE e.activo = 1
+        AND (e.vence_en IS NULL OR e.vence_en >= CURDATE())
+      ORDER BY e.creado_en DESC
+      LIMIT 5
+    ");
+    $vq->execute();
+    $vacantesDisponibles = $vq->fetchAll(PDO::FETCH_ASSOC);
+  } catch (Exception $e) {
+    $vacantesDisponibles = [];
+  }
+}
+
 // Datos
 /* $fotoUrl       = !empty($usuario['foto']) ? 'uploads/fotos/'.htmlspecialchars($usuario['foto']) : ''; */
 $fotoUrl = !empty($usuario['foto']) ? (str_starts_with($usuario['foto'], 'http') ? htmlspecialchars($usuario['foto']) : 'uploads/fotos/' . htmlspecialchars($usuario['foto'])) : '';
@@ -610,14 +656,14 @@ if ($subTipo === 'servicio') {
       --r3: #1a56db;
       --r4: #5b8eff;
       --rcielo: #b8d4ff;
-      --bg: #060e07;
-      --bg2: #0c1a0e;
-      --bg3: #111f13;
-      --card: rgba(15, 28, 17, .9);
-      --borde: rgba(255, 255, 255, .08);
-      --ink: rgba(255, 255, 255, .88);
-      --ink2: rgba(255, 255, 255, .55);
-      --ink3: rgba(255, 255, 255, .32);
+      --bg: #f0faf2;
+      --bg2: #e6f5ea;
+      --bg3: #d8eedd;
+      --card: rgba(255, 255, 255, .97);
+      --borde: rgba(39, 168, 85, .18);
+      --ink: rgba(10, 30, 15, .88);
+      --ink2: rgba(10, 30, 15, .55);
+      --ink3: rgba(10, 30, 15, .38);
     }
 
     *,
@@ -671,7 +717,7 @@ if ($subTipo === 'servicio') {
       position: sticky;
       top: 3px;
       z-index: 200;
-      background: rgba(4, 14, 7, .95);
+      background: rgba(240, 250, 242, .97);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--borde);
       display: flex;
@@ -696,11 +742,11 @@ if ($subTipo === 'servicio') {
     .nav-marca-txt {
       font-family: 'Fraunces', serif;
       font-size: 18px;
-      color: white
+      color: var(--ink)
     }
 
     .nav-marca-txt em {
-      color: var(--vlima);
+      color: var(--v2);
       font-style: normal
     }
 
@@ -726,7 +772,7 @@ if ($subTipo === 'servicio') {
     }
 
     .nl:hover {
-      background: rgba(255, 255, 255, .07);
+      background: rgba(39, 168, 85, .07);
       color: var(--ink)
     }
 
@@ -774,7 +820,7 @@ if ($subTipo === 'servicio') {
       font-weight: 900;
       color: white;
       cursor: pointer;
-      border: 2px solid rgba(163, 240, 181, .2);
+      border: 2px solid rgba(39, 168, 85, .35);
       overflow: hidden;
       flex-shrink: 0;
       transition: border-color .2s
@@ -789,7 +835,7 @@ if ($subTipo === 'servicio') {
       width: 34px;
       height: 34px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, .05);
+      background: rgba(39, 168, 85, .05);
       border: 1px solid var(--borde);
       display: flex;
       align-items: center;
@@ -801,7 +847,7 @@ if ($subTipo === 'servicio') {
     }
 
     .nav-notif:hover {
-      background: rgba(255, 255, 255, .1)
+      background: rgba(39, 168, 85, .08)
     }
 
     .notif-dot {
@@ -836,10 +882,10 @@ if ($subTipo === 'servicio') {
       top: calc(100% + 10px);
       right: 0;
       width: 290px;
-      background: #0c1a0e;
-      border: 1px solid rgba(255, 255, 255, .12);
+      background: #fff;
+      border: 1px solid var(--borde);
       border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+      box-shadow: 0 8px 32px rgba(39, 168, 85, .12);
       z-index: 9999;
       overflow: hidden;
       display: none
@@ -864,7 +910,7 @@ if ($subTipo === 'servicio') {
       display: flex;
       gap: 10px;
       align-items: flex-start;
-      border-bottom: 1px solid rgba(255, 255, 255, .04);
+      border-bottom: 1px solid var(--borde);
       font-size: 13px;
       color: var(--ink2)
     }
@@ -895,7 +941,7 @@ if ($subTipo === 'servicio') {
     .nav-salir {
       padding: 6px 12px;
       border-radius: 10px;
-      background: rgba(255, 255, 255, .05);
+      background: rgba(39, 168, 85, .05);
       border: 1px solid var(--borde);
       color: var(--ink3);
       font-size: 12px;
@@ -938,7 +984,9 @@ if ($subTipo === 'servicio') {
       left: 36px;
       right: 36px;
       height: 2px;
-      background: linear-gradient(to right, <?= $tc['border'] ?>, transparent)
+      background: linear-gradient(to right,
+          <?= $tc['border'] ?>
+          , transparent)
     }
 
     .hero-inner {
@@ -964,8 +1012,8 @@ if ($subTipo === 'servicio') {
       font-size: 34px;
       font-weight: 900;
       color: white;
-      border: 3px solid rgba(163, 240, 181, .2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, .5), 0 0 0 6px rgba(163, 240, 181, .05);
+      border: 3px solid rgba(39, 168, 85, .3);
+      box-shadow: 0 8px 32px rgba(39, 168, 85, .15), 0 0 0 6px rgba(39, 168, 85, .08);
       flex-shrink: 0;
       cursor: pointer;
       overflow: hidden;
@@ -996,8 +1044,12 @@ if ($subTipo === 'servicio') {
     }
 
     .hc-tipo {
-      background: <?= $tc['chip_bg'] ?>;
-      color: <?= $tc['chip_color'] ?>;
+      background:
+        <?= $tc['chip_bg'] ?>
+      ;
+      color:
+        <?= $tc['chip_color'] ?>
+      ;
       border: 1px solid
         <?= $tc['border'] ?>
         40
@@ -1030,13 +1082,13 @@ if ($subTipo === 'servicio') {
     .hero-nombre {
       font-family: 'Fraunces', serif;
       font-size: clamp(28px, 3vw, 40px);
-      color: white;
+      color: var(--ink);
       line-height: 1.1;
       margin-bottom: 6px
     }
 
     .hero-nombre em {
-      color: var(--vlima);
+      color: var(--v2);
       font-style: normal
     }
 
@@ -1065,7 +1117,7 @@ if ($subTipo === 'servicio') {
       font-family: 'Fraunces', serif;
       font-size: 24px;
       font-weight: 900;
-      color: white;
+      color: var(--v2);
       line-height: 1
     }
 
@@ -1117,7 +1169,7 @@ if ($subTipo === 'servicio') {
     }
 
     .alerta.as {
-      background: rgba(255, 255, 255, .04);
+      background: rgba(39, 168, 85, .04);
       border-color: var(--borde)
     }
 
@@ -1261,7 +1313,7 @@ if ($subTipo === 'servicio') {
       font-family: 'Fraunces', serif;
       font-size: 26px;
       font-weight: 900;
-      color: white;
+      color: var(--v2);
       line-height: 1
     }
 
@@ -1306,7 +1358,7 @@ if ($subTipo === 'servicio') {
       gap: 6px;
       padding: 14px 8px;
       border-radius: 16px;
-      background: rgba(255, 255, 255, .04);
+      background: rgba(39, 168, 85, .04);
       border: 1px solid var(--borde);
       text-decoration: none;
       transition: all .22s;
@@ -1387,7 +1439,7 @@ if ($subTipo === 'servicio') {
       gap: 12px;
       padding: 12px 14px;
       border-radius: 14px;
-      background: rgba(255, 255, 255, .04);
+      background: rgba(39, 168, 85, .04);
       border: 1px solid var(--borde);
       cursor: pointer;
       transition: all .2s
@@ -1448,7 +1500,7 @@ if ($subTipo === 'servicio') {
       gap: 12px;
       padding: 10px 14px;
       border-radius: 12px;
-      background: rgba(255, 255, 255, .04);
+      background: rgba(39, 168, 85, .04);
       border: 1px solid var(--borde)
     }
 
@@ -1512,7 +1564,7 @@ if ($subTipo === 'servicio') {
       color: white;
       margin-bottom: 12px;
       cursor: pointer;
-      border: 2px solid rgba(163, 240, 181, .15);
+      border: 2px solid rgba(39, 168, 85, .3);
       overflow: hidden;
       transition: all .2s
     }
@@ -1560,7 +1612,7 @@ if ($subTipo === 'servicio') {
       align-items: center;
       justify-content: space-between;
       padding: 10px 14px;
-      background: rgba(255, 255, 255, .04);
+      background: rgba(39, 168, 85, .04);
       border-radius: 12px;
       border: 1px solid var(--borde);
       margin: 4px 0
@@ -1596,7 +1648,7 @@ if ($subTipo === 'servicio') {
       position: absolute;
       inset: 0;
       border-radius: 11px;
-      background: rgba(255, 255, 255, .15);
+      background: rgba(39, 168, 85, .12);
       transition: .3s
     }
 
@@ -1657,7 +1709,7 @@ if ($subTipo === 'servicio') {
 
     .prog-t {
       height: 5px;
-      background: rgba(255, 255, 255, .08);
+      background: rgba(39, 168, 85, .08);
       border-radius: 4px;
       overflow: hidden
     }
@@ -1783,7 +1835,7 @@ if ($subTipo === 'servicio') {
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      border: 1.5px solid rgba(255, 255, 255, .15);
+      border: 1.5px solid var(--borde);
       box-shadow: 0 3px 10px rgba(0, 0, 0, .4);
       flex-shrink: 0;
       position: relative
@@ -1809,7 +1861,7 @@ if ($subTipo === 'servicio') {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(120deg, rgba(255, 255, 255, .15) 0%, transparent 60%);
+      background: linear-gradient(120deg, rgba(39, 168, 85, .08) 0%, transparent 60%);
       border-radius: 5px;
       pointer-events: none
     }
@@ -1832,12 +1884,12 @@ if ($subTipo === 'servicio') {
     }
 
     .modal-box {
-      background: #0c1a0e;
-      border: 1px solid rgba(163, 240, 181, .15);
+      background: #fff;
+      border: 1px solid var(--borde);
       border-radius: 24px;
       max-width: 560px;
       width: 100%;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+      box-shadow: 0 20px 60px rgba(39, 168, 85, .18);
       animation: fadeUp .3s ease;
       max-height: 90vh;
       overflow-y: auto;
@@ -1955,7 +2007,7 @@ if ($subTipo === 'servicio') {
       font-size: 13px;
       font-family: 'DM Sans', sans-serif;
       color: var(--ink);
-      background: rgba(255, 255, 255, .05);
+      background: rgba(39, 168, 85, .05);
       transition: border-color .2s;
       outline: none;
       resize: none
@@ -1969,7 +2021,7 @@ if ($subTipo === 'servicio') {
     }
 
     .mgr select option {
-      background: #0c1a0e;
+      background: #fff;
       color: var(--ink)
     }
 
@@ -2013,7 +2065,7 @@ if ($subTipo === 'servicio') {
     }
 
     .crop-inner {
-      background: #0c1a0e;
+      background: #fff;
       border: 1px solid var(--borde);
       border-radius: 20px;
       padding: 24px;
@@ -2068,7 +2120,7 @@ if ($subTipo === 'servicio') {
     }
 
     .psec-btn:hover {
-      background: rgba(255, 255, 255, .08);
+      background: rgba(39, 168, 85, .08);
       color: var(--ink)
     }
 
@@ -2081,7 +2133,7 @@ if ($subTipo === 'servicio') {
       align-items: flex-start;
       gap: 14px;
       padding: 14px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, .05);
+      border-bottom: 1px solid var(--borde);
       position: relative
     }
 
@@ -2093,7 +2145,7 @@ if ($subTipo === 'servicio') {
       width: 44px;
       height: 44px;
       border-radius: 12px;
-      background: rgba(255, 255, 255, .06);
+      background: rgba(39, 168, 85, .06);
       border: 1px solid var(--borde);
       display: flex;
       align-items: center;
@@ -2145,7 +2197,7 @@ if ($subTipo === 'servicio') {
       font-size: 12px;
       font-weight: 600;
       color: var(--ink2);
-      background: rgba(255, 255, 255, .04);
+      background: rgba(39, 168, 85, .04);
       cursor: pointer;
       transition: all .2s;
       text-decoration: none
@@ -2165,14 +2217,14 @@ if ($subTipo === 'servicio') {
       padding: 9px 12px;
       border: 1px solid var(--borde);
       border-radius: 12px;
-      background: rgba(255, 255, 255, .03);
+      background: rgba(39, 168, 85, .03);
       cursor: pointer;
       transition: background .2s;
       text-decoration: none
     }
 
     .psec-archivo:hover {
-      background: rgba(255, 255, 255, .07)
+      background: rgba(39, 168, 85, .07)
     }
 
     .psec-arch-thumb {
@@ -2226,7 +2278,7 @@ if ($subTipo === 'servicio') {
       justify-content: center;
       gap: 5px;
       padding: 12px 22px;
-      border-top: 1px solid rgba(255, 255, 255, .05);
+      border-top: 1px solid var(--borde);
       font-size: 13px;
       font-weight: 700;
       color: var(--ink3);
@@ -2272,7 +2324,7 @@ if ($subTipo === 'servicio') {
       gap: 6px;
       padding: 6px 12px;
       border-radius: 12px;
-      background: rgba(255, 255, 255, .05);
+      background: rgba(39, 168, 85, .05);
       border: 1px solid var(--borde);
       font-size: 12px;
       font-weight: 600;
@@ -2286,12 +2338,12 @@ if ($subTipo === 'servicio') {
 
     /* ── MODAL HOJA DE VIDA + PUBLICAR VACANTE ── */
     .hoja-modal-box {
-      background: #0c1a0e;
-      border: 1px solid rgba(163, 240, 181, .15);
+      background: #fff;
+      border: 1px solid var(--borde);
       border-radius: 24px;
       max-width: 700px;
       width: 100%;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+      box-shadow: 0 30px 80px rgba(39, 168, 85, .15);
       animation: fadeUp .3s ease;
       max-height: 92vh;
       overflow-y: auto;
@@ -2301,7 +2353,7 @@ if ($subTipo === 'servicio') {
     .hoja-sec {
       font-size: 11px;
       font-weight: 800;
-      color: var(--v4);
+      color: var(--v2);
       text-transform: uppercase;
       letter-spacing: .8px;
       margin: 20px 0 10px;
@@ -2326,7 +2378,7 @@ if ($subTipo === 'servicio') {
 
     .hoja-divider {
       height: 1px;
-      background: rgba(255, 255, 255, .07);
+      background: var(--borde);
       margin: 16px 0
     }
 
@@ -2356,7 +2408,7 @@ if ($subTipo === 'servicio') {
     .hoja-gr label {
       font-size: 11px;
       font-weight: 700;
-      color: rgba(255, 255, 255, .38);
+      color: var(--ink2);
       text-transform: uppercase;
       letter-spacing: .6px
     }
@@ -2366,10 +2418,10 @@ if ($subTipo === 'servicio') {
     .hoja-gr textarea {
       width: 100%;
       padding: 11px 13px;
-      background: rgba(255, 255, 255, .05);
-      border: 1.5px solid rgba(255, 255, 255, .1);
+      background: #f8fdf9;
+      border: 1.5px solid var(--borde);
       border-radius: 13px;
-      color: #fff;
+      color: var(--ink);
       font-size: 13px;
       font-family: 'DM Sans', sans-serif;
       outline: none;
@@ -2387,17 +2439,17 @@ if ($subTipo === 'servicio') {
 
     .hoja-gr input::placeholder,
     .hoja-gr textarea::placeholder {
-      color: rgba(255, 255, 255, .18)
+      color: var(--ink3)
     }
 
     .hoja-gr select option {
-      background: #0c1f10;
-      color: #fff
+      background: #fff;
+      color: var(--ink)
     }
 
     .hoja-item-card {
-      background: rgba(255, 255, 255, .04);
-      border: 1px solid rgba(255, 255, 255, .09);
+      background: #f8fdf9;
+      border: 1px solid var(--borde);
       border-radius: 14px;
       padding: 14px 16px;
       margin-bottom: 10px;
@@ -2446,7 +2498,7 @@ if ($subTipo === 'servicio') {
     }
 
     .hoja-progress-track {
-      background: rgba(255, 255, 255, .07);
+      background: rgba(39, 168, 85, .07);
       border-radius: 8px;
       height: 4px;
       overflow: hidden;
@@ -2536,7 +2588,8 @@ if ($subTipo === 'servicio') {
       <a href="empresas.php" class="nl">🏢 Empresas</a>
       <a href="negocios.php" class="nl">🏪 Negocios</a>
       <a href="servicios.php" class="nl">🎧 Eventos</a>
-      <a href="chat.php" class="nl">💬 Chat<?php if ($chatNoLeidos > 0): ?><span class="nl-dot"></span><?php endif; ?></a>
+      <a href="chat.php" class="nl">💬 Chat<?php if ($chatNoLeidos > 0): ?><span
+            class="nl-dot"></span><?php endif; ?></a>
       <a href="convocatorias.php" class="nl">📢 Convocatorias</a>
       <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
         <a href="#" class="nl" onclick="abrirPublicarVacante();return false;" style="color:var(--v4)">➕ Publicar
@@ -2624,7 +2677,8 @@ if ($subTipo === 'servicio') {
             </div>
           <?php elseif ($subTipo === 'servicio'): ?>
             <div class="hs">
-              <div class="hs-val"><?= $talento['calificacion'] ? number_format((float) $talento['calificacion'], 1) : '—' ?>
+              <div class="hs-val">
+                <?= $talento['calificacion'] ? number_format((float) $talento['calificacion'], 1) : '—' ?>
               </div>
               <div class="hs-lab">Calif.</div>
             </div>
@@ -2717,7 +2771,8 @@ if ($subTipo === 'servicio') {
             <div class="m-val"><?= $vistasTotal ?></div>
             <div class="m-lab">Vistas al negocio</div>
             <div class="m-sub" onclick="location.href='negocios.php'">
-              <?= $vistas7dias > 0 ? "+" . $vistas7dias . " esta semana" : "Ver directorio →" ?></div>
+              <?= $vistas7dias > 0 ? "+" . $vistas7dias . " esta semana" : "Ver directorio →" ?>
+            </div>
           </div>
         </div>
         <div class="card mini">
@@ -2742,7 +2797,8 @@ if ($subTipo === 'servicio') {
           <div class="m-ico ig">🎧</div>
           <div>
             <div class="m-val">
-              <?= $talento['precio_desde'] ? '$' . number_format((float) $talento['precio_desde'], 0, ',', '.') : '—' ?></div>
+              <?= $talento['precio_desde'] ? '$' . number_format((float) $talento['precio_desde'], 0, ',', '.') : '—' ?>
+            </div>
             <div class="m-lab">Precio desde</div>
             <div class="m-sub" onclick="location.href='servicios.php'">Ver servicios →</div>
           </div>
@@ -2750,7 +2806,8 @@ if ($subTipo === 'servicio') {
         <div class="card mini">
           <div class="m-ico io">⭐</div>
           <div>
-            <div class="m-val"><?= $talento['calificacion'] ? number_format((float) $talento['calificacion'], 1) : '0' ?>/5
+            <div class="m-val">
+              <?= $talento['calificacion'] ? number_format((float) $talento['calificacion'], 1) : '0' ?>/5
             </div>
             <div class="m-lab">Calificación</div>
             <div class="m-sub">Reseñas →</div>
@@ -2953,19 +3010,43 @@ if ($subTipo === 'servicio') {
             <?php endforeach; ?>
           </div>
         <?php else: ?>
-          <div class="ce-list">
-            <?php foreach ([['💻', 'Ingeniero en Sistemas', 'Tech Chocó', 'Quibdó · $3M–$4.5M', 'Tiempo completo'], ['🎨', 'Diseñador Gráfico', 'Agencia Creativa', 'Remoto · $1.5M–$2.5M', 'Freelance'], ['🎵', 'Instructor de Música', 'Cultura Chocó', 'Quibdó · $800K–$1.2M', 'Medio tiempo'], ['📊', 'Aux. Administrativo', 'Empresa Local', 'Quibdó · $1.2M–$1.6M', 'Tiempo completo']] as [$i, $n, $e, $m, $t]): ?>
-              <div class="ce-item" onclick="location.href='Empleo.html'">
-                <div class="ce-ico"><?= $i ?></div>
-                <div class="ce-info">
-                  <div class="ce-nom"><?= $n ?></div>
-                  <div class="ce-emp"><?= $e ?></div>
-                  <div class="ce-met"><?= $m ?></div>
+          <?php if (!empty($vacantesDisponibles)): ?>
+            <div class="ce-list">
+              <?php
+              $catIcons = ['Tecnología' => '💻', 'Diseño' => '🎨', 'Música' => '🎵', 'Administración' => '📊', 'Salud' => '🏥', 'Educación' => '📚', 'Comercio' => '🛒', 'Construcción' => '🏗️', 'Legal' => '⚖️'];
+              ?>
+              <?php foreach ($vacantesDisponibles as $v): ?>
+                <?php
+                $cat = $v['categoria'] ?? '';
+                $ico = $catIcons[$cat] ?? '💼';
+                $ciudad = htmlspecialchars($v['ciudad'] ?? 'Quibdó');
+                $salario = !empty($v['salario_texto']) ? htmlspecialchars($v['salario_texto']) : '';
+                $meta = $ciudad . ($salario ? ' · ' . $salario : '');
+                $modalidad = htmlspecialchars(ucfirst($v['modalidad'] ?? $v['tipo_contrato'] ?? 'Tiempo completo'));
+                ?>
+                <div class="ce-item" onclick="location.href='Empleo.html'">
+                  <div class="ce-ico"><?= $ico ?></div>
+                  <div class="ce-info">
+                    <div class="ce-nom"><?= htmlspecialchars($v['titulo']) ?></div>
+                    <div class="ce-emp"><?= htmlspecialchars($v['empresa'] ?? 'Empresa') ?></div>
+                    <div class="ce-met">📍 <?= $meta ?></div>
+                  </div>
+                  <span class="ce-badge"><?= $modalidad ?></span>
                 </div>
-                <span class="ce-badge"><?= $t ?></span>
-              </div>
-            <?php endforeach; ?>
-          </div>
+              <?php endforeach; ?>
+            </div>
+          <?php else: ?>
+            <div style="text-align:center;padding:32px 20px;color:var(--ink3)">
+              <div style="font-size:40px;margin-bottom:10px">🔍</div>
+              <div style="font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:6px">No hay vacantes activas por
+                ahora</div>
+              <div style="font-size:13px;color:var(--ink3);margin-bottom:14px">Vuelve pronto — publicamos nuevas ofertas
+                cada semana</div>
+              <a href="Empleo.html"
+                style="display:inline-block;padding:10px 22px;background:var(--v3);color:white;border-radius:10px;text-decoration:none;font-weight:800;font-size:13px">🔍
+                Explorar empleos</a>
+            </div>
+          <?php endif; ?>
         <?php endif; ?>
       </div>
 
@@ -2977,7 +3058,8 @@ if ($subTipo === 'servicio') {
                 style="width:100%;height:100%;object-fit:cover;border-radius:18px"><?php else: ?><?= $inicial ?><?php endif; ?>
           </div>
           <div class="cp-nom" id="dNombre">
-            <?= $tipo === 'empresa' ? $nombreEmpresa : ($tipo === 'negocio' ? $nombreNegocio : $nombreCompleto) ?></div>
+            <?= $tipo === 'empresa' ? $nombreEmpresa : ($tipo === 'negocio' ? $nombreNegocio : $nombreCompleto) ?>
+          </div>
           <div class="cp-pro" id="dProfesion">
             <?php if ($tipo === 'empresa'): ?>
               <?= $sectorEmp ?: 'Sector no definido' ?>
@@ -3126,7 +3208,7 @@ if ($subTipo === 'servicio') {
       ?>
       <!-- ══ GALERÍA DE EVIDENCIAS ══════════════════════════════════ -->
       <div
-        style="margin-top:28px;background:var(--blan,#fff);border:1px solid var(--bord,#e5e7eb);border-radius:18px;padding:28px">
+        style="margin-top:28px;background:var(--card);border:1px solid var(--bord,#e5e7eb);border-radius:18px;padding:28px">
         <div
           style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
           <div>
@@ -3381,7 +3463,7 @@ if ($subTipo === 'servicio') {
             <div class="hoja-gr full"><label>Descripción del cargo <span style="color:#ff6b6b">*</span></label>
               <textarea id="vacDesc" rows="3" placeholder="Funciones y responsabilidades del cargo…"
                 oninput="vacProgress();vacCount(this,'vacDescC',500)"></textarea>
-              <div style="text-align:right;font-size:11px;color:rgba(255,255,255,.25);margin-top:2px"><span
+              <div style="text-align:right;font-size:11px;color:var(--ink3);margin-top:2px"><span
                   id="vacDescC">0</span>/500</div>
             </div>
           </div>
@@ -3389,15 +3471,15 @@ if ($subTipo === 'servicio') {
             <div class="hoja-gr full"><label>Requisitos <span style="color:#ff6b6b">*</span></label>
               <textarea id="vacReq" rows="3" placeholder="Experiencia, estudios, habilidades requeridas…"
                 oninput="vacProgress();vacCount(this,'vacReqC',500)"></textarea>
-              <div style="text-align:right;font-size:11px;color:rgba(255,255,255,.25);margin-top:2px"><span
+              <div style="text-align:right;font-size:11px;color:var(--ink3);margin-top:2px"><span
                   id="vacReqC">0</span>/500</div>
             </div>
           </div>
           <div style="display:flex;gap:10px;margin-top:20px">
             <button onclick="cerrarPublicarVacante()"
-              style="flex:1;padding:13px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);border-radius:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer"
-              onmouseover="this.style.background='rgba(255,255,255,.12)'"
-              onmouseout="this.style.background='rgba(255,255,255,.07)'">Cancelar</button>
+              style="flex:1;padding:13px;background:rgba(39,168,85,.06);border:1.5px solid var(--borde);color:var(--ink2);border-radius:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer"
+              onmouseover="this.style.background='rgba(39,168,85,.1)'"
+              onmouseout="this.style.background='rgba(39,168,85,.06)'">Cancelar</button>
             <button id="btnGuardarVac" onclick="publicarVacante()"
               style="flex:2;padding:13px;background:linear-gradient(135deg,var(--v1),var(--v2) 50%,var(--v3));color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(39,168,85,.4)">🚀
               Publicar vacante</button>
@@ -3434,7 +3516,8 @@ if ($subTipo === 'servicio') {
           <div class="hoja-fila">
             <div class="hoja-gr"><label>Nombre completo <span style="color:#ff6b6b">*</span></label><input type="text"
                 id="hNombre" oninput="hojaProgress()"
-                value="<?= htmlspecialchars(trim(($usuario['nombre'] ?? '') . ' ' . ($usuario['apellido'] ?? ''))) ?>"></div>
+                value="<?= htmlspecialchars(trim(($usuario['nombre'] ?? '') . ' ' . ($usuario['apellido'] ?? ''))) ?>">
+            </div>
             <div class="hoja-gr"><label>Correo <span style="color:#ff6b6b">*</span></label><input type="email"
                 id="hCorreo" oninput="hojaProgress()" value="<?= htmlspecialchars($usuario['correo'] ?? '') ?>"></div>
           </div>
@@ -3463,7 +3546,7 @@ if ($subTipo === 'servicio') {
             <div class="hoja-gr full"><label>Perfil profesional</label>
               <textarea id="hPerfil" rows="3" placeholder="Breve descripción de quién eres y qué buscas…"
                 oninput="countHojaChars(this,'hPerfilCount',300)"><?= htmlspecialchars($talento['bio'] ?? '') ?></textarea>
-              <div style="text-align:right;font-size:11px;color:rgba(255,255,255,.25)"><span
+              <div style="text-align:right;font-size:11px;color:var(--ink3)"><span
                   id="hPerfilCount"><?= mb_strlen($talento['bio'] ?? '') ?></span>/300</div>
             </div>
           </div>
@@ -3503,9 +3586,9 @@ if ($subTipo === 'servicio') {
           <button class="hoja-btn-add" onclick="agregarCert()">+ Agregar certificado o curso</button>
           <div style="display:flex;gap:10px;margin-top:24px">
             <button onclick="cerrarHoja()"
-              style="flex:1;padding:13px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);border-radius:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer"
-              onmouseover="this.style.background='rgba(255,255,255,.12)'"
-              onmouseout="this.style.background='rgba(255,255,255,.07)'">Cancelar</button>
+              style="flex:1;padding:13px;background:rgba(39,168,85,.06);border:1.5px solid var(--borde);color:var(--ink2);border-radius:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer"
+              onmouseover="this.style.background='rgba(39,168,85,.1)'"
+              onmouseout="this.style.background='rgba(39,168,85,.06)'">Cancelar</button>
             <button id="btnGuardarHoja" onclick="guardarHoja()"
               style="flex:2;padding:13px;background:linear-gradient(135deg,var(--v1),var(--v2) 50%,var(--v3));color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(39,168,85,.4)">💾
               Guardar hoja de vida</button>
@@ -3541,7 +3624,9 @@ if ($subTipo === 'servicio') {
               <button onclick="document.getElementById('fotoInput').click()"
                 style="padding:8px 14px;border-radius:10px;background:var(--v3);color:white;border:none;font-size:13px;font-weight:700;cursor:pointer">📷
                 Cambiar foto</button>
-              <button id="btnEliminarFoto" onclick="eliminarFoto()" style="padding:8px 14px;border-radius:10px;background:transparent;color:#e74c3c;border:1.5px solid #e74c3c;font-size:13px;font-weight:700;cursor:pointer;<?= $fotoUrl ? '' : 'display:none' ?>">🗑 Eliminar</button>
+              <button id="btnEliminarFoto" onclick="eliminarFoto()"
+                style="padding:8px 14px;border-radius:10px;background:transparent;color:#e74c3c;border:1.5px solid #e74c3c;font-size:13px;font-weight:700;cursor:pointer;<?= $fotoUrl ? '' : 'display:none' ?>">🗑
+                Eliminar</button>
             </div>
             <div style="font-size:11px;color:var(--ink3);margin-top:5px">JPG, PNG o WEBP · máx 2 MB</div>
             <div id="fotoMsg" style="font-size:12px;margin-top:4px"></div>
@@ -3599,7 +3684,8 @@ if ($subTipo === 'servicio') {
             </div>
             <div class="mfila">
               <div class="mgr"><label>Sector</label><input type="text"
-                  value="<?= htmlspecialchars($extras['sector'] ?? $ep['sector'] ?? '') ?>" readonly style="opacity:.5"></div>
+                  value="<?= htmlspecialchars($extras['sector'] ?? $ep['sector'] ?? '') ?>" readonly style="opacity:.5">
+              </div>
               <div class="mgr"><label>NIT</label><input type="text"
                   value="<?= htmlspecialchars($extras['nit'] ?? $ep['nit'] ?? '') ?>" readonly style="opacity:.5"></div>
             </div>
@@ -3647,10 +3733,12 @@ if ($subTipo === 'servicio') {
         <div style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(239,68,68,.2);">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
             <span style="font-size:15px">⚠️</span>
-            <span style="font-size:13px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.8px">Zona de peligro</span>
+            <span style="font-size:13px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.8px">Zona
+              de peligro</span>
           </div>
           <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.5;">
-            Eliminar tu cuenta es <strong style="color:#f87171">permanente e irreversible</strong>. Se borrarán tu perfil, historial, mensajes y todos tus datos.
+            Eliminar tu cuenta es <strong style="color:#f87171">permanente e irreversible</strong>. Se borrarán tu
+            perfil, historial, mensajes y todos tus datos.
           </p>
           <button onclick="abrirEliminarCuenta()"
             style="padding:10px 20px;border-radius:10px;background:transparent;border:1.5px solid #e74c3c;color:#e74c3c;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;"
@@ -3663,22 +3751,30 @@ if ($subTipo === 'servicio') {
   </div>
 
   <!-- MODAL ELIMINAR CUENTA -->
-  <div id="modalEliminarCuenta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:#0f1a0f;border:1.5px solid rgba(239,68,68,.35);border-radius:20px;padding:36px 32px;max-width:440px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.5);">
+  <div id="modalEliminarCuenta"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;">
+    <div
+      style="background:#0f1a0f;border:1.5px solid rgba(239,68,68,.35);border-radius:20px;padding:36px 32px;max-width:440px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.5);">
       <div style="text-align:center;margin-bottom:20px;">
         <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
         <h3 style="font-size:20px;font-weight:800;color:#f87171;margin-bottom:8px;">Eliminar cuenta permanentemente</h3>
-        <p style="font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;">Esta acción no se puede deshacer. Se eliminarán todos tus datos, perfil, mensajes e historial.</p>
+        <p style="font-size:14px;color:var(--ink2);line-height:1.6;">Esta acción no se puede deshacer. Se eliminarán
+          todos tus datos, perfil, mensajes e historial.</p>
       </div>
       <div style="margin-bottom:20px;">
-        <label style="display:block;font-size:13px;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:8px;">Para confirmar, escribe tu correo: <strong style="color:#f87171"><?= htmlspecialchars($usuario['correo']) ?></strong></label>
+        <label style="display:block;font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:8px;">Para confirmar,
+          escribe tu correo: <strong style="color:#f87171"><?= htmlspecialchars($usuario['correo']) ?></strong></label>
         <input type="text" id="inputConfirmarCuenta" placeholder="Escribe tu correo exacto"
-          style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid rgba(239,68,68,.4);background:rgba(239,68,68,.06);color:white;font-size:14px;outline:none;font-family:inherit;">
+          style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid rgba(239,68,68,.4);background:rgba(239,68,68,.06);color:var(--ink);font-size:14px;outline:none;font-family:inherit;">
       </div>
-      <div id="msgEliminarCuenta" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:8px;font-size:13px;"></div>
+      <div id="msgEliminarCuenta"
+        style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:8px;font-size:13px;"></div>
       <div style="display:flex;gap:10px;">
-        <button onclick="cerrarEliminarCuenta()" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.7);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
-        <button id="btnConfirmarEliminar" onclick="confirmarEliminarCuenta()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#e74c3c;color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 Sí, eliminar mi cuenta</button>
+        <button onclick="cerrarEliminarCuenta()"
+          style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--borde);background:transparent;color:var(--ink2);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+        <button id="btnConfirmarEliminar" onclick="confirmarEliminarCuenta()"
+          style="flex:1;padding:12px;border-radius:10px;border:none;background:#e74c3c;color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🗑
+          Sí, eliminar mi cuenta</button>
       </div>
     </div>
   </div>
@@ -3719,7 +3815,7 @@ if ($subTipo === 'servicio') {
           msg.style.cssText = 'display:block;background:rgba(239,68,68,.15);color:#f87171;padding:10px 14px;border-radius:8px;font-size:13px;';
           btn.disabled = false; btn.textContent = '🗑 Sí, eliminar mi cuenta';
         }
-      } catch(e) {
+      } catch (e) {
         msg.textContent = '❌ Error de conexión.';
         msg.style.cssText = 'display:block;background:rgba(239,68,68,.15);color:#f87171;padding:10px 14px;border-radius:8px;font-size:13px;';
         btn.disabled = false; btn.textContent = '🗑 Sí, eliminar mi cuenta';
@@ -3825,7 +3921,7 @@ if ($subTipo === 'servicio') {
           msg.textContent = '✅ Foto eliminada'; msg.style.color = 'var(--v3)';
           const inicial = document.querySelector('.hero-av')?.dataset?.inicial || '?';
           const inicialTag = `<span id="fotoInicialPreview">${inicial}</span>`;
-          ['fotoPreview','heroAvatar'].forEach(id => {
+          ['fotoPreview', 'heroAvatar'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.innerHTML = inicialTag;
           });
@@ -3834,7 +3930,7 @@ if ($subTipo === 'servicio') {
         } else {
           msg.textContent = '❌ Error al eliminar'; msg.style.color = '#e74c3c';
         }
-      } catch(e) { msg.textContent = '❌ Error de conexión'; msg.style.color = '#e74c3c'; }
+      } catch (e) { msg.textContent = '❌ Error de conexión'; msg.style.color = '#e74c3c'; }
     }
 
     // ── CROP + FOTO ──
@@ -4213,11 +4309,11 @@ if ($subTipo === 'servicio') {
       // Sync aptitudes_bland e idiomas al servidor
       try {
         const fdApt = new FormData();
-        fdApt.append('_action','guardar_aptitudes_extra');
+        fdApt.append('_action', 'guardar_aptitudes_extra');
         fdApt.append('aptitudes_bland', bland);
         fdApt.append('aptitudes_idiomas', idiomas);
-        fetch('dashboard.php',{method:'POST',body:fdApt}).catch(()=>{});
-      } catch(e) {}
+        fetch('dashboard.php', { method: 'POST', body: fdApt }).catch(() => { });
+      } catch (e) { }
       // Sync habilidades técnicas al servidor via editar_perfil
       const fd = new FormData();
       fd.append('_action', 'editar_perfil');
@@ -4401,8 +4497,8 @@ if ($subTipo === 'servicio') {
   <?php endif; ?>
 
 
-<!-- Widget de sesión activa — QuibdóConecta -->
-<script src="js/sesion_widget.js"></script>
+  <!-- Widget de sesión activa — QuibdóConecta -->
+  <script src="js/sesion_widget.js"></script>
 </body>
 
 </html>
