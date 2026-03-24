@@ -145,6 +145,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     exit;
   }
+
+  if ($action === 'subir_evidencia') {
     // Verificar límite según badge Selva Verde
     require_once __DIR__ . '/Php/badges_helper.php';
     $badgesU = getBadgesUsuario($db, $usuario['id']);
