@@ -72,11 +72,22 @@ try {
         setcookie('qc_remember', $token, time() + (30 * 24 * 3600), '/', '', false, true);
     }
 
+    // Redirigir segun tipo de usuario
+    $tipo = $usuario['tipo'];
+    if ($tipo === 'admin') {
+        $redirect = 'gestion-qbc-2025.php';
+    } elseif ($tipo === 'empresa') {
+        $redirect = 'dashboard_empresa.php';
+    } else {
+        $redirect = 'dashboard.php';
+    }
+
     echo json_encode([
-        'ok'     => true,
-        'msg'    => '¡Bienvenido, ' . htmlspecialchars($usuario['nombre']) . '!',
-        'tipo'   => $usuario['tipo'],
-        'nombre' => $usuario['nombre']
+        'ok'        => true,
+        'msg'       => '¡Bienvenido, ' . htmlspecialchars($usuario['nombre']) . '!',
+        'tipo'      => $tipo,
+        'nombre'    => $usuario['nombre'],
+        'dashboard' => $redirect
     ]);
 
 } catch (PDOException $e) {
