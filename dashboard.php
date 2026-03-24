@@ -2531,7 +2531,7 @@ if ($subTipo === 'servicio') {
     </a>
     <div class="nav-links">
       <a href="dashboard.php" class="nl on">🏠 Panel</a>
-      <a href="Empleo.html" class="nl">💼 Empleos</a>
+      <a href="Empleo.php" class="nl">💼 Empleos</a>
       <a href="talentos.php" class="nl">🌟 Talentos</a>
       <a href="empresas.php" class="nl">🏢 Empresas</a>
       <a href="negocios.php" class="nl">🏪 Negocios</a>

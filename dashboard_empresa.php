@@ -515,7 +515,7 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
   <nav class="nav-links">
     <a href="dashboard_empresa.php" class="nl on">🏠 Panel</a>
     <a href="talentos.php" class="nl">🌟 Talentos</a>
-    <a href="Empleo.html" class="nl">💼 Empleos</a>
+    <a href="Empleo.php" class="nl">💼 Empleos</a>
     <a href="javascript:void(0)" onclick="abrirModalVacante()" class="nl">➕ Publicar vacante</a>
     <a href="chat.php" class="nl">
       💬 Mensajes
