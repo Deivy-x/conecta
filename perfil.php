@@ -551,7 +551,7 @@ if ($tipo === 'empresa') {
     <div class="side-card" style="text-align:center">
       <div class="side-tit">🌿 Explorar más</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <a href="talentos.php" style="padding:10px;background:rgba(163,240,181,.07);border:1px solid rgba(163,240,181,.15);border-radius:12px;color:var(--vlima);font-size:13px;font-weight:700;text-decoration:none;transition:background .2s" onmouseover="this.style.background='rgba(163,240,181,.13)'" onmouseout="this.style.background='rgba(163,240,181,.07)'">🌟 Ver talentos</a>
+        <a href="busqueda_talentos.php" style="padding:10px;background:rgba(163,240,181,.07);border:1px solid rgba(163,240,181,.15);border-radius:12px;color:var(--vlima);font-size:13px;font-weight:700;text-decoration:none;transition:background .2s" onmouseover="this.style.background='rgba(163,240,181,.13)'" onmouseout="this.style.background='rgba(163,240,181,.07)'">🌟 Ver talentos</a>
         <a href="empresas.php" style="padding:10px;background:rgba(91,142,255,.07);border:1px solid rgba(91,142,255,.15);border-radius:12px;color:var(--r4);font-size:13px;font-weight:700;text-decoration:none;transition:background .2s" onmouseover="this.style.background='rgba(91,142,255,.13)'" onmouseout="this.style.background='rgba(91,142,255,.07)'">🏢 Ver empresas</a>
         <a href="servicios.php" style="padding:10px;background:rgba(255,211,77,.06);border:1px solid rgba(255,211,77,.15);border-radius:12px;color:var(--a4);font-size:13px;font-weight:700;text-decoration:none;transition:background .2s" onmouseover="this.style.background='rgba(255,211,77,.12)'" onmouseout="this.style.background='rgba(255,211,77,.06)'">🎧 Ver servicios</a>
       </div>
