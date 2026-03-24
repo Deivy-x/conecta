@@ -348,6 +348,50 @@ if ($action && $logueado) {
     exit;
   }
 
+  // Eliminar usuario permanentemente
+  if ($action === 'eliminar_usuario' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!$ajaxPerms['usuarios'] || $nivel !== 'superadmin') {
+      echo json_encode(['ok' => false, 'msg' => 'Solo el superadmin puede eliminar usuarios.']);
+      exit;
+    }
+    $uid = (int) ($_POST['id'] ?? 0);
+    if (!$uid) { echo json_encode(['ok' => false, 'msg' => 'ID inválido.']); exit; }
+    // Proteger: no eliminar admins ni al propio admin logueado
+    $tipoU = $db->prepare("SELECT tipo FROM usuarios WHERE id=?");
+    $tipoU->execute([$uid]);
+    $rowU = $tipoU->fetch();
+    if (!$rowU) { echo json_encode(['ok' => false, 'msg' => 'Usuario no encontrado.']); exit; }
+    if ($rowU['tipo'] === 'admin') { echo json_encode(['ok' => false, 'msg' => 'No se puede eliminar una cuenta de admin desde aquí.']); exit; }
+    if ($uid === (int)$_SESSION['admin_id']) { echo json_encode(['ok' => false, 'msg' => 'No puedes eliminar tu propia cuenta.']); exit; }
+    try {
+      // Borrar tablas sin CASCADE
+      foreach (['perfiles_empresa','sesiones','negocios_locales','talento_galeria','talento_educacion','talento_certificaciones','talento_experiencia','perfil_vistas'] as $tabla) {
+        try { $db->prepare("DELETE FROM $tabla WHERE usuario_id=?")->execute([$uid]); } catch(Exception $e) {}
+      }
+      // Borrar fotos/logos del disco
+      $fotoRow = $db->prepare("SELECT foto FROM usuarios WHERE id=?");
+      $fotoRow->execute([$uid]);
+      $fotoFile = $fotoRow->fetchColumn();
+      if ($fotoFile && !str_starts_with($fotoFile, 'http') && file_exists(__DIR__.'/uploads/fotos/'.$fotoFile)) {
+        @unlink(__DIR__.'/uploads/fotos/'.$fotoFile);
+      }
+      $logoRow = $db->prepare("SELECT logo FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+      $logoRow->execute([$uid]);
+      $logoFile = $logoRow->fetchColumn();
+      if ($logoFile && file_exists(__DIR__.'/uploads/logos/'.$logoFile)) {
+        @unlink(__DIR__.'/uploads/logos/'.$logoFile);
+      }
+      // Borrar usuario (CASCADE limpia el resto)
+      $db->prepare("DELETE FROM usuarios WHERE id=?")->execute([$uid]);
+      // Auditoría
+      try { $db->prepare("INSERT INTO admin_auditoria (admin_id, accion, detalle) VALUES (?,?,?)")->execute([$_SESSION['admin_id'], 'eliminar_usuario', "Usuario $uid eliminado permanentemente"]); } catch(Exception $e) {}
+      echo json_encode(['ok' => true]);
+    } catch (Exception $e) {
+      echo json_encode(['ok' => false, 'msg' => 'Error: ' . $e->getMessage()]);
+    }
+    exit;
+  }
+
   // Verificaciones pendientes
   if ($action === 'verificaciones') {
     if (!$ajaxPerms['verificar']) {
@@ -5115,6 +5159,7 @@ if ($action) {
           ${parseInt(u.activo)
               ? `<button class="btn-sm red" onclick="toggleUsuario(${u.id},0,this)">Desactivar</button>`
               : `<button class="btn-sm green" onclick="toggleUsuario(${u.id},1,this)">Activar</button>`}
+          <button class="btn-sm" onclick="eliminarUsuario(${u.id},'${esc(u.nombre + ' ' + (u.apellido||''))}',this)" style="background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.45);color:#f87171;" title="Eliminar permanentemente">🗑 Eliminar</button>
         </div>
       </div>`;
           }).join('');
@@ -5146,6 +5191,26 @@ if ($action) {
         const d = await r.json();
         if (d.ok) cargarUsuarios();
         else btn.disabled = false;
+      }
+
+      async function eliminarUsuario(id, nombre, btn) {
+        if (!confirm(`⚠️ ¿Eliminar PERMANENTEMENTE la cuenta de "${nombre}"?\n\nEsto borrará todos sus datos, mensajes, empleos y perfil. Esta acción NO se puede deshacer.`)) return;
+        btn.disabled = true; btn.textContent = '⏳';
+        const fd = new FormData(); fd.append('id', id);
+        try {
+          const r = await fetch('gestion-qbc-2025.php?action=eliminar_usuario', { method: 'POST', body: fd });
+          const d = await r.json();
+          if (d.ok) {
+            mostrarToast(`🗑 Cuenta de "${nombre}" eliminada permanentemente`, 'red');
+            cargarUsuarios();
+          } else {
+            mostrarToast('❌ ' + (d.msg || 'Error al eliminar'), 'red');
+            btn.disabled = false; btn.textContent = '🗑 Eliminar';
+          }
+        } catch(e) {
+          mostrarToast('❌ Error de conexión', 'red');
+          btn.disabled = false; btn.textContent = '🗑 Eliminar';
+        }
       }
 
       // ── EMPLEOS ──

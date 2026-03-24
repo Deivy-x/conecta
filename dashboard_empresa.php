@@ -83,6 +83,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // ── SUBIR LOGO ───────────────────────────────────────────
+    // ── ELIMINAR LOGO ────────────────────────────────────────
+    if ($action === 'eliminar_logo') {
+        $epOld = $db->prepare("SELECT logo FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+        $epOld->execute([$usuario['id']]);
+        $logoViejo = $epOld->fetchColumn();
+        if ($logoViejo && file_exists(__DIR__ . '/uploads/logos/' . $logoViejo)) {
+            @unlink(__DIR__ . '/uploads/logos/' . $logoViejo);
+        }
+        $db->prepare("UPDATE perfiles_empresa SET logo = '' WHERE usuario_id = ? ORDER BY id DESC LIMIT 1")
+           ->execute([$usuario['id']]);
+        echo json_encode(['ok' => true]);
+        exit;
+    }
+
     if ($action === 'subir_logo') {
         if (!isset($_FILES['logo']) || $_FILES['logo']['error'] !== 0) {
             echo json_encode(['ok' => false, 'msg' => 'No se recibió ninguna imagen.']); exit;
@@ -151,6 +165,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['ok'=>true,'msg'=>'✅ Vacante enviada. El administrador la aprobará en 24–48 h.']);
         } catch (Exception $e) {
             echo json_encode(['ok'=>false,'msg'=>'Error al guardar: '.$e->getMessage()]);
+        }
+        exit;
+    }
+
+    // ── ELIMINAR CUENTA EMPRESA ──────────────────────────────
+    if ($action === 'eliminar_cuenta') {
+        $confirmar = trim($_POST['confirmar'] ?? '');
+        if ($confirmar !== $usuario['correo']) {
+            echo json_encode(['ok' => false, 'msg' => 'El correo no coincide. Escríbelo exactamente.']);
+            exit;
+        }
+        try {
+            // Borrar logo del servidor
+            $logoViejo = $ep['logo'] ?? '';
+            if ($logoViejo && file_exists(__DIR__ . '/uploads/logos/' . $logoViejo)) {
+                @unlink(__DIR__ . '/uploads/logos/' . $logoViejo);
+            }
+            // Borrar tablas sin CASCADE
+            foreach (['perfiles_empresa','sesiones','negocios_locales'] as $tabla) {
+                try { $db->prepare("DELETE FROM $tabla WHERE usuario_id=?")->execute([$usuario['id']]); } catch(Exception $e) {}
+            }
+            // Borrar usuario (CASCADE limpia empleos, mensajes, verificaciones, talento_perfil, admin_roles)
+            $db->prepare("DELETE FROM usuarios WHERE id=?")->execute([$usuario['id']]);
+            $_SESSION = [];
+            session_destroy();
+            echo json_encode(['ok' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['ok' => false, 'msg' => 'Error al eliminar: ' . $e->getMessage()]);
         }
         exit;
     }
@@ -788,7 +830,10 @@ if (isset($_GET['salir'])) {
         </div>
         <div>
           <input type="file" id="logoInput" accept="image/jpeg,image/png,image/webp,image/svg+xml" style="display:none" onchange="subirLogo(this)">
-          <button onclick="document.getElementById('logoInput').click()" style="padding:8px 14px;border-radius:8px;background:var(--azul);color:white;border:none;font-size:13px;font-weight:700;cursor:pointer">🖼️ Cambiar logo</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button onclick="document.getElementById('logoInput').click()" style="padding:8px 14px;border-radius:8px;background:var(--azul);color:white;border:none;font-size:13px;font-weight:700;cursor:pointer">🖼️ Cambiar logo</button>
+            <button id="btnEliminarLogo" onclick="eliminarLogo()" style="padding:8px 14px;border-radius:8px;background:transparent;color:#e74c3c;border:1.5px solid #e74c3c;font-size:13px;font-weight:700;cursor:pointer;<?= $logoUrl ? '' : 'display:none' ?>">🗑 Eliminar</button>
+          </div>
           <div style="font-size:11px;color:var(--ink3);margin-top:5px">JPG, PNG, WEBP o SVG · máx 2 MB</div>
           <div id="logoMsg" style="font-size:12px;margin-top:4px"></div>
         </div>
@@ -854,6 +899,43 @@ if (isset($_GET['salir'])) {
       </div>
 
       <button class="btn-save" id="btnGuardar" onclick="guardarEmpresa()">💾 Guardar cambios</button>
+
+      <!-- ── ZONA DE PELIGRO ── -->
+      <div style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(239,68,68,.2);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="font-size:15px">⚠️</span>
+          <span style="font-size:13px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.8px">Zona de peligro</span>
+        </div>
+        <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.5;">
+          Eliminar tu cuenta es <strong style="color:#f87171">permanente e irreversible</strong>. Se borrarán la empresa, vacantes publicadas, mensajes y todos los datos asociados.
+        </p>
+        <button onclick="abrirEliminarCuenta()"
+          style="padding:10px 20px;border-radius:10px;background:transparent;border:1.5px solid #e74c3c;color:#e74c3c;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;"
+          onmouseover="this.style.background='rgba(231,76,60,.1)'" onmouseout="this.style.background='transparent'">
+          🗑 Eliminar mi cuenta de empresa
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR CUENTA EMPRESA -->
+<div id="modalEliminarCuenta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0f172a;border:1.5px solid rgba(239,68,68,.35);border-radius:20px;padding:36px 32px;max-width:440px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.6);">
+    <div style="text-align:center;margin-bottom:22px;">
+      <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+      <h3 style="font-size:20px;font-weight:800;color:#f87171;margin-bottom:8px;">Eliminar cuenta permanentemente</h3>
+      <p style="font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;">Esta acción no se puede deshacer. Se eliminarán la empresa, todas las vacantes, mensajes y datos asociados.</p>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:8px;">Para confirmar, escribe tu correo: <strong style="color:#f87171"><?= htmlspecialchars($usuario['correo']) ?></strong></label>
+      <input type="text" id="inputConfirmarCuenta" placeholder="Escribe tu correo exacto"
+        style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid rgba(239,68,68,.4);background:rgba(239,68,68,.06);color:white;font-size:14px;outline:none;font-family:inherit;">
+    </div>
+    <div id="msgEliminarCuenta" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:8px;font-size:13px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="cerrarEliminarCuenta()" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.7);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+      <button id="btnConfirmarEliminar" onclick="confirmarEliminarCuenta()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#e74c3c;color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 Sí, eliminar cuenta</button>
     </div>
   </div>
 </div>
@@ -865,7 +947,51 @@ if (isset($_GET['salir'])) {
   document.getElementById('modalEditar').addEventListener('click', e => {
     if (e.target === document.getElementById('modalEditar')) cerrarModal()
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal() });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarModal(); cerrarEliminarCuenta(); } });
+
+  // ── ELIMINAR CUENTA ────────────────────────────────────────
+  function abrirEliminarCuenta() {
+    const m = document.getElementById('modalEliminarCuenta');
+    m.style.display = 'flex';
+    document.getElementById('inputConfirmarCuenta').value = '';
+    document.getElementById('msgEliminarCuenta').style.display = 'none';
+    document.getElementById('btnConfirmarEliminar').disabled = false;
+    document.getElementById('btnConfirmarEliminar').textContent = '🗑 Sí, eliminar cuenta';
+  }
+  function cerrarEliminarCuenta() {
+    document.getElementById('modalEliminarCuenta').style.display = 'none';
+  }
+  async function confirmarEliminarCuenta() {
+    const correo = document.getElementById('inputConfirmarCuenta').value.trim();
+    const msg    = document.getElementById('msgEliminarCuenta');
+    const btn    = document.getElementById('btnConfirmarEliminar');
+    const mostrarMsg = (texto, ok) => {
+      msg.textContent  = texto;
+      msg.style.cssText = `display:block;padding:10px 14px;border-radius:8px;font-size:13px;background:${ok ? 'rgba(31,157,85,.15)' : 'rgba(239,68,68,.15)'};color:${ok ? '#a7f3d0' : '#f87171'};`;
+    };
+    if (!correo) { mostrarMsg('Escribe tu correo para confirmar.', false); return; }
+    btn.disabled = true; btn.textContent = '⏳ Eliminando...';
+    const fd = new FormData();
+    fd.append('_action', 'eliminar_cuenta');
+    fd.append('confirmar', correo);
+    try {
+      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.ok) {
+        mostrarMsg('✅ Cuenta eliminada. Redirigiendo...', true);
+        setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+      } else {
+        mostrarMsg('❌ ' + (j.msg || 'Error al eliminar.'), false);
+        btn.disabled = false; btn.textContent = '🗑 Sí, eliminar cuenta';
+      }
+    } catch(e) {
+      mostrarMsg('❌ Error de conexión.', false);
+      btn.disabled = false; btn.textContent = '🗑 Sí, eliminar cuenta';
+    }
+  }
+  document.getElementById('modalEliminarCuenta').addEventListener('click', e => {
+    if (e.target === document.getElementById('modalEliminarCuenta')) cerrarEliminarCuenta();
+  });
 
   // Animar barra de progreso al cargar
   window.addEventListener('load', () => {
@@ -876,6 +1002,31 @@ if (isset($_GET['salir'])) {
   function mostrarMsg(t, c) {
     const e = document.getElementById('editMsg');
     e.textContent = t; e.className = 'mmsg ' + c; e.style.display = 'block';
+  }
+
+  // ── ELIMINAR LOGO ──────────────────────────────────────────
+  async function eliminarLogo() {
+    if (!confirm('¿Eliminar el logo de la empresa?')) return;
+    const msg = document.getElementById('logoMsg');
+    msg.textContent = '⏳ Eliminando…'; msg.style.color = 'var(--ink3)';
+    const fd = new FormData();
+    fd.append('_action', 'eliminar_logo');
+    try {
+      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.ok) {
+        msg.textContent = '✅ Logo eliminado'; msg.style.color = 'var(--verde2)';
+        const iniciales = `<span><?= $iniciales ?></span>`;
+        ['logoPreview','heroAvatar','cpAvatar','navAvatar'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = iniciales;
+        });
+        document.getElementById('btnEliminarLogo').style.display = 'none';
+        setTimeout(() => { msg.textContent = ''; }, 2000);
+      } else {
+        msg.textContent = '❌ Error al eliminar'; msg.style.color = '#e74c3c';
+      }
+    } catch(e) { msg.textContent = '❌ Error de conexión'; msg.style.color = '#e74c3c'; }
   }
 
   // ── SUBIR LOGO ─────────────────────────────────────────────
@@ -897,6 +1048,8 @@ if (isset($_GET['salir'])) {
           const el = document.getElementById(id);
           if (el) el.innerHTML = imgTag;
         });
+        const btnEl = document.getElementById('btnEliminarLogo');
+        if (btnEl) btnEl.style.display = 'inline-block';
       } else {
         msg.textContent = '❌ ' + (j.msg || 'Error'); msg.style.color = '#e74c3c';
       }

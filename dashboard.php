@@ -111,8 +111,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── SUBIR EVIDENCIA (foto o video) ────────────────────────
-  if ($action === 'subir_evidencia') {
+  // ── ELIMINAR FOTO DE PERFIL ───────────────────────────────
+  if ($action === 'eliminar_foto') {
+    $db->prepare("UPDATE usuarios SET foto='' WHERE id=?")->execute([$usuario['id']]);
+    echo json_encode(['ok' => true]);
+    exit;
+  }
+
+  // ── ELIMINAR CUENTA ───────────────────────────────────────
+  if ($action === 'eliminar_cuenta') {
+    $confirmar = trim($_POST['confirmar'] ?? '');
+    if ($confirmar !== $usuario['correo']) {
+      echo json_encode(['ok' => false, 'msg' => 'El correo no coincide. Escríbelo exactamente.']);
+      exit;
+    }
+    try {
+      // Borrar tablas sin CASCADE
+      foreach (['perfiles_empresa','talento_galeria','talento_educacion','talento_certificaciones','talento_experiencia','perfil_vistas','sesiones','negocios_locales'] as $tabla) {
+        try { $db->prepare("DELETE FROM $tabla WHERE usuario_id=?")->execute([$usuario['id']]); } catch(Exception $e) {}
+      }
+      // Borrar foto de disco
+      if (!empty($usuario['foto']) && !str_starts_with($usuario['foto'], 'http')) {
+        @unlink(__DIR__ . '/uploads/fotos/' . $usuario['foto']);
+      }
+      // Borrar usuario (CASCADE limpia empleos, mensajes, verificaciones, talento_perfil, admin_roles)
+      $db->prepare("DELETE FROM usuarios WHERE id=?")->execute([$usuario['id']]);
+      // Destruir sesión
+      $_SESSION = [];
+      session_destroy();
+      echo json_encode(['ok' => true, 'msg' => 'Cuenta eliminada correctamente.']);
+    } catch (Exception $e) {
+      echo json_encode(['ok' => false, 'msg' => 'Error al eliminar la cuenta: ' . $e->getMessage()]);
+    }
+    exit;
+  }
     // Verificar límite según badge Selva Verde
     require_once __DIR__ . '/Php/badges_helper.php';
     $badgesU = getBadgesUsuario($db, $usuario['id']);
@@ -3503,9 +3535,12 @@ if ($subTipo === 'servicio') {
           <div>
             <input type="file" id="fotoInput" accept="image/jpeg,image/png,image/webp" style="display:none"
               onchange="abrirCrop(this)">
-            <button onclick="document.getElementById('fotoInput').click()"
-              style="padding:8px 14px;border-radius:10px;background:var(--v3);color:white;border:none;font-size:13px;font-weight:700;cursor:pointer">📷
-              Cambiar foto</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <button onclick="document.getElementById('fotoInput').click()"
+                style="padding:8px 14px;border-radius:10px;background:var(--v3);color:white;border:none;font-size:13px;font-weight:700;cursor:pointer">📷
+                Cambiar foto</button>
+              <button id="btnEliminarFoto" onclick="eliminarFoto()" style="padding:8px 14px;border-radius:10px;background:transparent;color:#e74c3c;border:1.5px solid #e74c3c;font-size:13px;font-weight:700;cursor:pointer;<?= $fotoUrl ? '' : 'display:none' ?>">🗑 Eliminar</button>
+            </div>
             <div style="font-size:11px;color:var(--ink3);margin-top:5px">JPG, PNG o WEBP · máx 2 MB</div>
             <div id="fotoMsg" style="font-size:12px;margin-top:4px"></div>
           </div>
@@ -3605,6 +3640,43 @@ if ($subTipo === 'servicio') {
         <?php endif; ?>
 
         <button class="btn-save" id="btnGuardar" onclick="guardarPerfil()">💾 Guardar cambios</button>
+
+        <!-- ── ZONA DE PELIGRO ── -->
+        <div style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(239,68,68,.2);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <span style="font-size:15px">⚠️</span>
+            <span style="font-size:13px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.8px">Zona de peligro</span>
+          </div>
+          <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.5;">
+            Eliminar tu cuenta es <strong style="color:#f87171">permanente e irreversible</strong>. Se borrarán tu perfil, historial, mensajes y todos tus datos.
+          </p>
+          <button onclick="abrirEliminarCuenta()"
+            style="padding:10px 20px;border-radius:10px;background:transparent;border:1.5px solid #e74c3c;color:#e74c3c;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;"
+            onmouseover="this.style.background='rgba(231,76,60,.1)'" onmouseout="this.style.background='transparent'">
+            🗑 Eliminar mi cuenta
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ELIMINAR CUENTA -->
+  <div id="modalEliminarCuenta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#0f1a0f;border:1.5px solid rgba(239,68,68,.35);border-radius:20px;padding:36px 32px;max-width:440px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.5);">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+        <h3 style="font-size:20px;font-weight:800;color:#f87171;margin-bottom:8px;">Eliminar cuenta permanentemente</h3>
+        <p style="font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;">Esta acción no se puede deshacer. Se eliminarán todos tus datos, perfil, mensajes e historial.</p>
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="display:block;font-size:13px;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:8px;">Para confirmar, escribe tu correo: <strong style="color:#f87171"><?= htmlspecialchars($usuario['correo']) ?></strong></label>
+        <input type="text" id="inputConfirmarCuenta" placeholder="Escribe tu correo exacto"
+          style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid rgba(239,68,68,.4);background:rgba(239,68,68,.06);color:white;font-size:14px;outline:none;font-family:inherit;">
+      </div>
+      <div id="msgEliminarCuenta" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:8px;font-size:13px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="cerrarEliminarCuenta()" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.7);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+        <button id="btnConfirmarEliminar" onclick="confirmarEliminarCuenta()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#e74c3c;color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 Sí, eliminar mi cuenta</button>
       </div>
     </div>
   </div>
@@ -3614,6 +3686,46 @@ if ($subTipo === 'servicio') {
     function abrirModal() { document.getElementById('modalEditar').classList.add('open') }
     function cerrarModal() { document.getElementById('modalEditar').classList.remove('open') }
     document.getElementById('modalEditar').addEventListener('click', e => { if (e.target === document.getElementById('modalEditar')) cerrarModal() });
+
+    // ── ELIMINAR CUENTA ──
+    function abrirEliminarCuenta() {
+      document.getElementById('modalEliminarCuenta').style.display = 'flex';
+      document.getElementById('inputConfirmarCuenta').value = '';
+      document.getElementById('msgEliminarCuenta').style.display = 'none';
+    }
+    function cerrarEliminarCuenta() {
+      document.getElementById('modalEliminarCuenta').style.display = 'none';
+    }
+    async function confirmarEliminarCuenta() {
+      const correo = document.getElementById('inputConfirmarCuenta').value.trim();
+      const msg = document.getElementById('msgEliminarCuenta');
+      const btn = document.getElementById('btnConfirmarEliminar');
+      if (!correo) { msg.textContent = 'Escribe tu correo para confirmar.'; msg.style.cssText = 'display:block;background:rgba(239,68,68,.15);color:#f87171;padding:10px 14px;border-radius:8px;font-size:13px;'; return; }
+      btn.disabled = true; btn.textContent = '⏳ Eliminando...';
+      const fd = new FormData();
+      fd.append('_action', 'eliminar_cuenta');
+      fd.append('confirmar', correo);
+      try {
+        const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (j.ok) {
+          msg.textContent = '✅ Cuenta eliminada. Redirigiendo...';
+          msg.style.cssText = 'display:block;background:rgba(31,157,85,.15);color:#a7f3d0;padding:10px 14px;border-radius:8px;font-size:13px;';
+          setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+        } else {
+          msg.textContent = '❌ ' + j.msg;
+          msg.style.cssText = 'display:block;background:rgba(239,68,68,.15);color:#f87171;padding:10px 14px;border-radius:8px;font-size:13px;';
+          btn.disabled = false; btn.textContent = '🗑 Sí, eliminar mi cuenta';
+        }
+      } catch(e) {
+        msg.textContent = '❌ Error de conexión.';
+        msg.style.cssText = 'display:block;background:rgba(239,68,68,.15);color:#f87171;padding:10px 14px;border-radius:8px;font-size:13px;';
+        btn.disabled = false; btn.textContent = '🗑 Sí, eliminar mi cuenta';
+      }
+    }
+    document.getElementById('modalEliminarCuenta').addEventListener('click', e => {
+      if (e.target === document.getElementById('modalEliminarCuenta')) cerrarEliminarCuenta();
+    });
 
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
@@ -3697,6 +3809,32 @@ if ($subTipo === 'servicio') {
 
     function mostrarMsg(t, c) { const e = document.getElementById('editMsg'); e.textContent = t; e.className = 'mmsg ' + c; e.style.display = 'block' }
 
+    // ── ELIMINAR FOTO ──
+    async function eliminarFoto() {
+      if (!confirm('¿Eliminar tu foto de perfil?')) return;
+      const msg = document.getElementById('fotoMsg');
+      msg.textContent = '⏳ Eliminando…'; msg.style.color = 'var(--ink3)';
+      const fd = new FormData();
+      fd.append('_action', 'eliminar_foto');
+      try {
+        const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (j.ok) {
+          msg.textContent = '✅ Foto eliminada'; msg.style.color = 'var(--v3)';
+          const inicial = document.querySelector('.hero-av')?.dataset?.inicial || '?';
+          const inicialTag = `<span id="fotoInicialPreview">${inicial}</span>`;
+          ['fotoPreview','heroAvatar'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = inicialTag;
+          });
+          document.getElementById('btnEliminarFoto').style.display = 'none';
+          setTimeout(() => { msg.textContent = ''; }, 2000);
+        } else {
+          msg.textContent = '❌ Error al eliminar'; msg.style.color = '#e74c3c';
+        }
+      } catch(e) { msg.textContent = '❌ Error de conexión'; msg.style.color = '#e74c3c'; }
+    }
+
     // ── CROP + FOTO ──
     let cropperInstance = null;
     function abrirCrop(input) {
@@ -3737,6 +3875,8 @@ if ($subTipo === 'servicio') {
             const finalImg = `<img src="${j.foto}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:18px">`;
             ['heroAvatar', 'cpAvatar', 'navAvatar'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = finalImg; });
             document.getElementById('fotoPreview').innerHTML = finalImg;
+            const btnEl = document.getElementById('btnEliminarFoto');
+            if (btnEl) btnEl.style.display = 'inline-block';
           } else { msg.textContent = '❌ ' + (j.msg || 'Error'); msg.style.color = '#ff8080'; }
         } catch (e) { msg.textContent = '❌ Error de conexión'; msg.style.color = '#ff8080'; }
         btn.textContent = '✅ Usar esta foto'; btn.disabled = false;
