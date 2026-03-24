@@ -1963,6 +1963,9 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     // Also observe .reveal elements
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   </script>
+
+<!-- Widget de sesión activa — QuibdóConecta -->
+<script src="js/sesion_widget.js"></script>
 </body>
 
 </html>

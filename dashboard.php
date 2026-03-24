@@ -4258,6 +4258,9 @@ if ($subTipo === 'servicio') {
     </div>
   <?php endif; ?>
 
+
+<!-- Widget de sesión activa — QuibdóConecta -->
+<script src="js/sesion_widget.js"></script>
 </body>
 
 </html>

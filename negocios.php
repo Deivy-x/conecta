@@ -882,5 +882,8 @@ $totalAll = count($dbNegocios);
     observer.observe(el);
   });
 </script>
+
+<!-- Widget de sesión activa — QuibdóConecta -->
+<script src="js/sesion_widget.js"></script>
 </body>
 </html>

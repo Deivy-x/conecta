@@ -39,7 +39,10 @@ try {
 
 if (!$u) {
     http_response_code(404);
-    echo '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Perfil no encontrado</title><style>body{font-family:sans-serif;background:#060e07;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px}</style></head><body><div style="font-size:48px">🌿</div><h2>Perfil no encontrado</h2><p style="color:rgba(255,255,255,.5)">Este perfil no existe o fue desactivado.</p><a href="index.html" style="padding:10px 24px;background:#27a855;color:white;border-radius:20px;text-decoration:none;font-weight:700">← Volver al inicio</a></body></html>';
+    echo '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Perfil no encontrado</title><style>body{font-family:sans-serif;background:#060e07;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px}</style></head><body><div style="font-size:48px">🌿</div><h2>Perfil no encontrado</h2><p style="color:rgba(255,255,255,.5)">Este perfil no existe o fue desactivado.</p><a href="index.html" style="padding:10px 24px;background:#27a855;color:white;border-radius:20px;text-decoration:none;font-weight:700">← Volver al inicio</a>
+<!-- Widget de sesión activa — QuibdóConecta -->
+<script src="js/sesion_widget.js"></script>
+</body></html>';
     exit;
 }
 if (!$tipo) $tipo = $u['tipo'] ?? 'candidato';

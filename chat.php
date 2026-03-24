@@ -1519,7 +1519,9 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             return `${d.getDate()} de ${meses[d.getMonth()]}`;
         }
     </script>
+
+<!-- Widget de sesión activa — QuibdóConecta -->
+<script src="js/sesion_widget.js"></script>
 </body>
 
 </html>
-

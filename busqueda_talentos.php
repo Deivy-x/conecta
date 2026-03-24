@@ -969,5 +969,8 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
   }
 </script>
 
+
+<!-- Widget de sesión activa — QuibdóConecta -->
+<script src="js/sesion_widget.js"></script>
 </body>
 </html>

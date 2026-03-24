@@ -1070,5 +1070,8 @@ if (isset($_GET['salir'])) {
   </div>
 </div>
 
+
+<!-- Widget de sesión activa — QuibdóConecta -->
+<script src="js/sesion_widget.js"></script>
 </body>
 </html>
