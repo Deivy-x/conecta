@@ -788,146 +788,340 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       margin-bottom: 14px;
     }
 
-    /* MODAL PERFIL */
+    /* ── MODAL PERFIL EMPRESA (profesional) ─────────────────── */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.55);
+      background: rgba(0, 0, 0, 0.6);
       z-index: 2000;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
     }
 
-    .modal-overlay.open {
-      display: flex;
-    }
+    .modal-overlay.open { display: flex; }
 
     .modal-box {
-      background: white;
+      background: #fff;
       border-radius: 24px;
-      max-width: 580px;
+      max-width: 620px;
       width: 100%;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
-      animation: fadeUp 0.3s ease both;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.25);
+      animation: fadeUp 0.32s cubic-bezier(.22,.68,0,1.2) both;
       position: relative;
       max-height: 90vh;
       overflow-y: auto;
+      overflow-x: hidden;
     }
 
     @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px)
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0)
-      }
+      from { opacity: 0; transform: translateY(28px) scale(.97) }
+      to   { opacity: 1; transform: translateY(0)  scale(1) }
     }
 
+    /* Cover */
+    .modal-cover {
+      height: 120px;
+      border-radius: 24px 24px 0 0;
+      background: linear-gradient(135deg, #1a56db, #3b82f6);
+      position: relative;
+    }
+
+    /* Close */
     .modal-close {
       position: absolute;
-      top: 18px;
-      right: 20px;
-      background: none;
+      top: 14px;
+      right: 16px;
+      background: rgba(255,255,255,0.2);
       border: none;
-      font-size: 22px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 15px;
       cursor: pointer;
-      color: #888;
-      line-height: 1;
-      z-index: 1;
-    }
-
-    .modal-close:hover {
-      color: #333;
-    }
-
-    .modal-header {
-      padding: 36px 36px 24px;
+      color: white;
+      z-index: 10;
       display: flex;
-      gap: 20px;
-      align-items: flex-start;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
+      backdrop-filter: blur(4px);
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.35); }
+
+    /* Avatar flotante */
+    .modal-avatar-wrap {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      padding: 0 28px;
+      margin-top: -44px;
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 2;
     }
 
     .modal-avatar {
       width: 80px;
       height: 80px;
-      border-radius: 16px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #1a56db, #3b82f6);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 800;
       color: white;
       flex-shrink: 0;
-    }
-
-    .modal-info h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 4px;
-      letter-spacing: -0.5px;
-      line-height: 1.2;
-    }
-
-    .modal-info .m-sector {
-      color: #1a56db;
-      font-weight: 700;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-
-    .modal-info .m-ubicacion {
-      color: #888;
-      font-size: 13px;
-    }
-
-    .modal-body {
-      padding: 24px 36px 36px;
+      border: 4px solid white;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      overflow: hidden;
     }
 
     .modal-badge-e {
-      display: inline-block;
-      padding: 4px 12px;
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 13px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
-      margin-bottom: 16px;
+      margin-bottom: 6px;
+    }
+
+    /* Body */
+    .modal-body {
+      padding: 4px 28px 28px;
+    }
+
+    .modal-top-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .modal-nombre {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.15;
+      margin: 0 0 5px;
+      letter-spacing: -.4px;
+    }
+
+    .modal-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13.5px;
+      color: #64748b;
+      flex-wrap: wrap;
+    }
+
+    .modal-meta span:first-child { color: #1a56db; font-weight: 600; }
+    .meta-sep { color: #cbd5e1; }
+
+    .btn-ver-perfil {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 25px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      text-decoration: none;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .btn-ver-perfil:hover {
+      border-color: #1a56db;
+      color: #1a56db;
+      background: #eff6ff;
     }
 
     .modal-desc {
       font-size: 14px;
-      color: #555;
+      color: #475569;
       line-height: 1.7;
-      margin-bottom: 24px;
+      margin: 0 0 20px;
     }
 
-    .modal-btn {
+    /* Tabs */
+    .modal-tabs {
+      display: flex;
+      gap: 4px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 18px;
+    }
+
+    .modal-tab {
+      flex: 1;
+      padding: 9px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all .2s;
+    }
+    .modal-tab.active {
+      background: white;
+      color: #0f172a;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* Panels */
+    .modal-panel { min-height: 80px; }
+
+    /* Loading spinner */
+    .conv-loading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 0;
+      color: #64748b;
+      font-size: 14px;
+    }
+    .conv-spinner {
+      width: 18px; height: 18px;
+      border: 2px solid #e2e8f0;
+      border-top-color: #1a56db;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg) } }
+
+    /* Lista convocatorias */
+    .conv-lista { display: flex; flex-direction: column; gap: 10px; }
+
+    .conv-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .conv-item:hover {
+      border-color: #1a56db;
+      background: #eff6ff;
+      transform: translateX(3px);
+    }
+    .conv-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .conv-info { flex: 1; min-width: 0; }
+    .conv-titulo {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .conv-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #64748b;
+      flex-wrap: wrap;
+    }
+    .conv-tag {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 11px;
+    }
+    .conv-arrow {
+      color: #94a3b8;
+      font-size: 16px;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    /* Empty state */
+    .conv-empty {
+      text-align: center;
+      padding: 32px 20px;
+      color: #94a3b8;
+    }
+    .conv-empty span { font-size: 36px; display: block; margin-bottom: 8px; }
+    .conv-empty p { font-size: 14px; margin: 0; }
+
+    /* Info grid */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .info-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .info-item .i-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+    .info-item .i-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    /* CTA */
+    .modal-cta {
       display: block;
       width: 100%;
+      margin-top: 20px;
       padding: 14px;
       background: linear-gradient(135deg, #1a56db, #3b82f6);
       color: white;
-      border: none;
       border-radius: 14px;
       font-size: 15px;
       font-weight: 700;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
       text-align: center;
       text-decoration: none;
-      box-shadow: 0 6px 20px rgba(26, 86, 219, 0.4);
-      transition: transform 0.2s;
+      font-family: 'DM Sans', sans-serif;
+      box-shadow: 0 6px 20px rgba(26, 86, 219, 0.35);
+      transition: transform .2s, box-shadow .2s;
     }
+    .modal-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(26,86,219,.45); }
 
-    .modal-btn:hover {
-      transform: translateY(-2px);
+    @media(max-width:600px) {
+      .modal-box { border-radius: 20px; }
+      .modal-body { padding: 4px 18px 22px; }
+      .modal-avatar-wrap { padding: 0 18px; }
+      .info-grid { grid-template-columns: 1fr; }
     }
 
     /* CTA EMPRESA */
@@ -1536,27 +1730,63 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
   <!-- MODAL PERFIL EMPRESA -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
-      <button class="modal-close" id="modalClose">✕</button>
-      <div class="modal-header">
+
+      <!-- Cover con gradiente de la empresa -->
+      <div class="modal-cover" id="mCover"></div>
+
+      <!-- Cerrar -->
+      <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
+
+      <!-- Avatar flotante -->
+      <div class="modal-avatar-wrap">
         <div class="modal-avatar" id="mAvatar"></div>
-        <div class="modal-info">
-          <h2 id="mNombre"></h2>
-          <p class="m-sector" id="mSector"></p>
-          <p class="m-ubicacion" id="mUbicacion"></p>
-        </div>
-      </div>
-      <div class="modal-body">
         <span class="modal-badge-e" id="mBadge"></span>
-        <p class="modal-desc" id="mDesc"></p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a href="talentos.php" class="modal-btn">📩 Ver talentos disponibles</a>
-          <a href="#" id="mBtnPerfilE"
-            style="display:inline-flex;align-items:center;gap:5px;padding:12px 18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:30px;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:700"
-            onmouseover="this.style.background='rgba(255,255,255,.18)'"
-            onmouseout="this.style.background='rgba(255,255,255,.1)'">
-            🏢 Ver perfil completo
-          </a>
+      </div>
+
+      <!-- Cuerpo -->
+      <div class="modal-body">
+
+        <!-- Nombre + botón perfil -->
+        <div class="modal-top-info">
+          <div>
+            <h2 class="modal-nombre" id="mNombre"></h2>
+            <div class="modal-meta">
+              <span id="mSector"></span>
+              <span class="meta-sep">·</span>
+              <span id="mUbicacion"></span>
+            </div>
+          </div>
+          <a href="#" id="mBtnPerfilE" class="btn-ver-perfil">Ver perfil →</a>
         </div>
+
+        <p class="modal-desc" id="mDesc"></p>
+
+        <!-- Tabs -->
+        <div class="modal-tabs">
+          <button class="modal-tab active" data-tab="convocatorias">💼 Convocatorias</button>
+          <button class="modal-tab" data-tab="info">📋 Info empresa</button>
+        </div>
+
+        <!-- Panel convocatorias -->
+        <div class="modal-panel" id="panelConvocatorias">
+          <div class="conv-loading" id="convLoading">
+            <div class="conv-spinner"></div>
+            <span>Cargando convocatorias…</span>
+          </div>
+          <div id="convLista" class="conv-lista"></div>
+          <div id="convEmpty" class="conv-empty" style="display:none">
+            <span>📭</span>
+            <p>Sin convocatorias activas por ahora.</p>
+          </div>
+        </div>
+
+        <!-- Panel info -->
+        <div class="modal-panel" id="panelInfo" style="display:none">
+          <div class="info-grid" id="mInfoGrid"></div>
+        </div>
+
+        <!-- CTA -->
+        <a href="talentos.php" class="modal-cta" id="mBtnCta">📩 Ver talentos disponibles</a>
       </div>
     </div>
   </div>
@@ -1990,51 +2220,141 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
 
+    // Tabs
+    document.querySelectorAll('.modal-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const which = tab.dataset.tab;
+        document.getElementById('panelConvocatorias').style.display = which === 'convocatorias' ? '' : 'none';
+        document.getElementById('panelInfo').style.display = which === 'info' ? '' : 'none';
+      });
+    });
+
+    async function cargarConvocatorias(uid, grad) {
+      const loading = document.getElementById('convLoading');
+      const lista = document.getElementById('convLista');
+      const empty = document.getElementById('convEmpty');
+      loading.style.display = 'flex';
+      lista.innerHTML = '';
+      empty.style.display = 'none';
+
+      try {
+        const r = await fetch(`Php/get_empleos_empresa.php?usuario_id=${uid}`);
+        const empleos = await r.json();
+        loading.style.display = 'none';
+
+        if (!Array.isArray(empleos) || empleos.length === 0) {
+          empty.style.display = 'block';
+          return;
+        }
+
+        lista.innerHTML = empleos.map(e => {
+          const titulo = e.titulo || 'Convocatoria';
+          const modalidad = e.modalidad || '';
+          const salario = e.salario ? `$${Number(e.salario).toLocaleString('es-CO')}` : '';
+          const fecha = e.fecha_publicacion ? new Date(e.fecha_publicacion).toLocaleDateString('es-CO', { day:'numeric', month:'short' }) : '';
+          const ciudad = e.ciudad || '';
+          return `
+            <a href="Empleo.php#empleo-${e.id}" class="conv-item" target="_blank">
+              <div class="conv-icon">💼</div>
+              <div class="conv-info">
+                <p class="conv-titulo">${titulo}</p>
+                <div class="conv-meta">
+                  ${modalidad ? `<span class="conv-tag">${modalidad}</span>` : ''}
+                  ${ciudad ? `<span>📍 ${ciudad}</span>` : ''}
+                  ${salario ? `<span>💰 ${salario}</span>` : ''}
+                  ${fecha ? `<span>🗓 ${fecha}</span>` : ''}
+                </div>
+              </div>
+              <span class="conv-arrow">›</span>
+            </a>`;
+        }).join('');
+      } catch (err) {
+        loading.style.display = 'none';
+        empty.style.display = 'block';
+      }
+    }
+
     function abrirModal(card) {
       const grad = card.dataset.grad || 'linear-gradient(135deg,#1a56db,#3b82f6)';
+      const uid = card.dataset.uid || '';
+
+      // Cover
+      document.getElementById('mCover').style.background = grad;
+
+      // Avatar
       const av = document.getElementById('mAvatar');
       av.style.background = grad;
       const logo = card.dataset.logo || '';
       if (logo) {
-        av.innerHTML = `<img src="${logo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:16px">`;
+        av.innerHTML = `<img src="${logo}" alt="" style="width:100%;height:100%;object-fit:cover">`;
       } else {
         av.innerHTML = '';
         av.textContent = card.dataset.initials || '';
       }
+
+      // Badge
+      const badgeEl = card.querySelector('.badge-e');
+      const mBadge = document.getElementById('mBadge');
+      if (badgeEl) {
+        mBadge.innerHTML = badgeEl.innerHTML;
+        mBadge.style.cssText = badgeEl.style.cssText;
+        mBadge.style.display = 'inline-flex';
+      } else {
+        mBadge.innerHTML = '';
+        mBadge.style.display = 'none';
+      }
+
+      // Texto
       document.getElementById('mNombre').textContent = card.dataset.nombre || '';
       document.getElementById('mSector').textContent = '🏷️ ' + (card.dataset.sector || '');
       document.getElementById('mUbicacion').textContent = '📍 ' + (card.dataset.ubicacion || '');
       document.getElementById('mDesc').textContent = card.dataset.desc || '';
-      const badge = card.querySelector('.badge-e');
-      const mBadge = document.getElementById('mBadge');
-      if (badge) {
-        mBadge.textContent = badge.textContent;
-        mBadge.style.cssText = badge.style.cssText;
-      } else { mBadge.textContent = ''; }
+
+      // Info grid
       const web = card.dataset.web || '';
-      const btnModal = overlay.querySelector('.modal-btn');
+      document.getElementById('mInfoGrid').innerHTML = `
+        <div class="info-item"><div class="i-label">Sector</div><div class="i-val">${card.dataset.sector || '—'}</div></div>
+        <div class="info-item"><div class="i-label">Ciudad</div><div class="i-val">${card.dataset.ubicacion || '—'}</div></div>
+        <div class="info-item" style="grid-column:1/-1"><div class="i-label">Sitio web</div><div class="i-val">${web ? `<a href="${web.startsWith('http')?web:'https://'+web}" target="_blank" style="color:#1a56db;text-decoration:none">${web}</a>` : '—'}</div></div>
+      `;
+
+      // Botón CTA
+      const cta = document.getElementById('mBtnCta');
       if (web) {
-        btnModal.href = web.startsWith('http') ? web : 'https://' + web;
-        btnModal.target = '_blank';
-        btnModal.textContent = '🌐 Visitar sitio web';
+        cta.href = web.startsWith('http') ? web : 'https://' + web;
+        cta.target = '_blank';
+        cta.textContent = '🌐 Visitar sitio web';
       } else {
-        btnModal.href = 'talentos.php';
-        btnModal.target = '';
-        btnModal.textContent = '📩 Ver talentos disponibles';
+        cta.href = 'talentos.php';
+        cta.target = '';
+        cta.textContent = '📩 Ver talentos disponibles';
       }
-      // registrar vista al perfil
-      const uid = card.dataset.uid || '';
+
+      // Botón perfil completo
+      const bpE = document.getElementById('mBtnPerfilE');
+      if (bpE) bpE.href = uid ? `perfil.php?id=${uid}&tipo=empresa` : '#';
+
+      // Resetear tabs a convocatorias
+      document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.modal-tab[data-tab="convocatorias"]').classList.add('active');
+      document.getElementById('panelConvocatorias').style.display = '';
+      document.getElementById('panelInfo').style.display = 'none';
+
+      // Registrar vista
       if (uid) {
         const fd = new FormData();
         fd.append('_action', 'registrar_vista');
         fd.append('usuario_id', uid);
         fd.append('seccion', 'empresas');
-        fetch('dashboard.php', { method: 'POST', body: fd }).catch(() => { });
+        fetch('dashboard.php', { method: 'POST', body: fd }).catch(() => {});
       }
-      // Botón Ver perfil completo
-      const bpE = document.getElementById('mBtnPerfilE');
-      if (bpE) bpE.href = uid ? `perfil.php?id=${uid}&tipo=empresa` : '#';
+
       overlay.classList.add('open');
+
+      // Cargar convocatorias async
+      if (uid) cargarConvocatorias(uid, grad);
     }
 
     allCards.forEach(card => {
