@@ -47,7 +47,7 @@
             --bg-partners: #ffffff;
             --bg-talentos: #e8ecf0;
             --bg-testimonios: #f4f6f8;
-            --bg-locales: linear-gradient(160deg, #fff8ee 0%, #fef3d0 100%);
+            --bg-locales: #f4f6f8;
         }
 
         *,
@@ -1518,6 +1518,292 @@ height:100%;
 
         .cta-secondary:hover { border-color: #4ade80; color: #4ade80; }
 
+        /* ════ VIDEO SHOWCASE ════ */
+        .video-showcase {
+            background: linear-gradient(160deg, #050a12 0%, #0a1628 50%, #061810 100%);
+            padding: 100px 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-showcase::before {
+            content: '';
+            position: absolute;
+            top: -120px; left: -120px;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(31,157,85,.12) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .video-showcase::after {
+            content: '';
+            position: absolute;
+            bottom: -100px; right: -100px;
+            width: 420px; height: 420px;
+            background: radial-gradient(circle, rgba(212,160,23,.1) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .vs-franja {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--verde) 33.3%, var(--dorado) 33.3% 66.6%, var(--azul) 66.6%);
+        }
+
+        .vs-inner { position: relative; z-index: 2; }
+
+        .vs-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .vs-header h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 40px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 14px;
+        }
+
+        .vs-header h2 span { color: var(--dorado2); }
+        .vs-header p { color: rgba(255,255,255,.6); font-size: 16px; }
+
+        /* VIDEO PRINCIPAL */
+        .vs-main-wrap {
+            position: relative;
+            max-width: 820px;
+            margin: 0 auto 48px;
+        }
+
+        .vs-main-frame {
+            position: relative;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,.1),
+                0 32px 80px rgba(0,0,0,.6),
+                0 0 60px rgba(31,157,85,.12);
+            background: #0d1f0d;
+            aspect-ratio: 16/9;
+        }
+
+        .vs-main-frame video,
+        .vs-main-frame iframe {
+            width: 100%; height: 100%;
+            display: block;
+            object-fit: cover;
+            border: none;
+        }
+
+        /* Gradiente decorativo alrededor del frame */
+        .vs-main-frame::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 24px;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(31,157,85,.5), rgba(212,160,23,.4), rgba(26,58,107,.5));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .vs-main-label {
+            position: absolute;
+            top: 16px; left: 16px;
+            background: rgba(0,0,0,.65);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,.15);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 30px;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vs-main-label span.dot {
+            width: 7px; height: 7px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse-dot 1.6s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .5; transform: scale(1.4); }
+        }
+
+        /* GRID DE VIDEOS SECUNDARIOS */
+        .vs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .vs-thumb {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #0d1822;
+            aspect-ratio: 16/9;
+            cursor: pointer;
+            transition: transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
+            box-shadow: 0 8px 28px rgba(0,0,0,.4);
+            border: 1px solid rgba(255,255,255,.07);
+        }
+
+        .vs-thumb:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0,0,0,.6), 0 0 30px rgba(31,157,85,.15);
+            border-color: rgba(31,157,85,.35);
+        }
+
+        .vs-thumb video,
+        .vs-thumb iframe {
+            width: 100%; height: 100%;
+            display: block;
+            object-fit: cover;
+            border: none;
+            pointer-events: none;
+        }
+
+        /* Overlay hover */
+        .vs-thumb-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.75) 100%);
+            opacity: 0;
+            transition: opacity .3s;
+            display: flex;
+            align-items: flex-end;
+            padding: 14px;
+            z-index: 2;
+        }
+
+        .vs-thumb:hover .vs-thumb-overlay { opacity: 1; }
+
+        .vs-thumb-title {
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        /* Ícono play */
+        .vs-play-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 44px; height: 44px;
+            background: rgba(255,255,255,.15);
+            backdrop-filter: blur(6px);
+            border: 2px solid rgba(255,255,255,.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            z-index: 3;
+            transition: background .2s, transform .2s;
+        }
+
+        .vs-thumb:hover .vs-play-btn {
+            background: var(--verde);
+            border-color: var(--verde);
+            transform: translate(-50%, -50%) scale(1.12);
+        }
+
+        /* Badge del thumb */
+        .vs-thumb-badge {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: rgba(0,0,0,.6);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,.15);
+            color: rgba(255,255,255,.85);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            z-index: 4;
+        }
+
+        /* Placeholder con gradiente cuando no hay video */
+        .vs-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: rgba(255,255,255,.3);
+        }
+
+        .vs-placeholder .vs-ph-icon { font-size: 32px; opacity: .5; }
+        .vs-placeholder .vs-ph-text { font-size: 11px; font-weight: 600; text-align: center; opacity: .5; }
+
+        /* CTA debajo */
+        .vs-cta {
+            text-align: center;
+            margin-top: 48px;
+        }
+
+        .vs-cta p {
+            color: rgba(255,255,255,.5);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .vs-cta-btns { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+
+        .vs-btn-verde {
+            background: linear-gradient(135deg, var(--verde), var(--verde2));
+            color: white;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(31,157,85,.4);
+            transition: transform .2s;
+        }
+
+        .vs-btn-verde:hover { transform: translateY(-2px); }
+
+        .vs-btn-outline {
+            border: 2px solid rgba(255,255,255,.2);
+            color: rgba(255,255,255,.8);
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all .25s;
+        }
+
+        .vs-btn-outline:hover { border-color: var(--dorado2); color: var(--dorado2); }
+
+        @media (max-width: 768px) {
+            .video-showcase { padding: 60px 20px; }
+            .vs-header h2 { font-size: 28px; }
+            .vs-grid { grid-template-columns: 1fr; gap: 14px; }
+        }
+
+        @media (max-width: 480px) {
+            .vs-grid { gap: 10px; }
+        }
+
         /* ════ FOOTER ════ */
         footer {
             background: #050a12;
@@ -2131,6 +2417,241 @@ height:100%;
             </div>
         </div>
     </section>
+
+    <!-- ══════════════════════════════════════════
+         VIDEO SHOWCASE – QuibdóConecta en acción
+         ──────────────────────────────────────────
+         INSTRUCCIONES PARA AGREGAR TUS VIDEOS:
+
+         VIDEO PRINCIPAL (arriba, grande):
+         - Opción A – archivo local: <video src="videos/mi-video.mp4" autoplay muted loop playsinline></video>
+         - Opción B – YouTube embed: <iframe src="https://www.youtube.com/embed/TU_ID_VIDEO?autoplay=1&mute=1&loop=1&playlist=TU_ID_VIDEO&controls=0" ...></iframe>
+
+         VIDEOS SECUNDARIOS (3 miniaturas abajo):
+         - Cada .vs-thumb tiene un comentario marcando dónde poner el <video> o <iframe>
+         - Para agregar más videos, duplica un bloque .vs-thumb y descomenta
+         ══════════════════════════════════════════ -->
+    <section class="video-showcase reveal">
+        <div class="vs-franja"></div>
+        <div class="vs-inner">
+
+            <!-- CABECERA -->
+            <div class="vs-header reveal">
+                <span class="section-label azul-label">🎬 El Chocó en movimiento</span>
+                <h2>El talento del Chocó, <span>en pantalla</span></h2>
+                <p>Historias reales, personas reales — de Quibdó para el mundo</p>
+            </div>
+
+            <!-- ── VIDEO PRINCIPAL ── -->
+            <div class="vs-main-wrap reveal">
+                <div class="vs-main-frame">
+
+                    <!-- LABEL flotante -->
+                    <div class="vs-main-label">
+                        <span class="dot"></span> QuibdóConecta
+                    </div>
+
+                    <!--
+                    ╔══════════════════════════════════════════╗
+                    ║  REEMPLAZA ESTO CON TU VIDEO PRINCIPAL   ║
+                    ║                                          ║
+                    ║  Opción A – Video local:                 ║
+                    ║  <video src="videos/principal.mp4"       ║
+                    ║    autoplay muted loop playsinline        ║
+                    ║    style="width:100%;height:100%;         ║
+                    ║    object-fit:cover;display:block">       ║
+                    ║  </video>                                ║
+                    ║                                          ║
+                    ║  Opción B – YouTube:                     ║
+                    ║  <iframe                                 ║
+                    ║    src="https://www.youtube.com/embed/   ║
+                    ║    ID_VIDEO?autoplay=1&mute=1&loop=1&    ║
+                    ║    playlist=ID_VIDEO&controls=0&         ║
+                    ║    modestbranding=1&showinfo=0"          ║
+                    ║    allow="autoplay;encrypted-media"      ║
+                    ║    allowfullscreen                       ║
+                    ║    style="width:100%;height:100%;        ║
+                    ║    border:none;display:block">           ║
+                    ║  </iframe>                              ║
+                    ╚══════════════════════════════════════════╝
+                    -->
+
+                    <!-- Placeholder visual hasta que agregues el video -->
+                    <div class="vs-placeholder" style="background:linear-gradient(135deg,#0d2a1a,#1a3a6b);">
+                        <span class="vs-ph-icon">▶️</span>
+                        <span class="vs-ph-text">Tu video principal aquí<br>Reemplaza este bloque</span>
+                    </div>
+
+                </div>
+            </div>
+            <!-- ── FIN VIDEO PRINCIPAL ── -->
+
+            <!-- ── GRID DE VIDEOS SECUNDARIOS ── -->
+            <div class="vs-grid">
+
+                <!-- ── MINIATURA 1 ── -->
+                <div class="vs-thumb reveal">
+                    <span class="vs-thumb-badge">🌿 Comunidad</span>
+                    <div class="vs-play-btn">▶</div>
+
+                    <!--
+                    MINIATURA 1 – Reemplaza la línea de abajo con tu video:
+
+                    Video local:
+                    <video src="videos/video1.mp4" muted loop playsinline
+                      style="width:100%;height:100%;object-fit:cover;display:block"></video>
+
+                    YouTube:
+                    <iframe src="https://www.youtube.com/embed/ID_VIDEO?mute=1&loop=1&playlist=ID_VIDEO&controls=0"
+                      allow="autoplay;encrypted-media" allowfullscreen
+                      style="width:100%;height:100%;border:none;display:block;pointer-events:none"></iframe>
+                    -->
+
+                    <!-- Placeholder miniatura 1 -->
+                    <div class="vs-placeholder" style="background:linear-gradient(135deg,#0a1a0a,#1a2e1a);">
+                        <span class="vs-ph-icon">🌿</span>
+                        <span class="vs-ph-text">Video 1</span>
+                    </div>
+
+                    <div class="vs-thumb-overlay">
+                        <span class="vs-thumb-title">Comunidad & Talento del Chocó</span>
+                    </div>
+                </div>
+                <!-- ── FIN MINIATURA 1 ── -->
+
+                <!-- ── MINIATURA 2 ── -->
+                <div class="vs-thumb reveal">
+                    <span class="vs-thumb-badge">💼 Empleo</span>
+                    <div class="vs-play-btn">▶</div>
+
+                    <!--
+                    MINIATURA 2 – Reemplaza con tu video:
+
+                    Video local:
+                    <video src="videos/video2.mp4" muted loop playsinline
+                      style="width:100%;height:100%;object-fit:cover;display:block"></video>
+
+                    YouTube:
+                    <iframe src="https://www.youtube.com/embed/ID_VIDEO?mute=1&loop=1&playlist=ID_VIDEO&controls=0"
+                      allow="autoplay;encrypted-media" allowfullscreen
+                      style="width:100%;height:100%;border:none;display:block;pointer-events:none"></iframe>
+                    -->
+
+                    <!-- Placeholder miniatura 2 -->
+                    <div class="vs-placeholder" style="background:linear-gradient(135deg,#0d1a35,#1a2e5e);">
+                        <span class="vs-ph-icon">💼</span>
+                        <span class="vs-ph-text">Video 2</span>
+                    </div>
+
+                    <div class="vs-thumb-overlay">
+                        <span class="vs-thumb-title">Oportunidades de Empleo en Quibdó</span>
+                    </div>
+                </div>
+                <!-- ── FIN MINIATURA 2 ── -->
+
+                <!-- ── MINIATURA 3 ── -->
+                <div class="vs-thumb reveal">
+                    <span class="vs-thumb-badge">🎧 Eventos</span>
+                    <div class="vs-play-btn">▶</div>
+
+                    <!--
+                    MINIATURA 3 – Reemplaza con tu video:
+
+                    Video local:
+                    <video src="videos/video3.mp4" muted loop playsinline
+                      style="width:100%;height:100%;object-fit:cover;display:block"></video>
+
+                    YouTube:
+                    <iframe src="https://www.youtube.com/embed/ID_VIDEO?mute=1&loop=1&playlist=ID_VIDEO&controls=0"
+                      allow="autoplay;encrypted-media" allowfullscreen
+                      style="width:100%;height:100%;border:none;display:block;pointer-events:none"></iframe>
+                    -->
+
+                    <!-- Placeholder miniatura 3 -->
+                    <div class="vs-placeholder" style="background:linear-gradient(135deg,#1a1000,#3a2800);">
+                        <span class="vs-ph-icon">🎧</span>
+                        <span class="vs-ph-text">Video 3</span>
+                    </div>
+
+                    <div class="vs-thumb-overlay">
+                        <span class="vs-thumb-title">Servicios & Eventos del Chocó</span>
+                    </div>
+                </div>
+                <!-- ── FIN MINIATURA 3 ── -->
+
+                <!--
+                ╔══════════════════════════════════════╗
+                ║  PARA AGREGAR MÁS VIDEOS:            ║
+                ║  Descomenta y edita el bloque abajo  ║
+                ╚══════════════════════════════════════╝
+
+                <div class="vs-thumb reveal">
+                    <span class="vs-thumb-badge">🏙️ Quibdó</span>
+                    <div class="vs-play-btn">▶</div>
+
+                    MINIATURA 4 – Agrega tu video aquí:
+                    <video src="videos/video4.mp4" muted loop playsinline
+                      style="width:100%;height:100%;object-fit:cover;display:block"></video>
+
+                    <div class="vs-placeholder" style="background:linear-gradient(135deg,#0a1628,#1a2e1a);">
+                        <span class="vs-ph-icon">🏙️</span>
+                        <span class="vs-ph-text">Video 4</span>
+                    </div>
+                    <div class="vs-thumb-overlay">
+                        <span class="vs-thumb-title">Quibdó: Ciudad de oportunidades</span>
+                    </div>
+                </div>
+
+                <div class="vs-thumb reveal">
+                    <span class="vs-thumb-badge">🎨 Cultura</span>
+                    <div class="vs-play-btn">▶</div>
+
+                    MINIATURA 5:
+                    <video src="videos/video5.mp4" muted loop playsinline
+                      style="width:100%;height:100%;object-fit:cover;display:block"></video>
+
+                    <div class="vs-placeholder" style="background:linear-gradient(135deg,#1a0a2e,#2e1a5e);">
+                        <span class="vs-ph-icon">🎨</span>
+                        <span class="vs-ph-text">Video 5</span>
+                    </div>
+                    <div class="vs-thumb-overlay">
+                        <span class="vs-thumb-title">Cultura & Arte Chocoano</span>
+                    </div>
+                </div>
+
+                <div class="vs-thumb reveal">
+                    <span class="vs-thumb-badge">🌊 Naturaleza</span>
+                    <div class="vs-play-btn">▶</div>
+
+                    MINIATURA 6:
+                    <video src="videos/video6.mp4" muted loop playsinline
+                      style="width:100%;height:100%;object-fit:cover;display:block"></video>
+
+                    <div class="vs-placeholder" style="background:linear-gradient(135deg,#0a2a1a,#1a3a4a);">
+                        <span class="vs-ph-icon">🌊</span>
+                        <span class="vs-ph-text">Video 6</span>
+                    </div>
+                    <div class="vs-thumb-overlay">
+                        <span class="vs-thumb-title">La naturaleza del Chocó</span>
+                    </div>
+                </div>
+                -->
+
+            </div>
+            <!-- ── FIN GRID VIDEOS ── -->
+
+            <!-- CTA debajo de los videos -->
+            <div class="vs-cta reveal">
+                <p>¿Tienes contenido del Chocó para compartir? Haz parte de la comunidad.</p>
+                <div class="vs-cta-btns">
+                    <a href="registro.php" class="vs-btn-verde">✨ Crear perfil gratis</a>
+                    <a href="#servicios-eventos" class="vs-btn-outline">🎧 Ofrecer mi servicio</a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <!-- ══ FIN VIDEO SHOWCASE ══ -->
 
     <!-- FOOTER -->
     <footer>
