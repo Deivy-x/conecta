@@ -539,43 +539,126 @@ height:100%;
 
         /* ════ QUICK CATS ════ */
         .quick-cats {
-            background: var(--bg-cats);
-            padding: 70px 48px;
+            background: linear-gradient(160deg, #f0f7f2 0%, #e8f4ff 50%, #fef9e7 100%);
+            padding: 80px 48px;
             text-align: center;
-            border-bottom: 1px solid rgba(0, 0, 0, .05);
+            border-bottom: 1px solid rgba(0,0,0,.06);
+            position: relative;
+            overflow: hidden;
         }
-
-        .quick-cats h2 { font-family: 'Syne', sans-serif; font-size: 32px; margin-bottom: 10px; }
-        .quick-cats .sub { color: #666; font-size: 15px; margin-bottom: 40px; }
+        .quick-cats::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 320px; height: 320px;
+            background: radial-gradient(circle, rgba(31,157,85,.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .quick-cats::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 280px; height: 280px;
+            background: radial-gradient(circle, rgba(37,99,235,.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .quick-cats h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #1f9d55, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .quick-cats .sub { color: #777; font-size: 15px; margin-bottom: 48px; }
 
         .quick-cats-grid {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
             max-width: 1100px;
             margin: 0 auto;
         }
 
         .quick-cat-btn {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            gap: 10px;
             background: white;
-            border: 1px solid rgba(0, 0, 0, .1);
-            border-radius: 50px;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
+            border: 1.5px solid rgba(0,0,0,.07);
+            border-radius: 20px;
+            padding: 22px 16px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #2a2a2a;
             text-decoration: none;
-            transition: all .25s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+            transition: all .3s cubic-bezier(.34,1.56,.64,1);
+            box-shadow: 0 2px 12px rgba(0,0,0,.06);
+            position: relative;
+            overflow: hidden;
+        }
+        .quick-cat-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity .3s;
+            border-radius: 18px;
+        }
+        .quick-cat-btn .cat-icon {
+            font-size: 30px;
+            line-height: 1;
+            display: block;
+            transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+        }
+        .quick-cat-btn .cat-label {
+            font-size: 12.5px;
+            font-weight: 700;
+            letter-spacing: .01em;
+            text-align: center;
+            line-height: 1.3;
         }
 
-        .quick-cat-btn:hover { background: var(--verde-o); border-color: var(--verde); color: var(--verde); transform: translateY(-2px); }
-        .quick-cat-btn.cat-dorado:hover { background: var(--dorado-o); border-color: var(--dorado); color: var(--dorado); }
-        .quick-cat-btn.cat-azul:hover { background: #e8eeff; border-color: var(--azul2); color: var(--azul2); }
+        /* Verde - trabajo/oficina */
+        .quick-cat-btn:hover,
+        .quick-cat-btn.cat-verde:hover {
+            background: linear-gradient(135deg, #edfaf3, #d4f5e4);
+            border-color: var(--verde);
+            color: var(--verde);
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 28px rgba(31,157,85,.18);
+        }
+        /* Dorado - cultura/ocio */
+        .quick-cat-btn.cat-dorado:hover {
+            background: linear-gradient(135deg, #fef9e7, #fdefc8);
+            border-color: var(--dorado);
+            color: #a07010;
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 28px rgba(212,160,23,.2);
+        }
+        /* Azul - naturaleza/gobierno */
+        .quick-cat-btn.cat-azul:hover {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-color: var(--azul2);
+            color: var(--azul2);
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 28px rgba(37,99,235,.18);
+        }
+        .quick-cat-btn:hover .cat-icon {
+            transform: scale(1.25) rotate(-5deg);
+        }
+
+        @media (max-width: 900px) {
+            .quick-cats-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .quick-cats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .quick-cats { padding: 60px 20px; }
+        }
 
         /* ════ HOW IT WORKS ════ */
         .how-it-works {
@@ -1724,21 +1807,66 @@ height:100%;
         <h2>Explora por categoría</h2>
         <p class="sub">Empleos, servicios y talentos propios del Chocó</p>
         <div class="quick-cats-grid">
-            <a href="Empleo.html?cargo=administrativo" class="quick-cat-btn">💼 Administrativo</a>
-            <a href="Empleo.html?cargo=salud" class="quick-cat-btn">🏥 Salud</a>
-            <a href="Empleo.html?cargo=educacion" class="quick-cat-btn">📚 Educación</a>
-            <a href="Empleo.html?cargo=tecnologia" class="quick-cat-btn">💻 Tecnología</a>
-            <a href="Empleo.html?cargo=construccion" class="quick-cat-btn">🏗️ Construcción</a>
-            <a href="#servicios-eventos" class="quick-cat-btn cat-dorado">🎧 DJs & Música</a>
-            <a href="#servicios-eventos" class="quick-cat-btn cat-dorado">📸 Fotografía & Video</a>
-            <a href="Empleo.html?cargo=gastronomia" class="quick-cat-btn cat-dorado">🍽️ Gastronomía</a>
-            <a href="Empleo.html?cargo=artesanias" class="quick-cat-btn cat-dorado">🎨 Artesanías</a>
-            <a href="Empleo.html?cargo=ecoturismo" class="quick-cat-btn cat-azul">🌿 Ecoturismo</a>
-            <a href="Empleo.html?cargo=pesca" class="quick-cat-btn cat-azul">🐟 Pesca artesanal</a>
-            <a href="Empleo.html?cargo=mineria" class="quick-cat-btn cat-azul">⛏️ Minería legal</a>
-            <a href="Empleo.html?cargo=comercio" class="quick-cat-btn">🛒 Comercio</a>
-            <a href="Empleo.html?cargo=transporte" class="quick-cat-btn">🚗 Transporte</a>
-            <a href="#convocatorias" class="quick-cat-btn cat-azul">🏛️ Convocatorias públicas</a>
+            <a href="Empleo.html?cargo=administrativo" class="quick-cat-btn">
+                <span class="cat-icon">💼</span>
+                <span class="cat-label">Administrativo</span>
+            </a>
+            <a href="Empleo.html?cargo=salud" class="quick-cat-btn">
+                <span class="cat-icon">🏥</span>
+                <span class="cat-label">Salud</span>
+            </a>
+            <a href="Empleo.html?cargo=educacion" class="quick-cat-btn">
+                <span class="cat-icon">📚</span>
+                <span class="cat-label">Educación</span>
+            </a>
+            <a href="Empleo.html?cargo=tecnologia" class="quick-cat-btn">
+                <span class="cat-icon">💻</span>
+                <span class="cat-label">Tecnología</span>
+            </a>
+            <a href="Empleo.html?cargo=construccion" class="quick-cat-btn">
+                <span class="cat-icon">🏗️</span>
+                <span class="cat-label">Construcción</span>
+            </a>
+            <a href="#servicios-eventos" class="quick-cat-btn cat-dorado">
+                <span class="cat-icon">🎧</span>
+                <span class="cat-label">DJs & Música</span>
+            </a>
+            <a href="#servicios-eventos" class="quick-cat-btn cat-dorado">
+                <span class="cat-icon">📸</span>
+                <span class="cat-label">Fotografía & Video</span>
+            </a>
+            <a href="Empleo.html?cargo=gastronomia" class="quick-cat-btn cat-dorado">
+                <span class="cat-icon">🍽️</span>
+                <span class="cat-label">Gastronomía</span>
+            </a>
+            <a href="Empleo.html?cargo=artesanias" class="quick-cat-btn cat-dorado">
+                <span class="cat-icon">🎨</span>
+                <span class="cat-label">Artesanías</span>
+            </a>
+            <a href="Empleo.html?cargo=ecoturismo" class="quick-cat-btn cat-azul">
+                <span class="cat-icon">🌿</span>
+                <span class="cat-label">Ecoturismo</span>
+            </a>
+            <a href="Empleo.html?cargo=pesca" class="quick-cat-btn cat-azul">
+                <span class="cat-icon">🐟</span>
+                <span class="cat-label">Pesca artesanal</span>
+            </a>
+            <a href="Empleo.html?cargo=mineria" class="quick-cat-btn cat-azul">
+                <span class="cat-icon">⛏️</span>
+                <span class="cat-label">Minería legal</span>
+            </a>
+            <a href="Empleo.html?cargo=comercio" class="quick-cat-btn">
+                <span class="cat-icon">🛒</span>
+                <span class="cat-label">Comercio</span>
+            </a>
+            <a href="Empleo.html?cargo=transporte" class="quick-cat-btn">
+                <span class="cat-icon">🚗</span>
+                <span class="cat-label">Transporte</span>
+            </a>
+            <a href="#convocatorias" class="quick-cat-btn cat-azul">
+                <span class="cat-icon">🏛️</span>
+                <span class="cat-label">Convocatorias públicas</span>
+            </a>
         </div>
     </section>
 
