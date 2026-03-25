@@ -451,7 +451,7 @@
             </div>
             <div class="qc-drop-user-info">
               <div class="qc-drop-nombre">${escHtml((u.nombre || '') + (u.apellido ? ' ' + u.apellido : ''))}</div>
-              <div class="qc-drop-tipo">${tipoLabel}</div>
+              <div class="qc-drop-tipo">${u.profesion ? escHtml(u.profesion) : tipoLabel}</div>
               <div class="qc-drop-correo" title="${escHtml(u.correo || '')}">${escHtml(u.correo || '')}</div>
             </div>
           </div>

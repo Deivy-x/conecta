@@ -130,7 +130,7 @@ else { $tipoLabel = '👤 Talento profesional'; }
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title><?= $titulo ?> — QuibdóConecta</title>
   <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
   <style>
     :root {
       --accent:  <?= $colorAccent ?>;
@@ -176,7 +176,7 @@ else { $tipoLabel = '👤 Talento profesional'; }
       display:flex; align-items:center; justify-content:space-between; padding:0 28px;
       box-shadow:0 1px 12px rgba(0,0,0,.06);
     }
-    .brand { font-family:'Syne',sans-serif; font-size:18px; font-weight:900; color:var(--ink); text-decoration:none; letter-spacing:-.5px; }
+    .brand { font-family:'DM Sans',sans-serif; font-size:18px; font-weight:900; color:var(--ink); text-decoration:none; letter-spacing:-.5px; }
     .brand em { color:var(--accent); font-style:normal; }
     .nav-r { display:flex; align-items:center; gap:10px; }
     .btn-back { padding:8px 18px; border:1.5px solid var(--border); border-radius:20px; color:var(--ink2); font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; background:var(--surface); }
@@ -225,7 +225,7 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .hero-av-ph {
       width:100px; height:100px; border-radius:50%; flex-shrink:0;
       display:flex; align-items:center; justify-content:center;
-      font-family:'Syne',sans-serif; font-size:34px; font-weight:900; color:#fff;
+      font-family:'DM Sans',sans-serif; font-size:34px; font-weight:900; color:#fff;
       border:4px solid var(--surface); box-shadow:0 4px 20px rgba(0,0,0,.15);
       background:linear-gradient(135deg, <?= $colorAccent ?>, <?= $colorAccent2 ?>);
       animation:scaleIn .5s .2s cubic-bezier(.34,1.56,.64,1) both;
@@ -233,7 +233,7 @@ else { $tipoLabel = '👤 Talento profesional'; }
 
     .hero-info { flex:1; min-width:0; }
     .hero-tipo { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, transparent); border:1px solid color-mix(in srgb, var(--accent) 20%, transparent); padding:4px 10px; border-radius:20px; margin-bottom:10px; animation:slideRight .4s .3s both; }
-    .hero-nombre { font-family:'Syne',sans-serif; font-size:clamp(22px,4vw,32px); font-weight:900; color:var(--ink); line-height:1.1; margin-bottom:4px; letter-spacing:-.5px; animation:fadeUp .5s .35s both; }
+    .hero-nombre { font-family:'Playfair Display',serif; font-size:clamp(22px,4vw,32px); font-weight:800; color:var(--ink); line-height:1.1; margin-bottom:4px; letter-spacing:-.3px; animation:fadeUp .5s .35s both; }
     .hero-sub { font-size:15px; color:var(--accent); font-weight:600; margin-bottom:4px; animation:fadeUp .5s .4s both; }
     .hero-loc { font-size:13px; color:var(--ink3); margin-bottom:14px; animation:fadeUp .5s .42s both; }
 
@@ -257,7 +257,7 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .stats-inner { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:0; display:flex; overflow:hidden; box-shadow:var(--shadow); }
     .sbar-item { flex:1; text-align:center; padding:16px 12px; position:relative; }
     .sbar-item:not(:last-child)::after { content:''; position:absolute; right:0; top:20%; bottom:20%; width:1px; background:var(--border); }
-    .sbar-val { font-family:'Syne',sans-serif; font-size:22px; font-weight:900; color:var(--accent); }
+    .sbar-val { font-family:'DM Sans',sans-serif; font-size:22px; font-weight:900; color:var(--accent); }
     .sbar-lab { font-size:11px; color:var(--ink3); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-top:2px; }
 
     /* ── MAIN LAYOUT ── */
@@ -273,7 +273,7 @@ else { $tipoLabel = '👤 Talento profesional'; }
     }
     .pcard:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
     .pcard-head { padding:22px 24px 0; display:flex; align-items:center; justify-content:space-between; }
-    .pcard-tit { font-family:'Syne',sans-serif; font-size:15px; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:8px; }
+    .pcard-tit { font-family:'DM Sans',sans-serif; font-size:15px; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:8px; }
     .pcard-tit-icon { width:28px; height:28px; border-radius:8px; background:color-mix(in srgb, var(--accent) 12%, transparent); display:flex; align-items:center; justify-content:center; font-size:14px; }
     .pcard-count { font-size:11px; color:var(--ink3); font-weight:700; background:var(--surface2); padding:3px 10px; border-radius:12px; }
     .pcard-body { padding:16px 24px 22px; }
@@ -333,7 +333,7 @@ else { $tipoLabel = '👤 Talento profesional'; }
       animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;
     }
     .precio-label { font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:rgba(255,255,255,.7); margin-bottom:4px; }
-    .precio-val { font-family:'Syne',sans-serif; font-size:38px; font-weight:900; color:#fff; }
+    .precio-val { font-family:'DM Sans',sans-serif; font-size:38px; font-weight:900; color:#fff; }
     .precio-unidad { font-size:13px; color:rgba(255,255,255,.7); margin-top:4px; }
 
     .side-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; font-size:13px; }
@@ -348,7 +348,7 @@ else { $tipoLabel = '👤 Talento profesional'; }
       animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;
     }
     .cta-icon { font-size:32px; margin-bottom:10px; }
-    .cta-card h4 { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:#065f46; margin-bottom:6px; }
+    .cta-card h4 { font-family:'DM Sans',sans-serif; font-size:16px; font-weight:800; color:#065f46; margin-bottom:6px; }
     .cta-card p { font-size:12px; color:#047857; margin-bottom:14px; line-height:1.55; }
     .btn-reg { display:inline-block; padding:10px 24px; background:#1f9d55; color:#fff; border-radius:20px; font-weight:700; font-size:13px; text-decoration:none; transition:all .2s; }
     .btn-reg:hover { background:#178a49; transform:translateY(-1px); }
