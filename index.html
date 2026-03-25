@@ -2375,7 +2375,7 @@ height:100%;
                 <p class="tp-loc">📍 ${t.ciudad || 'Quibdó'}, Chocó</p>
                 ${premiumExtra ? `<div style="margin:4px 0 8px;">${premiumExtra}</div>` : ''}
                 <div class="tp-tags">${tags}</div>
-                <a href="talentos.php?id=${t.id}" class="tp-btn">Ver perfil</a>
+                <a href="perfil.php?id=${t.id}&tipo=${t.tipo || 'candidato'}" class="tp-btn">Ver perfil</a>
             </div>`;
                 }).join('');
 
@@ -2585,7 +2585,7 @@ height:100%;
                         <p class="ev-lugar">📍 ${s.ciudad || 'Quibdó'}, Chocó</p>
                         ${precio ? `<p class="ev-precio">${precio}</p>` : ''}
                         ${generos}
-                        <a href="talentos.php?id=${s.id}" class="ev-btn">Ver perfil y contratar →</a>
+                        <a href="perfil.php?id=${s.id}&tipo=${s.tipo || 'candidato'}" class="ev-btn">Ver perfil y contratar →</a>
                     </div>`;
                 }).join('');
                 grid.querySelectorAll('.reveal').forEach(el => ro.observe(el));
