@@ -3169,6 +3169,8 @@ if ($subTipo === 'servicio') {
         <button class="btn-edit" onclick="abrirModal()">✏️ Editar mi perfil</button>
         <a href="<?= $tipo === 'empresa' ? 'empresas.php#u' . $usuario['id'] : ($tipo === 'negocio' ? 'negocios.php#u' . $usuario['id'] : ($subTipo === 'servicio' ? 'servicios.php' : 'talentos.php')) ?>"
           class="btn-sec">🌐 Ver mi perfil en directorio</a>
+        <a href="perfil.php?id=<?= $usuario['id'] ?>&tipo=<?= urlencode($tipo) ?>"
+          class="btn-sec" style="margin-top:6px;">👤 Ver mi perfil público</a>
       </div>
 
       <!-- ── ACTIVIDAD RECIENTE ── -->

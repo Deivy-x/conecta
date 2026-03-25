@@ -465,7 +465,7 @@
               <span class="qc-dl-icon">🏠</span>
               Mi panel
             </a>
-            <a href="perfil.php" class="qc-drop-link">
+            <a href="perfil.php?id=${u.id}&tipo=${u.tipo}" class="qc-drop-link">
               <span class="qc-dl-icon">👤</span>
               Ver mi perfil
             </a>
@@ -600,6 +600,7 @@
             </div>
             <div style="display:flex;gap:8px;">
               <a href="${dashboard}" style="flex:1;text-align:center;padding:10px;border-radius:25px;background:#1f9d55;color:white;font-weight:600;font-size:14px;text-decoration:none;">Mi Panel</a>
+              <a href="perfil.php?id=${u.id}&tipo=${u.tipo}" style="flex:1;text-align:center;padding:10px;border-radius:25px;background:#2563eb;color:white;font-weight:600;font-size:14px;text-decoration:none;">Mi Perfil</a>
               <button onclick="cerrarSesionQC()" style="flex:1;text-align:center;padding:10px;border-radius:25px;border:2px solid #e74c3c;color:#e74c3c;font-weight:600;font-size:14px;background:none;cursor:pointer;font-family:inherit;">Salir</button>
             </div>
           </div>
