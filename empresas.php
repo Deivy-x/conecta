@@ -1786,7 +1786,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         </div>
 
         <!-- CTA -->
-        <a href="talentos.php" class="modal-cta" id="mBtnCta">📩 Ver talentos disponibles</a>
+        <a href="#" class="modal-cta" id="mBtnCta">🏢 Ver perfil completo</a>
       </div>
     </div>
   </div>
@@ -2320,17 +2320,11 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         <div class="info-item" style="grid-column:1/-1"><div class="i-label">Sitio web</div><div class="i-val">${web ? `<a href="${web.startsWith('http')?web:'https://'+web}" target="_blank" style="color:#1a56db;text-decoration:none">${web}</a>` : '—'}</div></div>
       `;
 
-      // Botón CTA
+      // Botón CTA → siempre al perfil de la empresa
       const cta = document.getElementById('mBtnCta');
-      if (web) {
-        cta.href = web.startsWith('http') ? web : 'https://' + web;
-        cta.target = '_blank';
-        cta.textContent = '🌐 Visitar sitio web';
-      } else {
-        cta.href = 'talentos.php';
-        cta.target = '';
-        cta.textContent = '📩 Ver talentos disponibles';
-      }
+      cta.href = uid ? `perfil.php?id=${uid}&tipo=empresa` : 'empresas.php';
+      cta.target = '';
+      cta.textContent = '🏢 Ver perfil completo';
 
       // Botón perfil completo
       const bpE = document.getElementById('mBtnPerfilE');

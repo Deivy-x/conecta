@@ -1,5 +1,6 @@
 <?php
-// get_empleos_empresa.php — Devuelve las convocatorias activas de una empresa
+// Php/get_empleos_empresa.php — Convocatorias activas de una empresa
+// Columnas reales: empresa_id, salario_texto, tipo_contrato, modalidad
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache');
 
@@ -15,12 +16,18 @@ try {
     $db = getDB();
 
     $stmt = $db->prepare("
-        SELECT e.id, e.titulo, e.modalidad, e.ciudad,
-               e.salario, e.fecha_publicacion, e.descripcion
+        SELECT
+            e.id,
+            e.titulo,
+            COALESCE(e.modalidad, e.tipo_contrato, '') AS modalidad,
+            e.ciudad,
+            COALESCE(e.salario_texto, '') AS salario,
+            e.creado_en AS fecha_publicacion,
+            LEFT(e.descripcion, 120) AS descripcion
         FROM empleos e
-        WHERE e.usuario_id = :uid
+        WHERE e.empresa_id = :uid
           AND e.activo = 1
-        ORDER BY e.fecha_publicacion DESC
+        ORDER BY e.creado_en DESC
         LIMIT 10
     ");
     $stmt->execute([':uid' => $uid]);
@@ -28,5 +35,5 @@ try {
 
     echo json_encode($rows);
 } catch (Exception $ex) {
-    echo json_encode([]);
+    echo json_encode(['_error' => $ex->getMessage()]);
 }
