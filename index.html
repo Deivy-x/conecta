@@ -659,12 +659,27 @@ height:100%;
             .quick-cat-btn .cat-label { font-size: 11px; }
         }
         @media (max-width: 600px) {
-            .quick-cats { padding: 48px 16px; }
-            .quick-cats h2 { font-size: 26px; }
-            .quick-cats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-            .quick-cat-btn { padding: 12px 8px 10px; gap: 6px; border-radius: 14px; }
-            .quick-cat-btn .cat-icon { font-size: 20px; }
-            .quick-cat-btn .cat-label { font-size: 10.5px; }
+            .quick-cats { padding: 40px 16px; }
+            .quick-cats h2 { font-size: 24px; }
+            .quick-cats .sub { font-size: 13px; margin-bottom: 24px; }
+            .quick-cats-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                align-items: stretch;
+            }
+            .quick-cat-btn {
+                flex-direction: row;
+                justify-content: flex-start;
+                padding: 11px 16px;
+                gap: 12px;
+                border-radius: 12px;
+                text-align: left;
+            }
+            .quick-cat-btn .cat-icon { font-size: 20px; flex-shrink: 0; }
+            .quick-cat-btn .cat-label { font-size: 13px; font-weight: 600; }
+            .quick-cat-btn:hover { transform: translateX(4px) scale(1); }
+            .quick-cat-btn:hover .cat-icon { transform: scale(1.2) rotate(0deg); }
         }
 
         /* ════ HOW IT WORKS ════ */
