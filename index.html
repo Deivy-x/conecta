@@ -653,11 +653,18 @@ height:100%;
         }
 
         @media (max-width: 900px) {
-            .quick-cats-grid { grid-template-columns: repeat(3, 1fr); }
+            .quick-cats-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+            .quick-cat-btn { padding: 14px 10px 12px; }
+            .quick-cat-btn .cat-icon { font-size: 22px; }
+            .quick-cat-btn .cat-label { font-size: 11px; }
         }
         @media (max-width: 600px) {
-            .quick-cats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .quick-cats { padding: 60px 20px; }
+            .quick-cats { padding: 48px 16px; }
+            .quick-cats h2 { font-size: 26px; }
+            .quick-cats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .quick-cat-btn { padding: 12px 8px 10px; gap: 6px; border-radius: 14px; }
+            .quick-cat-btn .cat-icon { font-size: 20px; }
+            .quick-cat-btn .cat-label { font-size: 10.5px; }
         }
 
         /* ════ HOW IT WORKS ════ */
