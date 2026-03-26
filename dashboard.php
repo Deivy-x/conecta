@@ -449,7 +449,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── GUARDAR APTITUDES EXTRA ───────────────────────────────  if ($action === 'guardar_aptitudes_extra') {
+  // ── GUARDAR APTITUDES EXTRA ───────────────────────────────
+  if ($action === 'guardar_aptitudes_extra') {
     try {
       $bland = substr(trim($_POST['aptitudes_bland'] ?? ''), 0, 500);
       $idiomas = substr(trim($_POST['aptitudes_idiomas'] ?? ''), 0, 300);
