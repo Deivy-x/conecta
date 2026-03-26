@@ -123,7 +123,7 @@ function catIcono($cat, $iconos) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Empleos & Cultura – Quibdó Conecta</title>
+  <title>Empleos – Quibdó Conecta</title>
   <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -137,10 +137,7 @@ function catIcono($cat, $iconos) {
     .logo{width:52px;height:auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.15))}
     .brand{font-size:22px;font-weight:800;color:#111}
     .brand span{color:#1f9d55}
-    .nav-center{display:flex;align-items:center;gap:22px;flex:1;justify-content:center}
-    .nav-center a{color:#333;text-decoration:none;font-size:15px;font-weight:500;padding:6px 4px;position:relative}
-    .nav-center a::after{content:"";position:absolute;left:0;bottom:-6px;width:0%;height:2px;background:#1f9d55;transition:width .3s}
-    .nav-center a:hover::after,.nav-center a.active::after{width:100%}
+    
     .nav-right{display:flex;align-items:center;gap:18px}
     .login{color:#1f9d55;text-decoration:none;font-size:14.5px;font-weight:600;padding:8px 18px;border:2px solid #1f9d55;border-radius:30px;transition:all .3s}
     .login:hover{background:#1f9d55;color:white}
@@ -177,14 +174,6 @@ function catIcono($cat, $iconos) {
     .stat{text-align:center;color:white}
     .stat-num{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:#2ecc71}
     .stat-label{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px}
-
-    /* ── TABS ── */
-    .tabs-nav{background:white;border-bottom:1px solid rgba(0,0,0,.08);position:sticky;top:78px;z-index:500;display:flex;justify-content:center;padding:0 48px}
-    .tab-link{padding:18px 28px;font-size:15px;font-weight:600;color:#666;text-decoration:none;border-bottom:3px solid transparent;transition:all .25s;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:8px}
-    .tab-link:hover{color:#1f9d55}
-    .tab-link.activo{color:#1f9d55;border-bottom-color:#1f9d55}
-    .tab-panel{display:none}
-    .tab-panel.activo{display:block}
 
     /* ── CATEGORÍAS ── */
     .categorias{padding:60px 48px;background:#f9fafb;text-align:center}
@@ -227,29 +216,7 @@ function catIcono($cat, $iconos) {
     .empty-bd{grid-column:1/-1;text-align:center;padding:60px 20px;color:#999}
     .empty-bd .ei{font-size:48px;display:block;margin-bottom:12px}
 
-    /* ── SECCIÓN CULTURAL ── */
-    .cultural{padding:60px 48px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)}
-    .cultural-header{text-align:center;margin-bottom:48px}
-    .cultural-badge{display:inline-block;background:rgba(163,230,53,.15);border:1px solid rgba(163,230,53,.35);color:#a3e635;font-size:12px;font-weight:700;padding:5px 18px;border-radius:30px;letter-spacing:1px;text-transform:uppercase;margin-bottom:18px}
-    .cultural h2{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:white;margin-bottom:12px;line-height:1.1}
-    .cultural h2 span{color:#a3e635}
-    .cultural-sub{color:rgba(255,255,255,.6);font-size:15px;max-width:600px;margin:0 auto;line-height:1.6}
-    .cultural-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;max-width:1200px;margin:0 auto}
-    .cult-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:24px;transition:all .3s;cursor:pointer}
-    .cult-card:hover{background:rgba(255,255,255,.1);border-color:rgba(163,230,53,.4);transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.3)}
-    .cult-tipo{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;padding:4px 10px;border-radius:20px;display:inline-block}
-    .cult-tipo.convocatoria{background:rgba(163,230,53,.15);color:#a3e635}
-    .cult-tipo.evento{background:rgba(99,102,241,.2);color:#818cf8}
-    .cult-tipo.beca{background:rgba(245,158,11,.15);color:#fbbf24}
-    .cult-tipo.residencia{background:rgba(236,72,153,.15);color:#f472b6}
-    .cult-card h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:white;margin-bottom:6px;line-height:1.2}
-    .cult-org{color:rgba(255,255,255,.55);font-size:13px;font-weight:600;margin-bottom:8px}
-    .cult-desc{font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:16px}
-    .cult-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
-    .cult-chip{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
-    .cult-deadline{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.45);margin-bottom:16px}
-    .btn-cult{display:block;text-align:center;padding:10px;border:1.5px solid rgba(163,230,53,.5);color:#a3e635;border-radius:25px;font-weight:700;font-size:13px;font-family:'DM Sans',sans-serif;background:transparent;cursor:pointer;transition:all .3s}
-    .btn-cult:hover{background:rgba(163,230,53,.15);border-color:#a3e635}
+    
 
     /* ── MODAL ── */
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
@@ -273,16 +240,7 @@ function catIcono($cat, $iconos) {
     .modal-btn{display:block;width:100%;padding:15px;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:white;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 6px 20px rgba(31,157,85,.35);transition:transform .2s,box-shadow .2s}
     .modal-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(31,157,85,.45)}
 
-    /* ── MODAL CULTURAL ── */
-    .modal-box.cult-modal{background:#16213e;color:white}
-    .modal-box.cult-modal .modal-close{color:rgba(255,255,255,.5)}
-    .modal-box.cult-modal .modal-close:hover{color:white}
-    .modal-box.cult-modal h2{color:white}
-    .modal-box.cult-modal .modal-empresa-nm{color:#a3e635}
-    .modal-box.cult-modal .modal-loc{color:rgba(255,255,255,.5)}
-    .modal-box.cult-modal .modal-chip{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
-    .modal-box.cult-modal .modal-desc{color:rgba(255,255,255,.7)}
-    .modal-box.cult-modal .modal-btn{background:linear-gradient(135deg,#374151,#a3e635 200%);border:1.5px solid rgba(163,230,53,.4);color:white}
+    
 
     /* ── CTA FINAL ── */
     .final-cta{padding:80px 48px;background:linear-gradient(135deg,#0f172a,#1a2e1a);text-align:center;color:white}
@@ -303,9 +261,8 @@ function catIcono($cat, $iconos) {
 
     /* ── RESPONSIVE ── */
     @media(max-width:900px){
-      .navbar{padding:0 24px}.nav-center,.nav-right{display:none}.hamburger{display:flex}
+      .navbar{padding:0 24px}.nav-right{display:none}.hamburger{display:flex}
       .hero{padding:120px 24px 80px}.hero h1{font-size:36px}
-      .tabs-nav{padding:0 16px}
       .categorias,.empleos{padding:50px 20px}.cultural{padding:50px 20px}.final-cta{padding:60px 20px}
       .empleos-grid,.cultural-grid{grid-template-columns:1fr}
       .cultural h2{font-size:28px}
@@ -325,13 +282,6 @@ function catIcono($cat, $iconos) {
     <img src="Imagenes/QuibConec.png" alt="QuibdóConecta" class="logo">
     <span class="brand">Quibdó<span>Conecta</span></span>
   </div>
-  <nav class="nav-center">
-    <a href="index.html">Inicio</a>
-    <a href="Empleo.php" class="active">Empleos</a>
-    <a href="talentos.php">Talento</a>
-    <a href="empresas.php">Empresas</a>
-    <a href="Ayuda.html">Ayuda</a>
-  </nav>
   <div class="nav-right">
     <a href="inicio_sesion.php" class="login">Iniciar sesión</a>
     <a href="registro.php" class="register">Registrarse</a>
@@ -356,8 +306,8 @@ function catIcono($cat, $iconos) {
 <!-- HERO -->
 <section class="hero">
   <div class="hero-content reveal">
-    <h1>Empleos &amp; <span>Cultura</span><br>del Chocó</h1>
-    <p class="hero-subtitle">Vacantes reales de empresas locales y oportunidades culturales de la región más biodiversa de Colombia.</p>
+    <h1>Empleos del <span>Chocó</span></h1>
+    <p class="hero-subtitle">Vacantes reales de empresas y negocios locales del Chocó. Encuentra tu próxima oportunidad laboral.</p>
     <div class="search-bar">
       <div class="search-field">
         <span class="icon">💼</span>
@@ -373,19 +323,10 @@ function catIcono($cat, $iconos) {
     <div class="hero-stats">
       <div class="stat"><div class="stat-num" id="statVacantes"><?= $totalVacantes > 0 ? '+' . $totalVacantes : '+300' ?></div><div class="stat-label">Vacantes activas</div></div>
       <div class="stat"><div class="stat-num"><?= $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120' ?></div><div class="stat-label">Empresas registradas</div></div>
-      <div class="stat"><div class="stat-num">18</div><div class="stat-label">Trabajos culturales</div></div>
     </div>
   </div>
 </section>
 
-<!-- TABS -->
-<div class="tabs-nav">
-  <button class="tab-link activo" onclick="switchTab('vacantes',this)">💼 Vacantes de empresas</button>
-  <button class="tab-link" onclick="switchTab('cultural',this)">🎭 Trabajos culturales</button>
-</div>
-
-<!-- ═══════════════════════ TAB: VACANTES ═══════════════════════ -->
-<div class="tab-panel activo" id="panel-vacantes">
 
   <!-- CATEGORÍAS -->
   <section class="categorias">
@@ -469,142 +410,7 @@ function catIcono($cat, $iconos) {
       <?php endif; ?>
     </div>
   </section>
-</div>
 
-<!-- ═══════════════════════ TAB: CULTURAL ═══════════════════════ -->
-<div class="tab-panel" id="panel-cultural">
-  <section class="cultural">
-    <div class="cultural-header">
-      <span class="cultural-badge">🌿 Identidad del Chocó</span>
-      <h2>Trabajos <span>Culturales</span><br>del Chocó</h2>
-      <p class="cultural-sub">Convocatorias, eventos, becas y residencias para artistas, músicos, fotógrafos y creadores del Pacífico colombiano.</p>
-    </div>
-
-    <div class="cultural-grid" id="cultGrid">
-
-      <div class="cult-card" data-tipo="convocatoria"
-        data-titulo="Músico de Chirimía"
-        data-org="Ministerio de Cultura – Chocó"
-        data-desc="Convocatoria para músicos tradicionales de chirimía que quieran representar al departamento del Chocó en el Festival Iberoamericano de Teatro de Bogotá. Se requiere experiencia mínima de 2 años en música tradicional del Pacífico."
-        data-chips="Presencial|Quibdó|2–5 personas|Pagado"
-        data-deadline="15 de agosto, 2026">
-        <span class="cult-tipo convocatoria">🎺 Convocatoria</span>
-        <h3>Músico de Chirimía</h3>
-        <p class="cult-org">Ministerio de Cultura – Chocó</p>
-        <p class="cult-desc">Representar al Chocó en el Festival Iberoamericano de Teatro de Bogotá con música tradicional del Pacífico.</p>
-        <div class="cult-meta"><span class="cult-chip">Presencial</span><span class="cult-chip">Quibdó</span><span class="cult-chip">Pagado</span></div>
-        <div class="cult-deadline">📅 Cierre: 15 de agosto, 2026</div>
-        <button class="btn-cult">Ver convocatoria</button>
-      </div>
-
-      <div class="cult-card" data-tipo="beca"
-        data-titulo="Beca Creación Literaria Afro"
-        data-org="Alcaldía de Quibdó – Casa de Cultura"
-        data-desc="Beca destinada a escritores y narradores afrocolombianos del Chocó para el desarrollo de obras literarias que recojan tradiciones orales, leyendas y memorias del territorio. Incluye publicación, taller y dotación económica de $3.500.000."
-        data-chips="Escritura|Quibdó|Individual|$3.500.000"
-        data-deadline="30 de julio, 2026">
-        <span class="cult-tipo beca">✍️ Beca</span>
-        <h3>Beca Creación Literaria Afro</h3>
-        <p class="cult-org">Casa de Cultura – Alcaldía de Quibdó</p>
-        <p class="cult-desc">Para escritores y narradores que quieran preservar las tradiciones orales afrocolombianas del Chocó.</p>
-        <div class="cult-meta"><span class="cult-chip">Escritura</span><span class="cult-chip">Individual</span><span class="cult-chip">$3.500.000</span></div>
-        <div class="cult-deadline">📅 Cierre: 30 de julio, 2026</div>
-        <button class="btn-cult">Ver beca</button>
-      </div>
-
-      <div class="cult-card" data-tipo="evento"
-        data-titulo="DJ Fiestas Patronales San Pacho"
-        data-org="Comité San Francisco de Asís"
-        data-desc="Se requieren DJs con repertorio de champeta, salsa choke, currulao electrónico y música regional para las Fiestas Patronales de San Pacho (Patrimonio Inmaterial de la UNESCO). 10 noches de presentación, pago por noche."
-        data-chips="Por evento|Quibdó|Sep–Oct|$350.000/noche"
-        data-deadline="Abierto">
-        <span class="cult-tipo evento">🎧 Evento</span>
-        <h3>DJ Fiestas Patronales San Pacho</h3>
-        <p class="cult-org">Comité San Francisco de Asís</p>
-        <p class="cult-desc">10 noches de música en las Fiestas Patronales de San Pacho — Patrimonio Inmaterial UNESCO.</p>
-        <div class="cult-meta"><span class="cult-chip">Sep–Oct 2026</span><span class="cult-chip">$350.000/noche</span><span class="cult-chip">Quibdó</span></div>
-        <div class="cult-deadline">📅 Postulación: Abierto</div>
-        <button class="btn-cult">Ver oportunidad</button>
-      </div>
-
-      <div class="cult-card" data-tipo="residencia"
-        data-titulo="Residencia Artística Baudó"
-        data-org="Fundación Selva Viva"
-        data-desc="Residencia de 4 semanas en el Alto Baudó para artistas visuales, fotógrafos y documentalistas que quieran explorar la biodiversidad del Chocó. Incluye alojamiento, alimentación y kit de materiales. Resultado: exposición en Quibdó."
-        data-chips="4 semanas|Alto Baudó|5 cupos|Todo pago"
-        data-deadline="1 de septiembre, 2026">
-        <span class="cult-tipo residencia">🎨 Residencia</span>
-        <h3>Residencia Artística Baudó</h3>
-        <p class="cult-org">Fundación Selva Viva</p>
-        <p class="cult-desc">4 semanas en el Alto Baudó para artistas visuales y fotógrafos explorando la biodiversidad chocoana.</p>
-        <div class="cult-meta"><span class="cult-chip">4 semanas</span><span class="cult-chip">5 cupos</span><span class="cult-chip">Todo pago</span></div>
-        <div class="cult-deadline">📅 Cierre: 1 de septiembre, 2026</div>
-        <button class="btn-cult">Ver residencia</button>
-      </div>
-
-      <div class="cult-card" data-tipo="convocatoria"
-        data-titulo="Fotógrafo Documental"
-        data-org="Periódico El Chocoano"
-        data-desc="El Chocoano busca fotógrafo documental freelance para coberturas de eventos culturales, sociales y comunitarios del departamento. Se requiere cámara propia y portafolio. Pago por entrega."
-        data-chips="Freelance|Todo el Chocó|Portafolio|Pagado"
-        data-deadline="Abierto permanente">
-        <span class="cult-tipo convocatoria">📷 Convocatoria</span>
-        <h3>Fotógrafo Documental</h3>
-        <p class="cult-org">Periódico El Chocoano</p>
-        <p class="cult-desc">Cobertura de eventos culturales, comunitarios y sociales en todo el departamento del Chocó.</p>
-        <div class="cult-meta"><span class="cult-chip">Freelance</span><span class="cult-chip">Todo el Chocó</span><span class="cult-chip">Portafolio</span></div>
-        <div class="cult-deadline">📅 Abierto permanente</div>
-        <button class="btn-cult">Ver convocatoria</button>
-      </div>
-
-      <div class="cult-card" data-tipo="evento"
-        data-titulo="Instructor de Danza Afro"
-        data-org="SENA Regional Chocó"
-        data-desc="El SENA Regional Chocó busca instructor de danzas tradicionales afrocolombianas (currulao, abozao, jota chocoana) para dictar talleres formativos a jóvenes de 14 a 25 años. Contrato de 6 meses. Requisito: experiencia y aval de comunidad."
-        data-chips="6 meses|Quibdó|Contrato|Salario mínimo+"
-        data-deadline="20 de julio, 2026">
-        <span class="cult-tipo evento">💃 Evento</span>
-        <h3>Instructor de Danza Afro</h3>
-        <p class="cult-org">SENA Regional Chocó</p>
-        <p class="cult-desc">Talleres de danza tradicional afrocolombiana para jóvenes chocoanos. Contrato 6 meses.</p>
-        <div class="cult-meta"><span class="cult-chip">6 meses</span><span class="cult-chip">Quibdó</span><span class="cult-chip">Salario mínimo+</span></div>
-        <div class="cult-deadline">📅 Cierre: 20 de julio, 2026</div>
-        <button class="btn-cult">Ver oportunidad</button>
-      </div>
-
-      <div class="cult-card" data-tipo="beca"
-        data-titulo="Beca Músicos Jóvenes Chocó"
-        data-org="Gobernación del Chocó – Secretaría de Cultura"
-        data-desc="Programa de becas para músicos jóvenes de 15 a 28 años, enfocado en géneros tradicionales del Pacífico. Incluye instrumento, clases durante 1 año y participación en el Festival de Músicas del Pacífico Petronio Álvarez."
-        data-chips="1 año|15–28 años|Instrumento incluido|Petronio"
-        data-deadline="10 de agosto, 2026">
-        <span class="cult-tipo beca">🎵 Beca</span>
-        <h3>Beca Músicos Jóvenes Chocó</h3>
-        <p class="cult-org">Gobernación del Chocó – Secretaría de Cultura</p>
-        <p class="cult-desc">Instrumento + clases por 1 año + participación en Petronio Álvarez para músicos de 15 a 28 años.</p>
-        <div class="cult-meta"><span class="cult-chip">15–28 años</span><span class="cult-chip">Instrumento</span><span class="cult-chip">Petronio 2026</span></div>
-        <div class="cult-deadline">📅 Cierre: 10 de agosto, 2026</div>
-        <button class="btn-cult">Ver beca</button>
-      </div>
-
-      <div class="cult-card" data-tipo="convocatoria"
-        data-titulo="Actor / Actriz Teatro Comunitario"
-        data-org="Teatro Experimental del Chocó"
-        data-desc="Compañía de teatro comunitario busca actores y actrices sin experiencia formal para nuevo montaje que aborda la historia de las comunidades del río Atrato. Ensayos 3 veces por semana. Presentaciones en Quibdó y Bojayá."
-        data-chips="Sin exp. requerida|Quibdó + Bojayá|Ensayos x3/sem|Presentaciones"
-        data-deadline="Abierto">
-        <span class="cult-tipo convocatoria">🎭 Convocatoria</span>
-        <h3>Actor / Actriz Teatro Comunitario</h3>
-        <p class="cult-org">Teatro Experimental del Chocó</p>
-        <p class="cult-desc">Montaje sobre las comunidades del río Atrato. Sin experiencia requerida. Presentaciones en Quibdó y Bojayá.</p>
-        <div class="cult-meta"><span class="cult-chip">Sin exp. req.</span><span class="cult-chip">Quibdó + Bojayá</span></div>
-        <div class="cult-deadline">📅 Abierto</div>
-        <button class="btn-cult">Ver convocatoria</button>
-      </div>
-
-    </div>
-  </section>
-</div>
 
 <!-- CTA FINAL -->
 <section class="final-cta">
@@ -681,7 +487,7 @@ function catIcono($cat, $iconos) {
 
 <!-- FOOTER -->
 <footer>
-  <p>© 2026 <span>QuibdóConecta</span> — Plataforma de empleos y cultura del Chocó.</p>
+  <p>© 2026 <span>QuibdóConecta</span> — Plataforma de empleos y talento del Chocó.</p>
 </footer>
 
 <script>
@@ -691,13 +497,6 @@ const ham = document.getElementById('hamburger'), mob = document.getElementById(
 ham.addEventListener('click', () => { ham.classList.toggle('open'); mob.classList.toggle('open'); });
 document.addEventListener('click', e => { if (!ham.contains(e.target) && !mob.contains(e.target)) { ham.classList.remove('open'); mob.classList.remove('open'); } });
 
-// TABS
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-link').forEach(b => b.classList.remove('activo'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
-  btn.classList.add('activo');
-  document.getElementById('panel-' + tab).classList.add('activo');
-}
 
 // CATEGORÍAS
 const allCards = Array.from(document.querySelectorAll('.empleo-card'));
@@ -750,7 +549,6 @@ document.querySelectorAll('.filtro-btn').forEach(btn => {
 function buscar() {
   textoBusqueda = (document.getElementById('searchCargo').value.trim() + ' ' + document.getElementById('searchLugar').value.trim()).trim().toLowerCase();
   aplicarFiltros();
-  document.querySelector('.tab-link').click();
   document.getElementById('sec-empleos').scrollIntoView({ behavior: 'smooth' });
 }
 document.getElementById('searchBtn').addEventListener('click', buscar);
@@ -953,29 +751,6 @@ function solicitarDesdeModal() { window.location.href = 'registro.php'; }
 
 document.querySelectorAll('.btn-ver').forEach(btn => btn.addEventListener('click', () => abrirModal(btn.closest('.empleo-card'))));
 
-// MODAL CULTURAL
-document.querySelectorAll('.btn-cult').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const card = btn.closest('.cult-card');
-    document.getElementById('modalIcon').textContent = '🎭';
-    document.getElementById('modalTipo').textContent = (card.dataset.tipo || 'Cultural').charAt(0).toUpperCase() + (card.dataset.tipo || 'cultural').slice(1);
-    document.getElementById('modalTitulo').textContent = card.dataset.titulo || '';
-    document.getElementById('modalEmpresa').textContent = '🌿 ' + (card.dataset.org || '');
-    document.getElementById('modalLoc').textContent = '📅 Cierre: ' + (card.dataset.deadline || 'Ver convocatoria');
-    document.getElementById('modalSalario').textContent = '';
-    document.getElementById('modalModalidad').textContent = '';
-    document.getElementById('modalDesc').textContent = card.dataset.desc || '';
-    const row = document.getElementById('modalBadgesRow');
-    row.innerHTML = '';
-    if (card.dataset.chips) {
-      card.dataset.chips.split('|').forEach(chip => {
-        row.innerHTML += `<span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(163,230,53,.15);color:#a3e635">${chip}</span>`;
-      });
-    }
-    document.getElementById('modalBox').className = 'modal-box cult-modal';
-    overlay.classList.add('open');
-  });
-});
 
 // SCROLL REVEAL
 const obs = new IntersectionObserver(entries => {
