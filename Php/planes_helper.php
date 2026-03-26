@@ -92,6 +92,28 @@ const PLANES = [
         'posicion'       => 'primero_siempre',
         'historial_dias' => 90,
     ],
+    // ── Plan especial de demostración ────────────────────────
+    'demo' => [
+        'nombre'         => '🧪 Modo Demo',
+        'aplicaciones'   => -1,
+        'vacantes'       => -1,
+        'mensajes'       => -1,
+        'ver_candidatos' => -1,
+        'ver_empresas'   => -1,
+        'visitantes'     => -1,
+        'candidatos_por_vacante' => -1,
+        'logo'           => true,
+        'alertas'        => true,
+        'portafolio'     => true,
+        'verificado'     => true,
+        'banner'         => true,
+        'reporte_pdf'    => true,
+        'redes'          => true,
+        'estadisticas'   => 'completas',
+        'soporte'        => 'dedicado',
+        'posicion'       => 'primero_siempre',
+        'historial_dias' => 90,
+    ],
     'microempresa' => [
         'nombre'         => 'Microempresa',
         'aplicaciones'   => 0,   // no aplica para empresas
@@ -134,6 +156,13 @@ const BADGE_A_PLAN = [
     'profundo azul'      => 'azul_profundo',
     'plan azul'          => 'azul_profundo',
     'azul'               => 'azul_profundo',
+    // Demo / prueba
+    'modo demo'          => 'demo',
+    'demo'               => 'demo',
+    'modo_demo'          => 'demo',
+    'prueba'             => 'demo',
+    'test'               => 'demo',
+    '🧪 modo demo'       => 'demo',
     // Microempresa
     'microempresa'       => 'microempresa',
     'micro empresa'      => 'microempresa',
@@ -148,6 +177,7 @@ const PLAN_PRIORIDAD = [
     'verde_selva'  => 2,
     'amarillo_oro' => 3,
     'azul_profundo'=> 4,
+    'demo'         => 5,  // supera todo — acceso total
 ];
 
 /**

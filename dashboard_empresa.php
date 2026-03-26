@@ -956,6 +956,21 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
 
 </div><!-- /contenido -->
 
+<!-- ── MODAL CROP BANNER EMPRESA ── -->
+<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:99999;align-items:center;justify-content:center;padding:20px" id="cropBannerModal">
+  <div style="background:#fff;border-radius:20px;padding:26px;max-width:700px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="font-size:16px;font-weight:800;color:#1a56db;margin-bottom:14px;text-align:center">🖼️ Encuadra el banner de tu empresa</div>
+    <div style="position:relative;width:100%;height:220px;overflow:hidden;border-radius:12px;background:#000;display:flex;align-items:center;justify-content:center">
+      <img id="cropBannerImg" style="max-width:100%;display:block">
+    </div>
+    <p style="font-size:12px;color:#64748b;text-align:center;margin:10px 0">Arrastra y haz zoom para encuadrar · Proporción 4:1</p>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button onclick="cancelarCropBanner()" style="flex:1;padding:11px;border-radius:10px;border:1px solid #e0e0e0;background:#f5f5f5;font-size:13px;font-weight:700;cursor:pointer;color:#546e7a">Cancelar</button>
+      <button onclick="confirmarCropBanner()" id="btnConfirmarCropBanner" style="flex:2;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a56db,#3b82f6);color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅ Usar este banner</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL EDITAR EMPRESA ── -->
 <div class="modal-ov" id="modalEditar">
   <div class="modal-box">
@@ -1296,53 +1311,93 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
   }
 
   // ── BANNER: subir ─────────────────────────────────────────
-  async function subirBanner(input) {
+  // ── BANNER CROP ────────────────────────────────────────────
+  let cropperBannerInstance = null;
+
+  function subirBanner(input) {
     const file = input.files[0];
     if (!file) return;
-    const msg = document.getElementById('bannerMsg');
-    msg.style.display = 'none';
-    // Preview inmediato
+    input.value = '';
     const reader = new FileReader();
     reader.onload = e => {
-      const zone = document.getElementById('bannerZone');
-      let img = document.getElementById('bannerImg');
-      const ph = document.getElementById('bannerPlaceholder');
-      if (ph) ph.style.display = 'none';
-      if (!img) {
-        img = document.createElement('img');
-        img.id = 'bannerImg';
-        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0';
-        zone.insertBefore(img, zone.firstChild);
-      }
+      const img = document.getElementById('cropBannerImg');
+      if (cropperBannerInstance) { cropperBannerInstance.destroy(); cropperBannerInstance = null; }
       img.src = e.target.result;
+      document.getElementById('cropBannerModal').style.display = 'flex';
+      img.onload = () => {
+        cropperBannerInstance = new Cropper(img, {
+          aspectRatio: 4,
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 1,
+          cropBoxResizable: false,
+          cropBoxMovable: false,
+          toggleDragModeOnDblclick: false,
+          background: false,
+          responsive: true
+        });
+      };
     };
     reader.readAsDataURL(file);
-    // Subir
-    const fd = new FormData();
-    fd.append('_action', 'subir_banner');
-    fd.append('banner', file);
-    try {
-      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
-      const j = await r.json();
-      if (!j.ok) {
-        msg.textContent = '❌ ' + (j.msg || 'Error al subir banner');
-        msg.style.display = 'block';
-      } else {
-        const zone = document.getElementById('bannerZone');
-        if (!zone.querySelector('.btn-quitar-banner')) {
-          const btn = document.createElement('button');
-          btn.className = 'btn-quitar-banner';
-          btn.textContent = '🗑 Quitar';
-          btn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;z-index:5';
-          btn.onclick = (e) => { e.stopPropagation(); eliminarBanner(); };
-          zone.appendChild(btn);
-        }
-      }
-    } catch(e) {
-      msg.textContent = '❌ Error de conexión.';
-      msg.style.display = 'block';
+  }
+
+  function cancelarCropBanner() {
+    document.getElementById('cropBannerModal').style.display = 'none';
+    if (cropperBannerInstance) { cropperBannerInstance.destroy(); cropperBannerInstance = null; }
+  }
+
+  async function confirmarCropBanner() {
+    if (!cropperBannerInstance) return;
+    const btn = document.getElementById('btnConfirmarCropBanner');
+    btn.textContent = '⏳ Guardando…'; btn.disabled = true;
+    const msg = document.getElementById('bannerMsg');
+
+    const canvas = cropperBannerInstance.getCroppedCanvas({ width: 1200, height: 300, imageSmoothingQuality: 'high' });
+    const dataUrl = canvas.toDataURL('image/jpeg', .92);
+
+    // Preview inmediato
+    const zone = document.getElementById('bannerZone');
+    let img = document.getElementById('bannerImg');
+    const ph = document.getElementById('bannerPlaceholder');
+    if (ph) ph.style.display = 'none';
+    if (!img) {
+      img = document.createElement('img');
+      img.id = 'bannerImg';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0';
+      zone.insertBefore(img, zone.firstChild);
     }
-    input.value = '';
+    img.src = dataUrl;
+
+    document.getElementById('cropBannerModal').style.display = 'none';
+    if (cropperBannerInstance) { cropperBannerInstance.destroy(); cropperBannerInstance = null; }
+
+    canvas.toBlob(async blob => {
+      const fd = new FormData();
+      fd.append('_action', 'subir_banner');
+      fd.append('banner', new File([blob], 'banner.jpg', { type: 'image/jpeg' }));
+      try {
+        const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (!j.ok) {
+          msg.textContent = '❌ ' + (j.msg || 'Error al subir banner');
+          msg.style.display = 'block';
+        } else {
+          msg.style.display = 'none';
+          if (!zone.querySelector('.btn-quitar-banner')) {
+            const qbtn = document.createElement('button');
+            qbtn.className = 'btn-quitar-banner';
+            qbtn.textContent = '🗑 Quitar';
+            qbtn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;z-index:5';
+            qbtn.onclick = (ev) => { ev.stopPropagation(); eliminarBanner(); };
+            zone.appendChild(qbtn);
+          }
+        }
+      } catch(e) {
+        msg.textContent = '❌ Error de conexión.';
+        msg.style.display = 'block';
+      }
+      btn.textContent = '✅ Usar este banner'; btn.disabled = false;
+    }, 'image/jpeg', .92);
   }
 
   // ── BANNER: eliminar ──────────────────────────────────────
