@@ -527,17 +527,17 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
     .hero-link-verde {
       background: #1a56db;
       color: white;
-      box-shadow: 0 4px 16px rgba(31,157,85,.45);
+      box-shadow: 0 4px 16px rgba(31, 157, 85, .45);
     }
 
     .hero-link-verde:hover {
       background: #166f3d;
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(31,157,85,.55);
+      box-shadow: 0 8px 24px rgba(31, 157, 85, .55);
     }
 
     .hero-link-outline {
-      border: 2px solid rgba(255,255,255,.6);
+      border: 2px solid rgba(255, 255, 255, .6);
       color: white;
     }
 
@@ -885,7 +885,9 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       backdrop-filter: blur(6px);
     }
 
-    .modal-overlay.open { display: flex; }
+    .modal-overlay.open {
+      display: flex;
+    }
 
     .modal-box {
       background: #fff;
@@ -893,7 +895,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       max-width: 620px;
       width: 100%;
       box-shadow: 0 40px 100px rgba(0, 0, 0, 0.25);
-      animation: fadeUp 0.32s cubic-bezier(.22,.68,0,1.2) both;
+      animation: fadeUp 0.32s cubic-bezier(.22, .68, 0, 1.2) both;
       position: relative;
       max-height: 90vh;
       overflow-y: auto;
@@ -901,8 +903,15 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
     }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(28px) scale(.97) }
-      to   { opacity: 1; transform: translateY(0)  scale(1) }
+      from {
+        opacity: 0;
+        transform: translateY(28px) scale(.97)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
     }
 
     /* Cover */
@@ -918,7 +927,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       position: absolute;
       top: 14px;
       right: 16px;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.2);
       border: none;
       width: 32px;
       height: 32px;
@@ -933,7 +942,10 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       transition: background .2s;
       backdrop-filter: blur(4px);
     }
-    .modal-close:hover { background: rgba(255,255,255,0.35); }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
 
     /* Avatar flotante */
     .modal-avatar-wrap {
@@ -960,7 +972,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       color: white;
       flex-shrink: 0;
       border: 4px solid white;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       overflow: hidden;
     }
 
@@ -1007,8 +1019,14 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       flex-wrap: wrap;
     }
 
-    .modal-meta span:first-child { color: #1a56db; font-weight: 600; }
-    .meta-sep { color: #cbd5e1; }
+    .modal-meta span:first-child {
+      color: #1a56db;
+      font-weight: 600;
+    }
+
+    .meta-sep {
+      color: #cbd5e1;
+    }
 
     .btn-ver-perfil {
       flex-shrink: 0;
@@ -1022,6 +1040,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       transition: all .2s;
       white-space: nowrap;
     }
+
     .btn-ver-perfil:hover {
       border-color: #1a56db;
       color: #1a56db;
@@ -1058,14 +1077,17 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       font-family: 'DM Sans', sans-serif;
       transition: all .2s;
     }
+
     .modal-tab.active {
       background: white;
       color: #0f172a;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     /* Panels */
-    .modal-panel { min-height: 80px; }
+    .modal-panel {
+      min-height: 80px;
+    }
 
     /* Loading spinner */
     .conv-loading {
@@ -1076,17 +1098,28 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       color: #64748b;
       font-size: 14px;
     }
+
     .conv-spinner {
-      width: 18px; height: 18px;
+      width: 18px;
+      height: 18px;
       border: 2px solid #e2e8f0;
       border-top-color: #1a56db;
       border-radius: 50%;
       animation: spin .7s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg) } }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
 
     /* Lista convocatorias */
-    .conv-lista { display: flex; flex-direction: column; gap: 10px; }
+    .conv-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
     .conv-item {
       display: flex;
@@ -1099,13 +1132,16 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       text-decoration: none;
       transition: all .2s;
     }
+
     .conv-item:hover {
       border-color: #1a56db;
       background: #eff6ff;
       transform: translateX(3px);
     }
+
     .conv-icon {
-      width: 40px; height: 40px;
+      width: 40px;
+      height: 40px;
       background: linear-gradient(135deg, #eff6ff, #dbeafe);
       border-radius: 10px;
       display: flex;
@@ -1114,7 +1150,12 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       font-size: 18px;
       flex-shrink: 0;
     }
-    .conv-info { flex: 1; min-width: 0; }
+
+    .conv-info {
+      flex: 1;
+      min-width: 0;
+    }
+
     .conv-titulo {
       font-size: 14px;
       font-weight: 700;
@@ -1124,6 +1165,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     .conv-meta {
       display: flex;
       align-items: center;
@@ -1132,6 +1174,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       color: #64748b;
       flex-wrap: wrap;
     }
+
     .conv-tag {
       background: #e0f2fe;
       color: #0369a1;
@@ -1140,6 +1183,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       font-weight: 600;
       font-size: 11px;
     }
+
     .conv-arrow {
       color: #94a3b8;
       font-size: 16px;
@@ -1153,8 +1197,17 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       padding: 32px 20px;
       color: #94a3b8;
     }
-    .conv-empty span { font-size: 36px; display: block; margin-bottom: 8px; }
-    .conv-empty p { font-size: 14px; margin: 0; }
+
+    .conv-empty span {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .conv-empty p {
+      font-size: 14px;
+      margin: 0;
+    }
 
     /* Info grid */
     .info-grid {
@@ -1162,12 +1215,14 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
+
     .info-item {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
       padding: 12px 14px;
     }
+
     .info-item .i-label {
       font-size: 11px;
       font-weight: 700;
@@ -1176,6 +1231,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       color: #94a3b8;
       margin-bottom: 4px;
     }
+
     .info-item .i-val {
       font-size: 14px;
       font-weight: 600;
@@ -1199,13 +1255,28 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       box-shadow: 0 6px 20px rgba(26, 86, 219, 0.35);
       transition: transform .2s, box-shadow .2s;
     }
-    .modal-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(26,86,219,.45); }
+
+    .modal-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(26, 86, 219, .45);
+    }
 
     @media(max-width:600px) {
-      .modal-box { border-radius: 20px; }
-      .modal-body { padding: 4px 18px 22px; }
-      .modal-avatar-wrap { padding: 0 18px; }
-      .info-grid { grid-template-columns: 1fr; }
+      .modal-box {
+        border-radius: 20px;
+      }
+
+      .modal-body {
+        padding: 4px 18px 22px;
+      }
+
+      .modal-avatar-wrap {
+        padding: 0 18px;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* CTA EMPRESA */
@@ -1719,15 +1790,13 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
             data-tipo="<?= $empresa['tiene_verificado'] ? 'verificada' : '' ?> <?= $empresa['tiene_destacado'] ? 'destacada' : '' ?>"
             data-nombre="<?= $nombreEmpresa ?>" data-sector="<?= $sec ?>" data-ubicacion="<?= $ciu ?>"
             data-desc="<?= $desc ?>" data-grad="<?= $grd ?>" data-initials="<?= $ini ?>"
-            data-web="<?= htmlspecialchars($empresa['sitio_web'] ?? '') ?>"
-            data-logo="<?= $logoSrc ?>">
+            data-web="<?= htmlspecialchars($empresa['sitio_web'] ?? '') ?>" data-logo="<?= $logoSrc ?>">
 
             <?= $badgePrincipalLabel ?>
 
             <div class="empresa-avatar" style="background:<?= $grd ?>;overflow:hidden">
               <?php if ($logoSrc): ?>
-                <img src="<?= $logoSrc ?>" alt="<?= $ini ?>"
-                  style="width:100%;height:100%;object-fit:cover;display:block">
+                <img src="<?= $logoSrc ?>" alt="<?= $ini ?>" style="width:100%;height:100%;object-fit:cover;display:block">
               <?php else: ?>
                 <?= $ini ?>
               <?php endif; ?>
@@ -1812,15 +1881,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
     </div>
   </section>
 
-  <!-- FINAL CTA -->
-  <section class="final-cta">
-    <h2 class="reveal">¿Eres un talento buscando empresa?</h2>
-    <p>Explora las empresas activas del Chocó y aplica a sus vacantes directamente desde la plataforma.</p>
-    <div class="cta-btns">
-      <a href="talentos.php" class="btn-azul">🌟 Ver talentos disponibles</a>
-      <a href="Empleo.html" class="btn-outline-w">💼 Ver vacantes abiertas</a>
-    </div>
-  </section>
+
 
   <!-- MODAL PERFIL EMPRESA -->
   <div class="modal-overlay" id="modalOverlay">
@@ -1929,7 +1990,8 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
           </button>
           <button class="periodo-btn" onclick="setPrecioPeriodo('anio',this)"
             style="padding:8px 20px;border-radius:26px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;background:transparent;color:#666;transition:all .2s">
-            Anual <span style="background:#dcfce7;color:#166534;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:4px">-30%</span>
+            Anual <span
+              style="background:#dcfce7;color:#166534;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:4px">-30%</span>
           </button>
         </div>
       </div>
@@ -1941,12 +2003,18 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       <!-- Servicios adicionales -->
       <div style="margin-top:64px">
         <div style="text-align:center;margin-bottom:32px">
-          <span style="display:inline-block;background:#e8f5ee;color:#1f6b3a;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;padding:5px 16px;border-radius:20px;margin-bottom:12px">⚡ Sin suscripción</span>
-          <h3 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#111;margin-bottom:8px">Servicios adicionales — Pago por evento</h3>
-          <p style="font-size:14px;color:#6b7280;max-width:480px;margin:0 auto">Accede a funciones puntuales sin comprometerte a un plan mensual.</p>
+          <span
+            style="display:inline-block;background:#e8f5ee;color:#1f6b3a;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;padding:5px 16px;border-radius:20px;margin-bottom:12px">⚡
+            Sin suscripción</span>
+          <h3 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#111;margin-bottom:8px">
+            Servicios adicionales — Pago por evento</h3>
+          <p style="font-size:14px;color:#6b7280;max-width:480px;margin:0 auto">Accede a funciones puntuales sin
+            comprometerte a un plan mensual.</p>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;max-width:900px;margin:0 auto">
-          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+        <div
+          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;max-width:900px;margin:0 auto">
+          <div
+            style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
             <div style="font-size:28px;flex-shrink:0">💼</div>
             <div>
               <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">Publicar vacante suelta</div>
@@ -1954,7 +2022,8 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
             </div>
             <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$9.900</div>
           </div>
-          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+          <div
+            style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
             <div style="font-size:28px;flex-shrink:0">⭐</div>
             <div>
               <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">Destacar vacante</div>
@@ -1962,7 +2031,8 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
             </div>
             <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$4.900</div>
           </div>
-          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+          <div
+            style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
             <div style="font-size:28px;flex-shrink:0">👤</div>
             <div>
               <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">5 contactos de CVs</div>
@@ -1970,7 +2040,8 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
             </div>
             <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$4.900</div>
           </div>
-          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+          <div
+            style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
             <div style="font-size:28px;flex-shrink:0">👥</div>
             <div>
               <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">10 contactos de CVs</div>
@@ -1978,7 +2049,8 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
             </div>
             <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$8.900</div>
           </div>
-          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+          <div
+            style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
             <div style="font-size:28px;flex-shrink:0">🔍</div>
             <div>
               <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">Destacar perfil candidato</div>
@@ -1986,7 +2058,8 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
             </div>
             <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$3.900</div>
           </div>
-          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+          <div
+            style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
             <div style="font-size:28px;flex-shrink:0">✅</div>
             <div>
               <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">Verificación express</div>
@@ -1999,25 +2072,49 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
 
       <!-- Métodos de pago -->
       <div style="margin-top:48px;text-align:center">
-        <p style="font-size:13px;color:#9ca3af;margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:.6px">Métodos de pago disponibles</p>
+        <p
+          style="font-size:13px;color:#9ca3af;margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:.6px">
+          Métodos de pago disponibles</p>
         <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px">
-          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">📱 Nequi</span>
-          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">💳 Daviplata</span>
-          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">🏪 Efecty / Baloto</span>
-          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">🏦 Transferencia bancaria</span>
-          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">💳 Tarjeta débito/crédito</span>
-          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">💬 Pago por WhatsApp</span>
+          <span
+            style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">📱
+            Nequi</span>
+          <span
+            style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">💳
+            Daviplata</span>
+          <span
+            style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">🏪
+            Efecty / Baloto</span>
+          <span
+            style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">🏦
+            Transferencia bancaria</span>
+          <span
+            style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">💳
+            Tarjeta débito/crédito</span>
+          <span
+            style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">💬
+            Pago por WhatsApp</span>
         </div>
       </div>
 
       <!-- Nota al pie -->
       <p style="text-align:center;margin-top:32px;font-size:13px;color:#9ca3af">
         Pagos seguros · Sin contratos · Cancela cuando quieras ·
-        <a href="mailto:soporte@quibdoconecta.com" style="color:#1a56db;text-decoration:none;font-weight:600">¿Dudas? Contáctanos</a>
+        <a href="mailto:soporte@quibdoconecta.com" style="color:#1a56db;text-decoration:none;font-weight:600">¿Dudas?
+          Contáctanos</a>
       </p>
     </div>
   </section>
 
+  <!-- FINAL CTA -->
+  <section class="final-cta">
+    <h2 class="reveal">¿Eres un talento buscando empresa?</h2>
+    <p>Explora las empresas activas del Chocó y aplica a sus vacantes directamente desde la plataforma.</p>
+    <div class="cta-btns">
+      <a href="talentos.php" class="btn-azul">🌟 Ver talentos disponibles</a>
+      <a href="Empleo.html" class="btn-outline-w">💼 Ver vacantes abiertas</a>
+    </div>
+  </section>
   <!-- FOOTER -->
   <footer>
     <p>© 2026 <span>QuibdóConecta</span> — Conectando el talento del Chocó con el mundo.</p>
@@ -2036,17 +2133,17 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
           desc: 'Para comenzar sin costo alguno.',
           precioSemana: 0, precioMes: 0, precioAnio: 0,
           candidato: [
-            { ok: true,  text: '3 aplicaciones a empleos/mes' },
-            { ok: true,  text: 'Hoja de vida completa' },
-            { ok: true,  text: 'Ver 5 perfiles de empresas/mes' },
-            { ok: true,  text: '10 mensajes de chat/mes' },
+            { ok: true, text: '3 aplicaciones a empleos/mes' },
+            { ok: true, text: 'Hoja de vida completa' },
+            { ok: true, text: 'Ver 5 perfiles de empresas/mes' },
+            { ok: true, text: '10 mensajes de chat/mes' },
             { ok: false, text: 'Posición en búsquedas', lock: 'Verde Selva+' },
             { ok: false, text: 'Ver quién visitó tu perfil', lock: 'Amarillo Oro+' },
           ],
           empresa: [
-            { ok: true,  text: '1 vacante por mes' },
-            { ok: true,  text: 'Ver 5 perfiles de candidatos/mes' },
-            { ok: true,  text: '10 mensajes de chat/mes' },
+            { ok: true, text: '1 vacante por mes' },
+            { ok: true, text: 'Ver 5 perfiles de candidatos/mes' },
+            { ok: true, text: '10 mensajes de chat/mes' },
             { ok: false, text: 'Logo en perfil', lock: 'Verde Selva+' },
             { ok: false, text: 'Estadísticas de vacantes', lock: 'Verde Selva+' },
             { ok: false, text: 'Insignia empresa activa', lock: 'Verde Selva+' },
@@ -2142,7 +2239,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       function featureIcon(f) {
         if (!f.ok) return `<span style="color:#ccc;font-size:13px">✕</span>`;
         if (f.crown) return `<span style="color:#1a3f6f;font-size:12px">◆</span>`;
-        if (f.star)  return `<span style="color:#b8860b;font-size:13px">★</span>`;
+        if (f.star) return `<span style="color:#b8860b;font-size:13px">★</span>`;
         return `<span style="color:#1f6b3a;font-size:13px;font-weight:700">✓</span>`;
       }
 
@@ -2220,8 +2317,8 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
 
             <div style="margin-bottom:22px;padding-bottom:20px;border-bottom:1px solid ${isPopular ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.07)'}">
               ${isPopular
-                ? precioHTML.replace(new RegExp('color:' + p.color.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), 'color:white').replace(/color:#999/g, 'color:rgba(255,255,255,0.7)')
-                : precioHTML}
+              ? precioHTML.replace(new RegExp('color:' + p.color.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), 'color:white').replace(/color:#999/g, 'color:rgba(255,255,255,0.7)')
+              : precioHTML}
             </div>
 
             <div style="margin-bottom:22px">
@@ -2444,7 +2541,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
           const titulo = e.titulo || 'Convocatoria';
           const modalidad = e.modalidad || '';
           const salario = e.salario ? `$${Number(e.salario).toLocaleString('es-CO')}` : '';
-          const fecha = e.fecha_publicacion ? new Date(e.fecha_publicacion).toLocaleDateString('es-CO', { day:'numeric', month:'short' }) : '';
+          const fecha = e.fecha_publicacion ? new Date(e.fecha_publicacion).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) : '';
           const ciudad = e.ciudad || '';
           return `
             <a href="Empleo.php#empleo-${e.id}" class="conv-item" target="_blank">
@@ -2508,7 +2605,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       document.getElementById('mInfoGrid').innerHTML = `
         <div class="info-item"><div class="i-label">Sector</div><div class="i-val">${card.dataset.sector || '—'}</div></div>
         <div class="info-item"><div class="i-label">Ciudad</div><div class="i-val">${card.dataset.ubicacion || '—'}</div></div>
-        <div class="info-item" style="grid-column:1/-1"><div class="i-label">Sitio web</div><div class="i-val">${web ? `<a href="${web.startsWith('http')?web:'https://'+web}" target="_blank" style="color:#1a56db;text-decoration:none">${web}</a>` : '—'}</div></div>
+        <div class="info-item" style="grid-column:1/-1"><div class="i-label">Sitio web</div><div class="i-val">${web ? `<a href="${web.startsWith('http') ? web : 'https://' + web}" target="_blank" style="color:#1a56db;text-decoration:none">${web}</a>` : '—'}</div></div>
       `;
 
       // Botón CTA → siempre al perfil de la empresa
@@ -2533,7 +2630,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
         fd.append('_action', 'registrar_vista');
         fd.append('usuario_id', uid);
         fd.append('seccion', 'empresas');
-        fetch('dashboard.php', { method: 'POST', body: fd }).catch(() => {});
+        fetch('dashboard.php', { method: 'POST', body: fd }).catch(() => { });
       }
 
       overlay.classList.add('open');
@@ -2570,28 +2667,53 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
 
   <!-- Widget de sesión activa — QuibdóConecta -->
   <script src="js/sesion_widget.js"></script>
-<!-- Modal: Iniciar sesión para buscar -->
-<div id="qc-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)" onclick="if(event.target===this)cerrarModalLogin()">
-  <div style="background:#fff;border-radius:24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;animation:qcLoginIn .35s cubic-bezier(.34,1.56,.64,1)">
-    <div style="background:linear-gradient(135deg,#1a56db,#3b82f6);padding:28px 28px 22px;text-align:center;position:relative">
-      <button onclick="cerrarModalLogin()" style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
-      <div style="font-size:40px;margin-bottom:8px">🏢</div>
-      <h2 style="margin:0;color:#fff;font-size:22px;font-weight:800;font-family:'DM Sans',sans-serif">Inicia sesión para buscar</h2>
-      <p style="margin:8px 0 0;color:rgba(255,255,255,.88);font-size:14px;font-family:'DM Sans',sans-serif">Descubre empresas y negocios de Quibdó y el Chocó</p>
-    </div>
-    <div style="padding:28px 28px 24px;text-align:center">
-      <p style="margin:0 0 22px;color:#555;font-size:14.5px;line-height:1.6;font-family:'DM Sans',sans-serif">Para usar el buscador necesitas tener una cuenta. ¡Es gratis y solo toma un minuto!</p>
-      <a href="inicio_sesion.php" style="display:block;background:linear-gradient(135deg,#1a56db,#3b82f6);color:#fff;padding:15px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(31,157,85,.35);margin-bottom:12px">🔑 Iniciar sesión</a>
-      <a href="registro.php" style="display:block;background:#f0faf5;color:#1a56db;padding:14px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;border:1.5px solid #c6ebd7">✨ Crear cuenta gratis</a>
-      <button onclick="cerrarModalLogin()" style="margin-top:16px;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Cancelar</button>
+  <!-- Modal: Iniciar sesión para buscar -->
+  <div id="qc-login-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)"
+    onclick="if(event.target===this)cerrarModalLogin()">
+    <div
+      style="background:#fff;border-radius:24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;animation:qcLoginIn .35s cubic-bezier(.34,1.56,.64,1)">
+      <div
+        style="background:linear-gradient(135deg,#1a56db,#3b82f6);padding:28px 28px 22px;text-align:center;position:relative">
+        <button onclick="cerrarModalLogin()"
+          style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+        <div style="font-size:40px;margin-bottom:8px">🏢</div>
+        <h2 style="margin:0;color:#fff;font-size:22px;font-weight:800;font-family:'DM Sans',sans-serif">Inicia sesión
+          para buscar</h2>
+        <p style="margin:8px 0 0;color:rgba(255,255,255,.88);font-size:14px;font-family:'DM Sans',sans-serif">Descubre
+          empresas y negocios de Quibdó y el Chocó</p>
+      </div>
+      <div style="padding:28px 28px 24px;text-align:center">
+        <p style="margin:0 0 22px;color:#555;font-size:14.5px;line-height:1.6;font-family:'DM Sans',sans-serif">Para
+          usar el buscador necesitas tener una cuenta. ¡Es gratis y solo toma un minuto!</p>
+        <a href="inicio_sesion.php"
+          style="display:block;background:linear-gradient(135deg,#1a56db,#3b82f6);color:#fff;padding:15px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(31,157,85,.35);margin-bottom:12px">🔑
+          Iniciar sesión</a>
+        <a href="registro.php"
+          style="display:block;background:#f0faf5;color:#1a56db;padding:14px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;border:1.5px solid #c6ebd7">✨
+          Crear cuenta gratis</a>
+        <button onclick="cerrarModalLogin()"
+          style="margin-top:16px;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Cancelar</button>
+      </div>
     </div>
   </div>
-</div>
-<style>@keyframes qcLoginIn{from{opacity:0;transform:scale(.88) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}</style>
-<script>
-function abrirModalLogin(){document.getElementById("qc-login-modal").style.display="flex";document.body.style.overflow="hidden";}
-function cerrarModalLogin(){document.getElementById("qc-login-modal").style.display="none";document.body.style.overflow="";}
-</script>
+  <style>
+    @keyframes qcLoginIn {
+      from {
+        opacity: 0;
+        transform: scale(.88) translateY(20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0)
+      }
+    }
+  </style>
+  <script>
+    function abrirModalLogin() { document.getElementById("qc-login-modal").style.display = "flex"; document.body.style.overflow = "hidden"; }
+    function cerrarModalLogin() { document.getElementById("qc-login-modal").style.display = "none"; document.body.style.overflow = ""; }
+  </script>
 </body>
 
 </html>
