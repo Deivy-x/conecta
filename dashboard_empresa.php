@@ -206,6 +206,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    if ($action === 'eliminar_vacante') {
+        $vacanteId = (int)($_POST['vacante_id'] ?? 0);
+        if (!$vacanteId) { echo json_encode(['ok'=>false,'msg'=>'ID inválido.']); exit; }
+        // Solo puede eliminar sus propias vacantes
+        $chk = $db->prepare("SELECT id FROM empleos WHERE id=? AND empresa_id=?");
+        $chk->execute([$vacanteId, $usuario['id']]);
+        if (!$chk->fetch()) { echo json_encode(['ok'=>false,'msg'=>'No autorizado.']); exit; }
+        $db->prepare("DELETE FROM empleos WHERE id=? AND empresa_id=?")->execute([$vacanteId, $usuario['id']]);
+        echo json_encode(['ok'=>true]);
+        exit;
+    }
+
     if ($action === 'eliminar_cuenta') {
         $confirmar = trim($_POST['confirmar'] ?? '');
         if ($confirmar !== $usuario['correo']) {
@@ -303,7 +315,7 @@ try {
 
 $historialVacantes = [];
 try {
-    $hvStmt = $db->prepare("SELECT titulo, ciudad, modalidad, activo, creado_en FROM empleos WHERE empresa_id=? ORDER BY creado_en DESC LIMIT 10");
+    $hvStmt = $db->prepare("SELECT id, titulo, ciudad, modalidad, activo, creado_en FROM empleos WHERE empresa_id=? ORDER BY creado_en DESC LIMIT 10");
     $hvStmt->execute([$usuario['id']]);
     $historialVacantes = $hvStmt->fetchAll();
 } catch(Exception $e) { $historialVacantes = []; }
@@ -787,6 +799,64 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
       </div>
     </div>
 
+    <!-- ── PLAN ACTIVO (span 3) ── -->
+    <?php if (!empty($datosPlan)): ?>
+    <?php
+      $usados  = $datosPlan['usados'] ?? [];
+      $cfg     = $datosPlan['config'] ?? [];
+      $showBars = [
+        'vacantes'  => ['💼', 'Vacantes'],
+        'mensajes'  => ['💬', 'Mensajes'],
+      ];
+    ?>
+    <div class="card span3" style="background:linear-gradient(135deg,#f0faf4,#e8f5e9);border:1.5px solid #a5d6a7">
+      <div style="padding:20px 24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:42px;height:42px;border-radius:12px;background:#2e7d32;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⭐</div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:#558b6e;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:2px">Plan activo</div>
+              <div style="font-size:20px;font-weight:800;color:#1b5e20;line-height:1.1"><?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
+            </div>
+          </div>
+          <a href="empresas.php#planes" style="display:inline-flex;align-items:center;gap:5px;padding:9px 18px;background:#2e7d32;color:#fff;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(46,125,50,.3)">
+            ✦ Mejorar plan
+          </a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">
+          <?php foreach ($showBars as $key => [$ico, $label]): ?>
+            <?php
+              $limite  = $cfg[$key] ?? 0;
+              if ($limite === 0) continue;
+              $usado   = $usados[$key] ?? 0;
+              $esInf   = ($limite === -1);
+              $pctBar  = $esInf ? 10 : min(100, ($usado / max(1, $limite)) * 100);
+              $color   = $pctBar >= 90 ? '#e53935' : ($pctBar >= 70 ? '#fb8c00' : '#43a047');
+              $bgCard  = $pctBar >= 90 ? '#fff5f5' : ($pctBar >= 70 ? '#fff8f0' : '#f9fbe7');
+              $bdCard  = $pctBar >= 90 ? '#ef9a9a' : ($pctBar >= 70 ? '#ffcc80' : '#c5e1a5');
+              $numCol  = $pctBar >= 90 ? '#c62828' : ($pctBar >= 70 ? '#e65100' : '#2e7d32');
+              $limTxt  = $esInf ? '∞' : $limite;
+            ?>
+            <div style="background:<?= $bgCard ?>;border:1px solid <?= $bdCard ?>;border-radius:12px;padding:14px">
+              <div style="font-size:11px;font-weight:600;color:#546e7a;margin-bottom:6px"><?= $ico ?> <?= $label ?></div>
+              <div style="font-size:20px;font-weight:800;color:<?= $numCol ?>;line-height:1;margin-bottom:8px">
+                <?= $usado ?><span style="font-size:12px;font-weight:500;color:#90a4ae"> / <?= $limTxt ?></span>
+              </div>
+              <div style="height:6px;background:rgba(0,0,0,.07);border-radius:4px">
+                <div style="height:6px;width:<?= $pctBar ?>%;background:<?= $color ?>;border-radius:4px"></div>
+              </div>
+              <?php if (!$esInf && $pctBar >= 70): ?>
+                <div style="font-size:10px;color:<?= $numCol ?>;margin-top:5px;font-weight:700">
+                  <?= $pctBar >= 90 ? '⚠️ Límite alcanzado' : '⚡ Casi en el límite' ?>
+                </div>
+              <?php endif; ?>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    </div>
+    <?php endif; ?>
+
     <!-- HISTORIAL VACANTES (span 2) -->
     <div class="card span2">
       <div class="ce-head">
@@ -796,21 +866,29 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
       <div class="hist-list" id="historialVacantes">
         <?php if (!empty($historialVacantes)): ?>
           <?php foreach ($historialVacantes as $v): ?>
-            <div class="hist-item">
-              <div class="hist-dot <?= $v['activo'] ? 'dot-activo' : 'dot-inactivo' ?>"></div>
-              <div class="hist-info">
-                <div class="hist-nom"><?= htmlspecialchars($v['titulo']) ?></div>
-                <div class="hist-meta">📍 <?= htmlspecialchars($v['ciudad'] ?? 'Chocó') ?> · <?= htmlspecialchars($v['modalidad'] ?? '') ?> · <?= $v['activo'] ? '<span style="color:#22c55e;font-weight:700">Activa</span>' : '<span style="color:#f59e0b;font-weight:600">En revisión</span>' ?></div>
+            <div class="hist-item" id="vac-<?= $v['id'] ?>" style="padding:8px 12px;gap:8px">
+              <div class="hist-dot <?= $v['activo'] ? 'dot-activo' : 'dot-inactivo' ?>" style="flex-shrink:0"></div>
+              <div class="hist-info" style="min-width:0;flex:1">
+                <div class="hist-nom" style="font-size:12px;font-weight:700"><?= htmlspecialchars($v['titulo']) ?></div>
+                <div class="hist-meta" style="font-size:10px">
+                  <?= htmlspecialchars($v['modalidad'] ?? '') ?> ·
+                  <?= $v['activo'] ? '<span style="color:#22c55e;font-weight:700">Activa</span>' : '<span style="color:#f59e0b;font-weight:600">En revisión</span>' ?>
+                </div>
               </div>
-              <div class="hist-fecha"><?= date('d/m/Y', strtotime($v['creado_en'])) ?></div>
+              <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                <div class="hist-fecha" style="font-size:10px"><?= date('d/m/y', strtotime($v['creado_en'])) ?></div>
+                <button onclick="eliminarVacante(<?= $v['id'] ?>, this)" title="Eliminar vacante"
+                  style="width:24px;height:24px;border-radius:6px;background:transparent;border:1px solid #fca5a5;color:#e74c3c;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:.2s;padding:0"
+                  onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">🗑</button>
+              </div>
             </div>
           <?php endforeach; ?>
         <?php else: ?>
-          <div style="text-align:center;padding:32px 20px;color:var(--ink3)">
-            <div style="font-size:40px;margin-bottom:10px">💼</div>
-            <div style="font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:6px">Aún no has publicado vacantes</div>
-            <div style="font-size:13px">Conecta con talentos del Chocó publicando tu primera oferta</div>
-            <a href="javascript:void(0)" onclick="abrirModalVacante()" style="display:inline-block;margin-top:16px;padding:10px 22px;background:var(--azul);color:white;border-radius:10px;text-decoration:none;font-weight:800;font-size:13px">➕ Publicar primera vacante</a>
+          <div style="text-align:center;padding:24px 16px;color:var(--ink3)">
+            <div style="font-size:32px;margin-bottom:8px">💼</div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:4px">Aún no has publicado vacantes</div>
+            <div style="font-size:12px">Conecta con talentos del Chocó publicando tu primera oferta</div>
+            <a href="javascript:void(0)" onclick="abrirModalVacante()" style="display:inline-block;margin-top:12px;padding:8px 18px;background:var(--azul);color:white;border-radius:10px;text-decoration:none;font-weight:800;font-size:12px">➕ Publicar primera vacante</a>
           </div>
         <?php endif; ?>
       </div>
@@ -1287,7 +1365,31 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     }
   }
 
-  let cropperBannerInstance = null;
+
+  async function eliminarVacante(id, btn) {
+    if (!confirm('¿Eliminar esta vacante? Esta acción no se puede deshacer.')) return;
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '⏳';
+    const fd = new FormData();
+    fd.append('_action', 'eliminar_vacante');
+    fd.append('vacante_id', id);
+    try {
+      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.ok) {
+        const row = document.getElementById('vac-' + id);
+        if (row) { row.style.opacity='0'; row.style.transform='translateX(20px)'; row.style.transition='.3s'; setTimeout(()=>row.remove(),320); }
+      } else {
+        alert('❌ ' + (j.msg || 'Error al eliminar'));
+        btn.disabled = false; btn.innerHTML = originalHtml;
+      }
+    } catch(e) {
+      alert('❌ Error de conexión');
+      btn.disabled = false; btn.innerHTML = originalHtml;
+    }
+  }
+
+
 
   function subirBanner(input) {
     const file = input.files[0];
