@@ -190,7 +190,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registrarse – Quibdó Conecta</title>
   <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{--verde:#0d5c2e;--verde2:#1e8c45;--lima:#4ade80;--oro:#f5c800;--oro2:#ffd94d;--rio:#0039a6;--rio2:#1a56db;--oscuro:#04150b}
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -234,10 +236,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .grupo.full{flex:0 0 100%;width:100%}
     label{display:block;margin-bottom:6px;font-size:11px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.7px}
     .req{color:#f87171}
-    input,select,textarea{width:100%;padding:12px 15px;border:1.5px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.06);color:white;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .25s,background .25s,box-shadow .25s;resize:none}
+    input,select,textarea{width:100%;padding:12px 15px;border:1.5px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.06);color:white;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .25s,background .25s,box-shadow .25s;resize:none;-webkit-appearance:none;appearance:none}
     input:focus,select:focus,textarea:focus{border-color:var(--verde2);background:rgba(30,140,69,.1);box-shadow:0 0 0 3px rgba(30,140,69,.1)}
+    select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
     input::placeholder,textarea::placeholder{color:rgba(255,255,255,.2)}
-    select option{background:#0d2a0d;color:white}
+    select option,select optgroup{background:#0a1f0d!important;color:white!important}
+    .cd-wrap{position:relative}
+    .cd-trigger{width:100%;padding:12px 36px 12px 15px;border:1.5px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;text-align:left;transition:border-color .25s,background .25s,box-shadow .25s;position:relative;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+    .cd-trigger.has-val{color:white}
+    .cd-trigger:focus,.cd-trigger.open{border-color:var(--verde2);background-color:rgba(30,140,69,.1);box-shadow:0 0 0 3px rgba(30,140,69,.1)}
+    .cd-panel{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:#0a1f0d;border:1.5px solid rgba(30,140,69,.4);border-radius:16px;z-index:200;max-height:280px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.7);flex-direction:column}
+    .cd-panel.open{display:flex}
+    .cd-search{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
+    .cd-search input{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:white;font-size:13px;width:100%;outline:none}
+    .cd-search input:focus{border-color:var(--verde2)}
+    .cd-list{overflow-y:auto;flex:1}
+    .cd-list::-webkit-scrollbar{width:4px}
+    .cd-list::-webkit-scrollbar-track{background:transparent}
+    .cd-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+    .cd-group-label{padding:8px 14px 4px;font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px;pointer-events:none}
+    .cd-option{padding:9px 14px;font-size:13px;color:rgba(255,255,255,.8);cursor:pointer;transition:background .12s}
+    .cd-option:hover,.cd-option.focused{background:rgba(30,140,69,.25);color:white}
+    .cd-option.selected{color:var(--lima);font-weight:600}
+    .cd-empty{padding:16px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
+    .cd-hidden{display:none!important}
     .pass-wrap{position:relative}
     .pass-wrap input{padding-right:46px}
     .toggle-pass{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.35);cursor:pointer;font-size:16px;transition:color .2s}
@@ -407,91 +429,92 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="sec-title">💼 Perfil profesional</div>
       <div class="grupo full">
         <label>¿Cuál es tu área o perfil?</label>
-        <select id="profesion_tipo">
-          <option value="">— Selecciona tu área —</option>
-          <optgroup label="🎓 Carreras universitarias & técnicas">
-            <option>Ingeniería de Sistemas / Software</option>
-            <option>Ingeniería Civil</option>
-            <option>Ingeniería Industrial</option>
-            <option>Medicina / Ciencias de la Salud</option>
-            <option>Enfermería</option>
-            <option>Odontología</option>
-            <option>Bacteriología / Laboratorio Clínico</option>
-            <option>Farmacia</option>
-            <option>Psicología</option>
-            <option>Derecho / Jurisprudencia</option>
-            <option>Administración de Empresas</option>
-            <option>Contaduría Pública</option>
-            <option>Economía / Finanzas</option>
-            <option>Licenciatura en Educación</option>
-            <option>Trabajo Social</option>
-            <option>Comunicación Social / Periodismo</option>
-            <option>Diseño Gráfico / Publicidad</option>
-            <option>Arquitectura</option>
-            <option>Agronomía / Ingeniería Forestal</option>
-            <option>Biología / Ciencias Ambientales</option>
-            <option>Tecnología en Sistemas</option>
-            <option>Tecnología en Construcción</option>
-            <option>Técnico en Electricidad</option>
-            <option>Técnico en Electrónica</option>
-            <option>Técnico en Mecánica</option>
-            <option>Técnico en Salud Ocupacional</option>
-            <option>Técnico en Gastronomía</option>
-          </optgroup>
-          <optgroup label="🎵 Arte, Música & Cultura del Chocó">
-            <option>DJ / Disc Jockey</option>
-            <option>Músico – Chirimía</option>
-            <option>Músico – Marimba / Percusión</option>
-            <option>Músico – Trompeta / Vientos</option>
-            <option>Cantante / Vocalista</option>
-            <option>Cantautor(a)</option>
-            <option>Productor(a) Musical</option>
-            <option>Sonidista / Técnico de Audio</option>
-            <option>Bailarín(a) – Currulao / Danzas afro</option>
-            <option>Coreógrafo(a)</option>
-            <option>Actor / Actriz</option>
-            <option>Artista Plástico(a) / Pintor(a)</option>
-            <option>Escultor(a) / Ceramista</option>
-            <option>Artesano(a) – Tagua, Madera, Fibras</option>
-            <option>Fotógrafo(a)</option>
-            <option>Videógrafo(a) / Camarógrafo(a)</option>
-            <option>Animador(a) de eventos / Maestro(a) de ceremonias</option>
-            <option>Locutor(a) / Presentador(a)</option>
-            <option>Narrador(a) / Poeta / Escritor(a)</option>
-            <option>Gestor(a) Cultural</option>
-            <option>Promotor(a) de Eventos</option>
-            <option>Tatuador(a)</option>
-            <option>Maquillador(a) Artístico</option>
-          </optgroup>
-          <optgroup label="🔧 Oficios & Técnicos">
-            <option>Electricista</option>
-            <option>Plomero(a)</option>
-            <option>Albañil / Constructor</option>
-            <option>Carpintero(a) / Ebanista</option>
-            <option>Mecánico(a)</option>
-            <option>Conductor(a) / Transportador(a)</option>
-            <option>Vigilante / Guardia de Seguridad</option>
-            <option>Agricultor(a)</option>
-            <option>Pescador(a)</option>
-            <option>Minero(a)</option>
-          </optgroup>
-          <optgroup label="💅 Belleza & Bienestar">
-            <option>Peluquero(a) / Estilista</option>
-            <option>Barbero(a)</option>
-            <option>Esteticista / Cosmetóloga</option>
-            <option>Masajista / Terapista</option>
-            <option>Especialista en uñas</option>
-          </optgroup>
-          <optgroup label="📱 Digital & Tecnología">
-            <option>Desarrollador(a) Web / Móvil</option>
-            <option>Community Manager</option>
-            <option>Diseñador(a) UX/UI</option>
-            <option>Soporte Técnico / Helpdesk</option>
-            <option>Analista de Datos</option>
-            <option>Editor(a) de Video</option>
-          </optgroup>
-          <option value="otro">Otro (especificar)</option>
-        </select>
+        <input type="hidden" id="profesion_tipo">
+        <div class="cd-wrap" id="cd-profesion">
+          <button type="button" class="cd-trigger" id="cd-profesion-trigger" onclick="cdToggle('cd-profesion')">— Selecciona tu área —</button>
+          <div class="cd-panel" id="cd-profesion-panel">
+            <div class="cd-search"><input type="text" placeholder="🔍 Buscar..." oninput="cdSearch('cd-profesion',this.value)"></div>
+            <div class="cd-list" id="cd-profesion-list">
+              <div class="cd-group-label">🎓 Carreras universitarias & técnicas</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Ingeniería de Sistemas / Software')">Ingeniería de Sistemas / Software</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Ingeniería Civil')">Ingeniería Civil</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Ingeniería Industrial')">Ingeniería Industrial</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Medicina / Ciencias de la Salud')">Medicina / Ciencias de la Salud</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Enfermería')">Enfermería</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Odontología')">Odontología</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Bacteriología / Laboratorio Clínico')">Bacteriología / Laboratorio Clínico</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Farmacia')">Farmacia</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Psicología')">Psicología</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Derecho / Jurisprudencia')">Derecho / Jurisprudencia</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Administración de Empresas')">Administración de Empresas</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Contaduría Pública')">Contaduría Pública</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Economía / Finanzas')">Economía / Finanzas</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Licenciatura en Educación')">Licenciatura en Educación</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Trabajo Social')">Trabajo Social</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Comunicación Social / Periodismo')">Comunicación Social / Periodismo</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Diseño Gráfico / Publicidad')">Diseño Gráfico / Publicidad</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Arquitectura')">Arquitectura</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Agronomía / Ingeniería Forestal')">Agronomía / Ingeniería Forestal</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Biología / Ciencias Ambientales')">Biología / Ciencias Ambientales</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Tecnología en Sistemas')">Tecnología en Sistemas</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Tecnología en Construcción')">Tecnología en Construcción</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Técnico en Electricidad')">Técnico en Electricidad</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Técnico en Electrónica')">Técnico en Electrónica</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Técnico en Mecánica')">Técnico en Mecánica</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Técnico en Salud Ocupacional')">Técnico en Salud Ocupacional</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Técnico en Gastronomía')">Técnico en Gastronomía</div>
+              <div class="cd-group-label">🎵 Arte, Música & Cultura del Chocó</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','DJ / Disc Jockey')">DJ / Disc Jockey</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Músico – Chirimía')">Músico – Chirimía</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Músico – Marimba / Percusión')">Músico – Marimba / Percusión</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Músico – Trompeta / Vientos')">Músico – Trompeta / Vientos</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Cantante / Vocalista')">Cantante / Vocalista</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Cantautor(a)')">Cantautor(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Productor(a) Musical')">Productor(a) Musical</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Sonidista / Técnico de Audio')">Sonidista / Técnico de Audio</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Bailarín(a) – Currulao / Danzas afro')">Bailarín(a) – Currulao / Danzas afro</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Coreógrafo(a)')">Coreógrafo(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Actor / Actriz')">Actor / Actriz</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Artista Plástico(a) / Pintor(a)')">Artista Plástico(a) / Pintor(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Escultor(a) / Ceramista')">Escultor(a) / Ceramista</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Artesano(a) – Tagua, Madera, Fibras')">Artesano(a) – Tagua, Madera, Fibras</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Fotógrafo(a)')">Fotógrafo(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Videógrafo(a) / Camarógrafo(a)')">Videógrafo(a) / Camarógrafo(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Animador(a) de eventos / Maestro(a) de ceremonias')">Animador(a) de eventos / Maestro(a) de ceremonias</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Locutor(a) / Presentador(a)')">Locutor(a) / Presentador(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Narrador(a) / Poeta / Escritor(a)')">Narrador(a) / Poeta / Escritor(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Gestor(a) Cultural')">Gestor(a) Cultural</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Promotor(a) de Eventos')">Promotor(a) de Eventos</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Tatuador(a)')">Tatuador(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Maquillador(a) Artístico')">Maquillador(a) Artístico</div>
+              <div class="cd-group-label">🔧 Oficios & Técnicos</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Electricista')">Electricista</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Plomero(a)')">Plomero(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Albañil / Constructor')">Albañil / Constructor</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Carpintero(a) / Ebanista')">Carpintero(a) / Ebanista</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Mecánico(a)')">Mecánico(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Conductor(a) / Transportador(a)')">Conductor(a) / Transportador(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Vigilante / Guardia de Seguridad')">Vigilante / Guardia de Seguridad</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Agricultor(a)')">Agricultor(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Pescador(a)')">Pescador(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Minero(a)')">Minero(a)</div>
+              <div class="cd-group-label">💅 Belleza & Bienestar</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Peluquero(a) / Estilista')">Peluquero(a) / Estilista</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Barbero(a)')">Barbero(a)</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Esteticista / Cosmetóloga')">Esteticista / Cosmetóloga</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Masajista / Terapista')">Masajista / Terapista</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Especialista en uñas')">Especialista en uñas</div>
+              <div class="cd-group-label">📱 Digital & Tecnología</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Desarrollador(a) Web / Móvil')">Desarrollador(a) Web / Móvil</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Community Manager')">Community Manager</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Diseñador(a) UX/UI')">Diseñador(a) UX/UI</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Soporte Técnico / Helpdesk')">Soporte Técnico / Helpdesk</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Analista de Datos')">Analista de Datos</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','Editor(a) de Video')">Editor(a) de Video</div>
+              <div class="cd-option" onclick="cdSelect('cd-profesion','otro')">Otro (especificar)</div>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- Campo "Otro" visible solo cuando se elige Otro -->
       <div class="grupo full" id="grupoOtraArea" style="display:none">
@@ -819,52 +842,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="sec-title">🎧 Mi servicio para eventos</div>
       <div class="grupo full">
         <label>Tipo de servicio <span class="req">*</span></label>
-        <select id="profesion_tipo_servicio">
-          <option value="">— Selecciona tu servicio —</option>
-          <optgroup label="🎵 Música & Entretenimiento">
-            <option value="DJ / Disc Jockey">🎧 DJ / Disc Jockey</option>
-            <option value="Chirimía – Música tradicional del Chocó">🎺 Chirimía – Música tradicional del Chocó</option>
-            <option value="Marimba / Percusión afro">🥁 Marimba / Percusión afro</option>
-            <option value="Grupo musical – Salsa / Vallenato / Cumbia">🎸 Grupo musical – Salsa / Vallenato / Cumbia</option>
-            <option value="Grupo musical – Champeta / Urbano">🎤 Grupo musical – Champeta / Urbano</option>
-            <option value="Cantante / Solista">🎙️ Cantante / Solista</option>
-            <option value="Mariachi / Boleros">🎻 Mariachi / Boleros</option>
-            <option value="Banda de viento">🎺 Banda de viento</option>
-          </optgroup>
-          <optgroup label="📸 Foto & Video">
-            <option value="Fotógrafo de eventos">📸 Fotógrafo de eventos</option>
-            <option value="Videógrafo / Camarógrafo">🎥 Videógrafo / Camarógrafo</option>
-            <option value="Fotografía & Video combo">📸🎥 Fotografía & Video combo</option>
-            <option value="Drone / Fotografía aérea">🚁 Drone / Fotografía aérea</option>
-          </optgroup>
-          <optgroup label="🍽️ Gastronomía">
-            <option value="Catering – Comida chocoana">🍖 Catering – Comida chocoana</option>
-            <option value="Catering – Mariscos / Pescados">🐟 Catering – Mariscos / Pescados</option>
-            <option value="Catering – Internacional">🌮 Catering – Internacional</option>
-            <option value="Repostería / Tortas para eventos">🎂 Repostería / Tortas para eventos</option>
-            <option value="Bartender / Coctelería">🍹 Bartender / Coctelería</option>
-          </optgroup>
-          <optgroup label="🌸 Decoración & Ambientación">
-            <option value="Decoración de eventos">🌸 Decoración de eventos</option>
-            <option value="Florería / Arreglos florales">💐 Florería / Arreglos florales</option>
-            <option value="Alquiler de carpas / Mobiliario">⛺ Alquiler de carpas / Mobiliario</option>
-            <option value="Iluminación de eventos">💡 Iluminación de eventos</option>
-          </optgroup>
-          <optgroup label="🎤 Animación & Protocolo">
-            <option value="Maestro(a) de ceremonias">🎤 Maestro(a) de ceremonias</option>
-            <option value="Animador(a) infantil">🎈 Animador(a) infantil</option>
-            <option value="Show de comedia / Humor">🤣 Show de comedia / Humor</option>
-            <option value="Mago / Ilusionista">🎩 Mago / Ilusionista</option>
-          </optgroup>
-          <optgroup label="💄 Belleza para eventos">
-            <option value="Maquillaje artístico / de bodas">💄 Maquillaje artístico / de bodas</option>
-            <option value="Peinados para eventos">💇 Peinados para eventos</option>
-          </optgroup>
-          <optgroup label="🚐 Transporte & Logística">
-            <option value="Transporte de invitados">🚐 Transporte de invitados</option>
-            <option value="Seguridad de eventos">🛡️ Seguridad de eventos</option>
-          </optgroup>
-        </select>
+        <input type="hidden" id="profesion_tipo_servicio">
+        <div class="cd-wrap" id="cd-servicio">
+          <button type="button" class="cd-trigger" id="cd-servicio-trigger" onclick="cdToggle('cd-servicio')">— Selecciona tu servicio —</button>
+          <div class="cd-panel" id="cd-servicio-panel">
+            <div class="cd-search"><input type="text" placeholder="🔍 Buscar..." oninput="cdSearch('cd-servicio',this.value)"></div>
+            <div class="cd-list" id="cd-servicio-list">
+              <div class="cd-group-label">🎵 Música & Entretenimiento</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','DJ / Disc Jockey')">🎧 DJ / Disc Jockey</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Chirimía – Música tradicional del Chocó')">🎺 Chirimía – Música tradicional del Chocó</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Marimba / Percusión afro')">🥁 Marimba / Percusión afro</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Grupo musical – Salsa / Vallenato / Cumbia')">🎸 Grupo musical – Salsa / Vallenato / Cumbia</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Grupo musical – Champeta / Urbano')">🎤 Grupo musical – Champeta / Urbano</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Cantante / Solista')">🎙️ Cantante / Solista</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Mariachi / Boleros')">🎻 Mariachi / Boleros</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Banda de viento')">🎺 Banda de viento</div>
+              <div class="cd-group-label">📸 Foto & Video</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Fotógrafo de eventos')">📸 Fotógrafo de eventos</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Videógrafo / Camarógrafo')">🎥 Videógrafo / Camarógrafo</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Fotografía & Video combo')">📸🎥 Fotografía & Video combo</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Drone / Fotografía aérea')">🚁 Drone / Fotografía aérea</div>
+              <div class="cd-group-label">🍽️ Gastronomía</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Catering – Comida chocoana')">🍖 Catering – Comida chocoana</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Catering – Mariscos / Pescados')">🐟 Catering – Mariscos / Pescados</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Catering – Internacional')">🌮 Catering – Internacional</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Repostería / Tortas para eventos')">🎂 Repostería / Tortas para eventos</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Bartender / Coctelería')">🍹 Bartender / Coctelería</div>
+              <div class="cd-group-label">🌸 Decoración & Ambientación</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Decoración de eventos')">🌸 Decoración de eventos</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Florería / Arreglos florales')">💐 Florería / Arreglos florales</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Alquiler de carpas / Mobiliario')">⛺ Alquiler de carpas / Mobiliario</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Iluminación de eventos')">💡 Iluminación de eventos</div>
+              <div class="cd-group-label">🎤 Animación & Protocolo</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Maestro(a) de ceremonias')">🎤 Maestro(a) de ceremonias</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Animador(a) infantil')">🎈 Animador(a) infantil</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Show de comedia / Humor')">🤣 Show de comedia / Humor</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Mago / Ilusionista')">🎩 Mago / Ilusionista</div>
+              <div class="cd-group-label">💄 Belleza para eventos</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Maquillaje artístico / de bodas')">💄 Maquillaje artístico / de bodas</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Peinados para eventos')">💇 Peinados para eventos</div>
+              <div class="cd-group-label">🚐 Transporte & Logística</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Transporte de invitados')">🚐 Transporte de invitados</div>
+              <div class="cd-option" onclick="cdSelect('cd-servicio','Seguridad de eventos')">🛡️ Seguridad de eventos</div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="row">
         <div class="grupo">
@@ -956,12 +978,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script>
   
   const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const emojis=['🌿','🌊','⭐','🎺','🥁','🌴','🦋','🌸','✨','🍃','🎧','🌺','💼','🎵'];
+  let raf;
+  function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resizeCanvas();
+  let resizeT;
+  window.addEventListener('resize',()=>{clearTimeout(resizeT);resizeT=setTimeout(resizeCanvas,200);});
+  const emojis=['🌿','🌊','⭐','🎺','🥁','🌴','🦋','🌸','✨','🍃','🎧','🌺'];
   const parts=[];
-  for(let i=0;i<50;i++) parts.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,e:emojis[Math.floor(Math.random()*emojis.length)],s:Math.random()*18+8,vy:Math.random()*1.1+0.3,vx:(Math.random()-.5)*.5,r:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.04,o:Math.random()*.45+.1});
-  (function anim(){ctx.clearRect(0,0,canvas.width,canvas.height);parts.forEach(p=>{ctx.save();ctx.globalAlpha=p.o;ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.font=p.s+'px serif';ctx.fillText(p.e,0,0);ctx.restore();p.y+=p.vy;p.x+=p.vx;p.r+=p.rs;if(p.y>canvas.height+20){p.y=-20;p.x=Math.random()*canvas.width;}});requestAnimationFrame(anim);})();
+  for(let i=0;i<22;i++) parts.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight-window.innerHeight,e:emojis[i%emojis.length],s:Math.random()*14+7,vy:Math.random()*.7+.2,vx:(Math.random()-.5)*.3,r:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.03,o:Math.random()*.3+.08});
+  function anim(){ctx.clearRect(0,0,canvas.width,canvas.height);for(let i=0;i<parts.length;i++){const p=parts[i];ctx.save();ctx.globalAlpha=p.o;ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.font=p.s+'px serif';ctx.fillText(p.e,0,0);ctx.restore();p.y+=p.vy;p.x+=p.vx;p.r+=p.rs;if(p.y>canvas.height+20){p.y=-20;p.x=Math.random()*canvas.width;}}raf=requestAnimationFrame(anim);}
+  anim();
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(raf);}else{anim();}});
 
   const activeClasses = {candidato:'active', empresa:'active-azul', negocio:'active-tierra', servicio:'active-dorado'};
   function setTipo(tipo, btn, cls) {
@@ -993,6 +1020,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     document.getElementById('lbl-neg-virtual').style.borderColor = esVirtual ? '#1a56db' : 'rgba(255,255,255,.12)';
   }
   toggleNegocioTipo(); 
+
+  function cdToggle(id){
+    const panel=document.getElementById(id+'-panel');
+    const trigger=document.getElementById(id+'-trigger');
+    const isOpen=panel.classList.contains('open');
+    document.querySelectorAll('.cd-panel.open').forEach(p=>p.classList.remove('open'));
+    document.querySelectorAll('.cd-trigger.open').forEach(t=>t.classList.remove('open'));
+    if(!isOpen){panel.classList.add('open');trigger.classList.add('open');const s=panel.querySelector('.cd-search input');if(s){s.value='';cdSearch(id,'');s.focus();}}
+  }
+  function cdSelect(id,val){
+    const hidden=document.getElementById(id==='cd-profesion'?'profesion_tipo':'profesion_tipo_servicio');
+    const trigger=document.getElementById(id+'-trigger');
+    hidden.value=val;
+    trigger.textContent=val==='otro'?'Otro (especificar)':val;
+    trigger.classList.add('has-val');
+    document.getElementById(id+'-panel').classList.remove('open');
+    trigger.classList.remove('open');
+    document.querySelectorAll('#'+id+'-list .cd-option').forEach(o=>o.classList.toggle('selected',o.getAttribute('onclick').includes("'"+val+"'")));
+    if(id==='cd-profesion'){
+      const esOtro=val==='otro';
+      document.getElementById('grupoOtraArea').style.display=esOtro?'block':'none';
+      if(!esOtro) document.getElementById('otra_area').value='';
+    }
+  }
+  function cdSearch(id,q){
+    const list=document.getElementById(id+'-list');
+    const lq=q.toLowerCase().trim();
+    list.querySelectorAll('.cd-option').forEach(o=>{o.classList.toggle('cd-hidden',lq&&!o.textContent.toLowerCase().includes(lq));});
+    list.querySelectorAll('.cd-group-label').forEach(g=>{const opts=[];let n=g.nextElementSibling;while(n&&!n.classList.contains('cd-group-label')){if(n.classList.contains('cd-option'))opts.push(n);n=n.nextElementSibling;}g.classList.toggle('cd-hidden',lq&&opts.every(o=>o.classList.contains('cd-hidden')));});
+  }
+  document.addEventListener('click',e=>{if(!e.target.closest('.cd-wrap')){document.querySelectorAll('.cd-panel.open').forEach(p=>p.classList.remove('open'));document.querySelectorAll('.cd-trigger.open').forEach(t=>t.classList.remove('open'));}});
 
   document.getElementById('profesion_tipo').addEventListener('change', function() {
     const esOtro = this.value === 'otro';
