@@ -573,7 +573,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
 
     /* CATEGORÍAS / SECTORES */
     .categorias {
-      padding: 80px 48px;
+      padding: 72px 48px 64px;
       background: #f9fafb;
       text-align: center;
       border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -588,86 +588,130 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
     .categorias .sub {
       color: #666;
       font-size: 15px;
-      margin-bottom: 48px;
+      margin-bottom: 40px;
     }
 
     .categorias-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
       justify-content: center;
-      max-width: 1100px;
+      max-width: 1000px;
       margin: 0 auto;
     }
 
     .cat-btn {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       background: white;
-      border: 2px solid rgba(0, 0, 0, 0.07);
-      border-radius: 50px;
-      padding: 10px 20px;
-      font-size: 14px;
+      border: 1.5px solid rgba(0, 0, 0, 0.09);
+      border-radius: 12px;
+      padding: 9px 16px;
+      font-size: 13.5px;
       font-weight: 600;
       color: #444;
       cursor: pointer;
       font-family: 'DM Sans', sans-serif;
-      transition: all 0.25s;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      white-space: nowrap;
     }
 
-    .cat-btn:hover,
-    .cat-btn.activa {
-      background: #eff6ff;
-      border-color: #1a56db;
+    .cat-btn:hover {
+      background: #f0f5ff;
+      border-color: #93c5fd;
       color: #1a56db;
-      box-shadow: 0 6px 20px rgba(26, 86, 219, 0.15);
-      transform: translateY(-2px);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(26, 86, 219, 0.1);
+    }
+
+    .cat-btn.activa {
+      background: #1a56db;
+      border-color: #1a56db;
+      color: white;
+      box-shadow: 0 6px 20px rgba(26, 86, 219, 0.28);
+      transform: translateY(-1px);
     }
 
     .cat-btn .count {
       font-size: 11px;
-      background: #f1f5f9;
-      border-radius: 10px;
-      padding: 2px 8px;
-      color: #888;
-      font-weight: 600;
+      background: rgba(0, 0, 0, 0.07);
+      border-radius: 6px;
+      padding: 2px 7px;
+      color: inherit;
+      font-weight: 700;
+      min-width: 20px;
+      text-align: center;
     }
 
     .cat-btn.activa .count {
-      background: rgba(26, 86, 219, 0.12);
-      color: #1a56db;
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+    }
+
+    /* DIVISOR FILTROS */
+    .filtros-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      max-width: 500px;
+      margin: 32px auto 20px;
+    }
+
+    .filtros-divider::before,
+    .filtros-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .filtros-divider span {
+      font-size: 11px;
+      font-weight: 700;
+      color: #aaa;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space: nowrap;
     }
 
     /* FILTROS TIPO */
     .filtros-tipo {
-      display: flex;
-      gap: 10px;
+      display: inline-flex;
+      gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 24px;
+      background: white;
+      border: 1.5px solid rgba(0, 0, 0, 0.08);
+      border-radius: 14px;
+      padding: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .filtro-btn {
-      background: white;
-      border: 1px solid rgba(0, 0, 0, 0.12);
-      color: #444;
-      padding: 8px 18px;
-      border-radius: 25px;
+      background: transparent;
+      border: none;
+      color: #666;
+      padding: 8px 16px;
+      border-radius: 9px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       font-family: 'DM Sans', sans-serif;
-      transition: all 0.2s;
+      transition: all 0.18s;
+      white-space: nowrap;
     }
 
-    .filtro-btn:hover,
+    .filtro-btn:hover {
+      background: #f0f5ff;
+      color: #1a56db;
+    }
+
     .filtro-btn.activo {
       background: #1a56db;
-      border-color: #1a56db;
       color: white;
-      box-shadow: 0 6px 16px rgba(26,86,219,.2);
+      box-shadow: 0 3px 10px rgba(26, 86, 219, 0.25);
     }
 
     /* EMPRESAS SECTION */
@@ -1622,6 +1666,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       <button class="cat-btn" data-cat="finanzas">💰 Finanzas <span class="count" id="cnt-fin">0</span></button>
       <button class="cat-btn" data-cat="agro">🌿 Agro &amp; Ambiente <span class="count" id="cnt-agr">0</span></button>
     </div>
+    <div class="filtros-divider"><span>Filtrar por tipo</span></div>
     <div class="filtros-tipo" id="filtrosTipo">
       <button class="filtro-btn activo" data-tipo="todos">Todas</button>
       <button class="filtro-btn" data-tipo="verificada">✓ Verificada</button>
