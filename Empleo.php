@@ -1,8 +1,57 @@
 <?php
 // Empleo.php — Vacantes reales de BD + Trabajos Culturales del Chocó
+session_start();
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
+
+// ── Manejar POST: solicitar vacante desde Empleo.php ──────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'solicitar_vacante_pub') {
+  header('Content-Type: application/json');
+  if (!isset($_SESSION['usuario_id'])) {
+    echo json_encode(['ok' => false, 'msg' => 'Debes iniciar sesión para solicitar esta vacante.', 'login' => true]);
+    exit;
+  }
+  if (($_SESSION['usuario_tipo'] ?? '') !== 'candidato') {
+    echo json_encode(['ok' => false, 'msg' => 'Solo candidatos pueden solicitar vacantes.']);
+    exit;
+  }
+  $empleo_id = (int) ($_POST['empleo_id'] ?? 0);
+  if (!$empleo_id) { echo json_encode(['ok' => false, 'msg' => 'Vacante no válida.']); exit; }
+  try {
+    if (file_exists(__DIR__ . '/Php/db.php')) require_once __DIR__ . '/Php/db.php';
+    $db = getDB();
+    $db->exec("CREATE TABLE IF NOT EXISTS solicitudes_empleo (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      empleo_id INT NOT NULL,
+      candidato_id INT NOT NULL,
+      mensaje TEXT DEFAULT NULL,
+      estado ENUM('pendiente','vista','aceptada','rechazada') DEFAULT 'pendiente',
+      creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY unique_solicitud (empleo_id, candidato_id),
+      INDEX idx_empleo (empleo_id),
+      INDEX idx_candidato (candidato_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $chkS = $db->prepare("SELECT id FROM solicitudes_empleo WHERE empleo_id=? AND candidato_id=?");
+    $chkS->execute([$empleo_id, $_SESSION['usuario_id']]);
+    if ($chkS->fetch()) {
+      echo json_encode(['ok' => false, 'msg' => 'Ya aplicaste a esta vacante.', 'ya_aplicado' => true]);
+      exit;
+    }
+    $mensaje = substr(trim($_POST['mensaje'] ?? ''), 0, 1000);
+    $db->prepare("INSERT INTO solicitudes_empleo (empleo_id, candidato_id, mensaje) VALUES (?,?,?)")
+       ->execute([$empleo_id, $_SESSION['usuario_id'], $mensaje ?: null]);
+    echo json_encode(['ok' => true, 'msg' => '✅ ¡Solicitud enviada! La empresa revisará tu perfil.']);
+  } catch (Exception $ex) {
+    echo json_encode(['ok' => false, 'msg' => 'Error: ' . $ex->getMessage()]);
+  }
+  exit;
+}
+
+// ── Detectar sesión para pasar al JS ──────────────────────────
+$usuarioLogueado   = isset($_SESSION['usuario_id']);
+$usuarioEsCandidato = $usuarioLogueado && ($_SESSION['usuario_tipo'] ?? '') === 'candidato';
+$usuarioNombre     = htmlspecialchars($_SESSION['usuario_nombre'] ?? '');
 
 $vacantesDB = [];
 $totalVacantes = 0;
@@ -384,6 +433,7 @@ function catIcono($cat, $iconos) {
           $tiempo = tiempoTranscurrido($v['creado_en']);
         ?>
         <div class="empleo-card reveal"
+          data-empid="<?= (int)$v['id'] ?>"
           data-tipo="<?= htmlspecialchars($v['tipo'] ?? 'tiempo completo') ?>"
           data-cat="<?= $catFilter ?>"
           data-titulo="<?= $titulo ?>"
@@ -600,7 +650,32 @@ function catIcono($cat, $iconos) {
     <div id="modalDescBloque"></div>
 
     <!-- BTN -->
-    <a href="registro.php" class="modal-btn" id="modalBtn" style="margin-top:8px">🚀 Postularme ahora</a>
+    <div id="modalBtnWrap" style="margin-top:8px">
+      <?php if ($usuarioEsCandidato): ?>
+        <!-- Candidato logueado: puede solicitar directo -->
+        <button class="modal-btn" id="modalBtnSolicitar" onclick="solicitarDesdeModal()">
+          🚀 Solicitar esta vacante
+        </button>
+      <?php elseif ($usuarioLogueado): ?>
+        <!-- Logueado pero no candidato -->
+        <a href="Empleo.php" class="modal-btn" style="text-align:center">💼 Ver todas las vacantes</a>
+      <?php else: ?>
+        <!-- No logueado -->
+        <a href="registro.php" class="modal-btn" id="modalBtn">🚀 Postularme ahora</a>
+        <p style="text-align:center;font-size:12px;color:#94a3b8;margin-top:8px">
+          ¿Ya tienes cuenta? <a href="inicio_sesion.php" style="color:#1f9d55;font-weight:700">Inicia sesión →</a>
+        </p>
+      <?php endif; ?>
+    </div>
+    <!-- Mensaje de respuesta al solicitar -->
+    <div id="modalSolMsg" style="display:none;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;text-align:center"></div>
+    <!-- Área mensaje opcional (candidato logueado) -->
+    <?php if ($usuarioEsCandidato): ?>
+    <div id="modalMensajeWrap" style="margin-top:12px;display:none">
+      <textarea id="modalMensajeTxt" rows="3" placeholder="Mensaje opcional para la empresa…"
+        style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;color:#333"></textarea>
+    </div>
+    <?php endif; ?>
   </div>
 </div>
 
@@ -801,11 +876,80 @@ function abrirModal(card) {
     bloque.appendChild(d);
   }
 
+  // Guardar empleo id actual para solicitud
+  window._modalEmpId = parseInt(card.dataset.empid || '0');
+
+  // Reset estado solicitud
+  const solMsg = document.getElementById('modalSolMsg');
+  if (solMsg) { solMsg.style.display = 'none'; solMsg.textContent = ''; }
+  const btnSol = document.getElementById('modalBtnSolicitar');
+  if (btnSol) { btnSol.disabled = false; btnSol.textContent = '🚀 Solicitar esta vacante'; }
+  const mensajeWrap = document.getElementById('modalMensajeWrap');
+  if (mensajeWrap) mensajeWrap.style.display = 'none';
+  const mensajeTxt = document.getElementById('modalMensajeTxt');
+  if (mensajeTxt) mensajeTxt.value = '';
+
   document.getElementById('modalBox').className = 'modal-box';
   overlay.classList.add('open');
 }
 
 function ucfirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+// ── SOLICITAR VACANTE DESDE MODAL ─────────────────────────────
+<?php if ($usuarioEsCandidato): ?>
+async function solicitarDesdeModal() {
+  const empId = window._modalEmpId || 0;
+  if (!empId) return;
+  const btn = document.getElementById('modalBtnSolicitar');
+  const msg = document.getElementById('modalSolMsg');
+  const mensajeWrap = document.getElementById('modalMensajeWrap');
+
+  // Primera pulsación: mostrar área de mensaje
+  if (mensajeWrap && mensajeWrap.style.display === 'none') {
+    mensajeWrap.style.display = 'block';
+    btn.textContent = '✅ Confirmar y enviar solicitud';
+    btn.style.background = 'linear-gradient(135deg,#1648e8,#2563eb)';
+    return;
+  }
+
+  const mensaje = document.getElementById('modalMensajeTxt')?.value.trim() || '';
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+  msg.style.display = 'none';
+
+  try {
+    const fd = new FormData();
+    fd.append('_action', 'solicitar_vacante_pub');
+    fd.append('empleo_id', empId);
+    fd.append('mensaje', mensaje);
+    const r = await fetch('Empleo.php', { method: 'POST', body: fd });
+    const j = await r.json();
+    msg.style.display = 'block';
+    if (j.ok) {
+      msg.textContent = j.msg || '✅ ¡Solicitud enviada!';
+      msg.style.cssText = 'display:block;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;background:#edfaf3;color:#1f9d55;border:1px solid #a3f0ba';
+      btn.textContent = '✅ Solicitud enviada';
+      if (mensajeWrap) mensajeWrap.style.display = 'none';
+    } else if (j.ya_aplicado) {
+      msg.textContent = '✅ Ya aplicaste a esta vacante anteriormente.';
+      msg.style.cssText = 'display:block;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;background:#fef9c3;color:#854d0e;border:1px solid #fde68a';
+      btn.textContent = '✅ Ya aplicaste';
+    } else {
+      msg.textContent = j.msg || '❌ Error al enviar.';
+      msg.style.cssText = 'display:block;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;background:#fef2f2;color:#dc2626;border:1px solid #fecaca';
+      btn.disabled = false;
+      btn.textContent = '🚀 Solicitar esta vacante';
+    }
+  } catch (e) {
+    msg.textContent = '❌ Error de conexión. Intenta de nuevo.';
+    msg.style.cssText = 'display:block;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;background:#fef2f2;color:#dc2626;border:1px solid #fecaca';
+    btn.disabled = false;
+    btn.textContent = '🚀 Solicitar esta vacante';
+  }
+}
+<?php else: ?>
+function solicitarDesdeModal() { window.location.href = 'registro.php'; }
+<?php endif; ?>
 
 document.querySelectorAll('.btn-ver').forEach(btn => btn.addEventListener('click', () => abrirModal(btn.closest('.empleo-card'))));
 

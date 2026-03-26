@@ -366,8 +366,90 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── GUARDAR APTITUDES EXTRA ───────────────────────────────
-  if ($action === 'guardar_aptitudes_extra') {
+  // ── SOLICITAR VACANTE ─────────────────────────────────────
+  if ($action === 'solicitar_vacante') {
+    try {
+      if ($usuario['tipo'] !== 'candidato') {
+        echo json_encode(['ok' => false, 'msg' => 'Solo candidatos pueden solicitar vacantes.']);
+        exit;
+      }
+      $empleo_id = (int) ($_POST['empleo_id'] ?? 0);
+      if (!$empleo_id) {
+        echo json_encode(['ok' => false, 'msg' => 'Vacante no válida.']);
+        exit;
+      }
+      // Crear tabla si no existe
+      $db->exec("CREATE TABLE IF NOT EXISTS solicitudes_empleo (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        empleo_id INT NOT NULL,
+        candidato_id INT NOT NULL,
+        mensaje TEXT DEFAULT NULL,
+        estado ENUM('pendiente','vista','aceptada','rechazada') DEFAULT 'pendiente',
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_solicitud (empleo_id, candidato_id),
+        INDEX idx_empleo (empleo_id),
+        INDEX idx_candidato (candidato_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+      // Verificar que la vacante exista y esté activa
+      $chkV = $db->prepare("SELECT id, titulo FROM empleos WHERE id=? AND activo=1 LIMIT 1");
+      $chkV->execute([$empleo_id]);
+      $vacante = $chkV->fetch();
+      if (!$vacante) {
+        echo json_encode(['ok' => false, 'msg' => 'La vacante no está disponible.']);
+        exit;
+      }
+      // Verificar que no haya aplicado antes
+      $chkS = $db->prepare("SELECT id FROM solicitudes_empleo WHERE empleo_id=? AND candidato_id=?");
+      $chkS->execute([$empleo_id, $usuario['id']]);
+      if ($chkS->fetch()) {
+        echo json_encode(['ok' => false, 'msg' => 'Ya aplicaste a esta vacante.', 'ya_aplicado' => true]);
+        exit;
+      }
+      $mensaje = substr(trim($_POST['mensaje'] ?? ''), 0, 1000);
+      $db->prepare("INSERT INTO solicitudes_empleo (empleo_id, candidato_id, mensaje) VALUES (?,?,?)")
+         ->execute([$empleo_id, $usuario['id'], $mensaje ?: null]);
+      echo json_encode(['ok' => true, 'msg' => '✅ ¡Solicitud enviada! La empresa revisará tu perfil.']);
+    } catch (Exception $e) {
+      echo json_encode(['ok' => false, 'msg' => 'Error: ' . $e->getMessage()]);
+    }
+    exit;
+  }
+
+  // ── VER MIS SOLICITUDES ────────────────────────────────────
+  if ($action === 'mis_solicitudes') {
+    try {
+      $db->exec("CREATE TABLE IF NOT EXISTS solicitudes_empleo (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        empleo_id INT NOT NULL,
+        candidato_id INT NOT NULL,
+        mensaje TEXT DEFAULT NULL,
+        estado ENUM('pendiente','vista','aceptada','rechazada') DEFAULT 'pendiente',
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_solicitud (empleo_id, candidato_id),
+        INDEX idx_empleo (empleo_id),
+        INDEX idx_candidato (candidato_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+      $stmt = $db->prepare("
+        SELECT se.id, se.estado, se.creado_en,
+               e.titulo, e.ciudad, e.modalidad, e.tipo_contrato,
+               COALESCE(pe.nombre_empresa, u.nombre) AS empresa
+        FROM solicitudes_empleo se
+        JOIN empleos e ON e.id = se.empleo_id
+        LEFT JOIN usuarios u ON u.id = e.empresa_id
+        LEFT JOIN perfiles_empresa pe ON pe.usuario_id = e.empresa_id
+        WHERE se.candidato_id = ?
+        ORDER BY se.creado_en DESC
+        LIMIT 20
+      ");
+      $stmt->execute([$usuario['id']]);
+      echo json_encode(['ok' => true, 'solicitudes' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    } catch (Exception $e) {
+      echo json_encode(['ok' => false, 'msg' => $e->getMessage()]);
+    }
+    exit;
+  }
+
+  // ── GUARDAR APTITUDES EXTRA ───────────────────────────────  if ($action === 'guardar_aptitudes_extra') {
     try {
       $bland = substr(trim($_POST['aptitudes_bland'] ?? ''), 0, 500);
       $idiomas = substr(trim($_POST['aptitudes_idiomas'] ?? ''), 0, 300);
@@ -3046,14 +3128,20 @@ if ($subTipo === 'servicio') {
                 $meta = $ciudad . ($salario ? ' · ' . $salario : '');
                 $modalidad = htmlspecialchars(ucfirst($v['modalidad'] ?? $v['tipo_contrato'] ?? 'Tiempo completo'));
                 ?>
-                <div class="ce-item" onclick="location.href='Empleo.html'">
+                <div class="ce-item">
                   <div class="ce-ico"><?= $ico ?></div>
-                  <div class="ce-info">
+                  <div class="ce-info" onclick="location.href='Empleo.php'" style="cursor:pointer;flex:1">
                     <div class="ce-nom"><?= htmlspecialchars($v['titulo']) ?></div>
                     <div class="ce-emp"><?= htmlspecialchars($v['empresa'] ?? 'Empresa') ?></div>
                     <div class="ce-met">📍 <?= $meta ?></div>
                   </div>
-                  <span class="ce-badge"><?= $modalidad ?></span>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+                    <span class="ce-badge"><?= $modalidad ?></span>
+                    <button onclick="abrirModalSolicitud(<?= (int)$v['id'] ?>, '<?= addslashes(htmlspecialchars($v['titulo'])) ?>', '<?= addslashes(htmlspecialchars($v['empresa'] ?? 'Empresa')) ?>')"
+                      style="padding:5px 14px;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:white;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
+                      🚀 Solicitar
+                    </button>
+                  </div>
                 </div>
               <?php endforeach; ?>
             </div>
@@ -4283,6 +4371,43 @@ if ($subTipo === 'servicio') {
     }
     function cerrarFormApt() { document.getElementById('modal-apt').classList.remove('open'); }
 
+    // ── SYNC SERVIDOR ───────────────────────────────────────────
+    async function syncEduServidor() {
+      try {
+        const fd = new FormData();
+        fd.append('_action', 'guardar_educacion');
+        fd.append('items', JSON.stringify(perfilData.educacion));
+        const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (!j.ok) console.warn('syncEdu error:', j.msg);
+      } catch (e) { console.warn('syncEdu red error:', e); }
+    }
+
+    async function syncCertServidor() {
+      const certMsg = document.getElementById('cert-msg');
+      try {
+        const fd = new FormData();
+        fd.append('_action', 'guardar_certificaciones');
+        // Filtrar base64 grandes: si el archivo es base64 y pesa mucho, omitir del sync (sólo se guarda localmente)
+        const itemsSync = perfilData.certificaciones.map(c => {
+          const archEs64 = c.archivo && c.archivo.startsWith('data:');
+          return { ...c, archivo: archEs64 ? '' : (c.archivo || ''), archivoNom: archEs64 ? c.archivoNom : (c.archivoNom || '') };
+        });
+        fd.append('items', JSON.stringify(itemsSync));
+        const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (j.ok) {
+          if (certMsg) { certMsg.textContent = '✅ Certificación guardada correctamente.'; certMsg.className = 'mmsg success'; certMsg.style.display = 'block'; setTimeout(() => { certMsg.style.display = 'none'; }, 2500); }
+        } else {
+          console.warn('syncCert error:', j.msg);
+          if (certMsg) { certMsg.textContent = '⚠️ Guardado local OK, pero no se sincronizó al servidor: ' + (j.msg || 'error'); certMsg.className = 'mmsg error'; certMsg.style.display = 'block'; }
+        }
+      } catch (e) {
+        console.warn('syncCert red error:', e);
+        if (certMsg) { certMsg.textContent = '⚠️ Sin conexión — la certificación quedó guardada localmente.'; certMsg.className = 'mmsg error'; certMsg.style.display = 'block'; }
+      }
+    }
+
     // Eliminar
     function eliminarEdu(i) { perfilData.educacion.splice(i, 1); savePerfilData(); renderEdu(); syncEduServidor(); }
     function eliminarCert(i) { perfilData.certificaciones.splice(i, 1); savePerfilData(); renderCert(); syncCertServidor(); }
@@ -4532,6 +4657,111 @@ if ($subTipo === 'servicio') {
     </div>
   <?php endif; ?>
 
+
+  <!-- ══ MODAL SOLICITAR VACANTE ══ -->
+  <div class="modal-ov" id="modal-solicitud-vacante">
+    <div class="modal-box" style="max-width:480px">
+      <button class="mcerrar" onclick="cerrarModalSolicitud()">✕</button>
+      <div class="modal-pad">
+        <div class="mtit">🚀 Solicitar vacante</div>
+        <p class="msub" id="sol-subtitulo">Envía tu solicitud a la empresa.</p>
+        <div class="mmsg" id="sol-msg"></div>
+        <div class="mgr full" style="margin-bottom:14px">
+          <label style="font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:6px;display:block">
+            Mensaje opcional para la empresa
+          </label>
+          <textarea id="sol-mensaje" rows="4"
+            placeholder="Ej: Estoy muy interesado en esta vacante porque tengo experiencia en… (opcional)"
+            style="width:100%;border:1.5px solid var(--brd);border-radius:12px;padding:10px 14px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;color:var(--ink1);background:var(--bg2);box-sizing:border-box"></textarea>
+        </div>
+        <div id="sol-ya-aplicado" style="display:none;text-align:center;padding:18px 0">
+          <div style="font-size:32px;margin-bottom:8px">✅</div>
+          <div style="font-weight:700;color:var(--ink1);margin-bottom:4px">Ya enviaste tu solicitud</div>
+          <div style="font-size:13px;color:var(--ink3)">La empresa revisará tu perfil y te contactará.</div>
+        </div>
+        <div id="sol-acciones">
+          <button class="btn-save" onclick="enviarSolicitudVacante()" id="sol-btn-enviar">🚀 Enviar solicitud</button>
+          <button onclick="cerrarModalSolicitud()"
+            style="display:block;width:100%;margin-top:10px;padding:11px;background:none;border:1.5px solid var(--brd);border-radius:12px;font-size:14px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:'DM Sans',sans-serif">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ── MODAL SOLICITAR VACANTE ───────────────────────────────
+  let _solEmpId = 0;
+
+  function abrirModalSolicitud(empleoId, titulo, empresa) {
+    _solEmpId = empleoId;
+    const msg = document.getElementById('sol-msg');
+    const sub = document.getElementById('sol-subtitulo');
+    const yaApl = document.getElementById('sol-ya-aplicado');
+    const acciones = document.getElementById('sol-acciones');
+    const txtArea = document.getElementById('sol-mensaje');
+    if (sub) sub.textContent = '📋 ' + titulo + ' · ' + empresa;
+    if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+    if (yaApl) yaApl.style.display = 'none';
+    if (acciones) acciones.style.display = '';
+    if (txtArea) txtArea.value = '';
+    document.getElementById('modal-solicitud-vacante').classList.add('open');
+  }
+
+  function cerrarModalSolicitud() {
+    document.getElementById('modal-solicitud-vacante').classList.remove('open');
+  }
+
+  async function enviarSolicitudVacante() {
+    const msg = document.getElementById('sol-msg');
+    const btn = document.getElementById('sol-btn-enviar');
+    const mensaje = document.getElementById('sol-mensaje').value.trim();
+    if (!_solEmpId) return;
+    btn.disabled = true;
+    btn.textContent = 'Enviando…';
+    msg.style.display = 'none';
+    try {
+      const fd = new FormData();
+      fd.append('_action', 'solicitar_vacante');
+      fd.append('empleo_id', _solEmpId);
+      fd.append('mensaje', mensaje);
+      const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.ok) {
+        msg.textContent = j.msg || '✅ ¡Solicitud enviada correctamente!';
+        msg.className = 'mmsg success';
+        msg.style.display = 'block';
+        document.getElementById('sol-acciones').style.display = 'none';
+        document.getElementById('sol-ya-aplicado').style.display = 'block';
+        setTimeout(cerrarModalSolicitud, 2200);
+      } else if (j.ya_aplicado) {
+        document.getElementById('sol-ya-aplicado').style.display = 'block';
+        document.getElementById('sol-acciones').style.display = 'none';
+      } else {
+        msg.textContent = j.msg || '❌ Error al enviar solicitud.';
+        msg.className = 'mmsg error';
+        msg.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '🚀 Enviar solicitud';
+      }
+    } catch (e) {
+      msg.textContent = '❌ Error de conexión. Intenta de nuevo.';
+      msg.className = 'mmsg error';
+      msg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '🚀 Enviar solicitud';
+    }
+  }
+
+  // Cerrar modal solicitud con overlay click o Escape
+  document.getElementById('modal-solicitud-vacante').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalSolicitud();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarModalSolicitud();
+  });
+  </script>
 
   <!-- Widget de sesión activa — QuibdóConecta -->
   <script src="js/sesion_widget.js"></script>
