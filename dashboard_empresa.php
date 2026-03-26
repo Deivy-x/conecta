@@ -295,7 +295,9 @@ $nombreEmpresa  = htmlspecialchars(trim($ep['nombre_empresa'] ?: $usuario['nombr
 $iniciales      = strtoupper(mb_substr($nombreEmpresa, 0, 2));
 $sector         = htmlspecialchars($ep['sector'] ?? '');
 $ciudad         = htmlspecialchars($usuario['ciudad'] ?? '');
-$logoUrl        = !empty($ep['logo']) ? 'uploads/logos/' . htmlspecialchars($ep['logo']) : '';
+$logoUrl        = !empty($ep['logo'])
+    ? (str_starts_with($ep['logo'], 'http') ? htmlspecialchars($ep['logo']) : 'uploads/logos/' . htmlspecialchars($ep['logo']))
+    : '';
 $fechaRegistro  = date('d \de F Y', strtotime($usuario['creado_en']));
 $correo         = htmlspecialchars($usuario['correo']);
 $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1);
