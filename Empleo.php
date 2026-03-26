@@ -125,7 +125,7 @@ function catIcono($cat, $iconos) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Empleos – Quibdó Conecta</title>
   <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'DM Sans',Arial,sans-serif;background:#f9fafb;color:#111}
@@ -212,7 +212,7 @@ function catIcono($cat, $iconos) {
     .badge.remoto{background:#e3f2fd;color:#1565c0}
     .badge.cultura{background:#f3e5f5;color:#6a1b9a}
     .empleo-icon{font-size:38px;display:block;margin-bottom:12px}
-    .empleo-card h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;line-height:1.2}
+    .empleo-card h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;margin-bottom:4px;line-height:1.3}
     .empresa{color:#1f9d55;font-weight:600;font-size:14px;margin-bottom:3px}
     .ubicacion{color:#999;font-size:13px;margin-bottom:12px}
     .empleo-salario{font-size:13px;font-weight:700;color:#333;margin-bottom:12px}
