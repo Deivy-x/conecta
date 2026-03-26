@@ -5017,11 +5017,11 @@ if ($action) {
       <div class="verif-card" id="sc-${s.id}">
         <div class="verif-header">
           <div class="verif-user">
-            <div class="verif-avatar" style="background:${s.tipo === 'empresa' ? '#3b82f6' : '#10b981'}">${s.nombre.charAt(0).toUpperCase()}</div>
+            <div class="verif-avatar" style="background:${s.tipo === 'empresa' ? '#3b82f6' : s.tipo === 'servicio' ? '#f59e0b' : s.tipo === 'negocio' ? '#8b5cf6' : '#10b981'}">${s.nombre.charAt(0).toUpperCase()}</div>
             <div class="verif-info">
               <div class="name">${esc(s.nombre + ' ' + (s.apellido || ''))}</div>
               <div class="meta">
-                ${esc(s.correo)} · ${s.tipo === 'empresa' ? '🏢 Empresa' : '👤 Candidato'} · ${fFecha(s.creado_en)}
+                ${esc(s.correo)} · ${s.tipo === 'empresa' ? '🏢 Empresa' : s.tipo === 'servicio' ? '🛠️ Servicio' : s.tipo === 'negocio' ? '🏪 Negocio' : '👤 Candidato'} · ${fFecha(s.creado_en)}
               </div>
               <div class="meta" style="margin-top:4px">
                 ${s.telefono ? '📞 ' + esc(s.telefono) + ' · ' : ''} 
@@ -5128,7 +5128,7 @@ if ($action) {
             <div class="verif-avatar">${v.nombre.charAt(0).toUpperCase()}</div>
             <div class="verif-info">
               <div class="name">${esc(v.nombre + ' ' + (v.apellido || ''))}</div>
-              <div class="meta">${esc(v.correo)} · ${v.tipo === 'empresa' ? '🏢 Empresa' : '👤 Candidato'} · ${fFecha(v.creado_en)}</div>
+              <div class="meta">${esc(v.correo)} · ${v.tipo === 'empresa' ? '🏢 Empresa' : v.tipo === 'servicio' ? '🛠️ Servicio' : v.tipo === 'negocio' ? '🏪 Negocio' : '👤 Candidato'} · ${fFecha(v.creado_en)}</div>
             </div>
           </div>
           <span class="badge ${v.estado === 'pendiente' ? 'amber' : v.estado === 'aprobado' ? 'green' : 'red'}">${v.estado}</span>
@@ -5229,7 +5229,7 @@ if ($action) {
           </div>
         </div>
         <div class="uc-badges">
-          <span class="badge ${u.tipo === 'empresa' ? 'blue' : 'green'}">${u.tipo === 'empresa' ? '🏢' : '👤'} ${u.tipo}</span>
+          <span class="badge ${u.tipo === 'empresa' ? 'blue' : u.tipo === 'servicio' ? 'amber' : u.tipo === 'negocio' ? 'purple' : 'green'}">${u.tipo === 'empresa' ? '🏢' : u.tipo === 'servicio' ? '🛠️' : u.tipo === 'negocio' ? '🏪' : '👤'} ${u.tipo}</span>
           ${parseInt(u.verificado) ? '<span class="badge green">✓ Verificado</span>' : ''}
           ${parseInt(u.activo) ? '<span class="badge green">🟢 Activo</span>' : '<span class="badge red">🔴 Inactivo</span>'}
           ${parseInt(u.en_talentos) ? '<span class="badge" style="background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.3)">🌟 Aparece en talentos</span>' : ''}
