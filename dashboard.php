@@ -2682,6 +2682,7 @@ if ($subTipo === 'servicio') {
       <a href="chat.php" class="nl">💬 Chat<?php if ($chatNoLeidos > 0): ?><span
             class="nl-dot"></span><?php endif; ?></a>
       <a href="convocatorias.php" class="nl">📢 Convocatorias</a>
+      <a href="buscar.php" class="nl">🔍 Buscar</a>
       <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
         <a href="#" class="nl" onclick="abrirPublicarVacante();return false;" style="color:var(--v2)">➕ Publicar
           vacante</a>

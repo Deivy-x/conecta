@@ -522,6 +522,7 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
       <?php if ($chatNoLeidos > 0): ?><span class="nl-dot"></span><?php endif; ?>
     </a>
     <a href="Ayuda.html" class="nl">❓ Ayuda</a>
+    <a href="buscar.php" class="nl">🔍 Buscar</a>
   </nav>
   <div class="nav-usuario">
     <div class="nav-avatar" id="navAvatar" onclick="abrirModal()">

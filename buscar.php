@@ -488,7 +488,7 @@ endif;
     <a href="buscar.php" class="nl active"><span class="ico">🔍</span>Buscar</a>
     <a href="convocatorias.php" class="nl"><span class="ico">📋</span>Convocatorias</a>
   </nav>
-  <div class="nav-auth">
+  <div class="nav-right">
     <a href="inicio_sesion.php" class="btn-in">Iniciar sesión</a>
     <a href="registro.php" class="btn-reg">Registrarse</a>
   </div>
@@ -507,7 +507,7 @@ endif;
     <a href="Ayuda.html" class="mob-link"><span class="m-ico">❓</span>Ayuda</a>
   </nav>
   <div class="mob-divider"></div>
-  <div class="mob-auth">
+  <div class="mobile-auth">
     <a href="inicio_sesion.php" class="mob-in">Iniciar sesión</a>
     <a href="registro.php" class="mob-reg">Registrarse</a>
   </div>
