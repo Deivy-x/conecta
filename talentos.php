@@ -533,9 +533,9 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       font-weight: 500;
     }
 
-    /* CATEGORÍAS */
+    /* CATEGORÍAS — estilo index */
     .categorias {
-      padding: 80px 48px;
+      padding: 72px 48px;
       background: #f9fafb;
       text-align: center;
       border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -565,35 +565,56 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     .cat-btn {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       background: white;
       border: 2px solid rgba(0, 0, 0, 0.07);
       border-radius: 50px;
-      padding: 10px 20px;
+      padding: 12px 22px;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
       color: #444;
       cursor: pointer;
       font-family: 'DM Sans', sans-serif;
-      transition: all 0.25s;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+      position: relative;
+      overflow: hidden;
     }
+
+    .cat-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(31,157,85,.08), rgba(37,99,235,.05));
+      opacity: 0;
+      transition: opacity .25s;
+    }
+
+    .cat-btn:hover::before, .cat-btn.activa::before { opacity: 1; }
 
     .cat-btn:hover,
     .cat-btn.activa {
       background: #edfaf3;
       border-color: #1f9d55;
       color: #1f9d55;
-      box-shadow: 0 6px 20px rgba(31, 157, 85, 0.15);
+      box-shadow: 0 6px 20px rgba(31, 157, 85, 0.18);
+      transform: translateY(-2px);
+    }
+
+    .cat-btn .cat-emoji {
+      font-size: 18px;
+      line-height: 1;
     }
 
     .cat-btn .count {
       font-size: 11px;
       background: #f1f5f9;
       border-radius: 10px;
-      padding: 2px 8px;
+      padding: 3px 9px;
       color: #888;
-      font-weight: 600;
+      font-weight: 700;
+      min-width: 22px;
+      text-align: center;
     }
 
     .cat-btn.activa .count {
@@ -607,20 +628,21 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       gap: 10px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 24px;
+      margin-top: 28px;
     }
 
     .filtro-btn {
       background: white;
-      border: 1px solid rgba(0, 0, 0, 0.12);
-      color: #444;
-      padding: 8px 18px;
+      border: 1.5px solid rgba(0, 0, 0, 0.1);
+      color: #555;
+      padding: 9px 20px;
       border-radius: 25px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       font-family: 'DM Sans', sans-serif;
-      transition: all 0.2s;
+      transition: all 0.25s;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
     }
 
     .filtro-btn:hover,
@@ -628,6 +650,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       background: #1f9d55;
       border-color: #1f9d55;
       color: white;
+      box-shadow: 0 6px 16px rgba(31,157,85,.25);
     }
 
     /* TALENTOS SECTION */
@@ -1384,6 +1407,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 
       .cat-btn {
         justify-content: center;
+        width: 100%;
       }
 
       .dj-cards {
@@ -1487,7 +1511,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
   <!-- STATS -->
   <div class="stats-band">
     <div class="s reveal">
-      <h3>+500</h3>
+      <h3 id="stat-talentos">+500</h3>
       <p>Talentos registrados</p>
     </div>
     <div class="s reveal">
@@ -1495,7 +1519,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       <p>Categorías de talento</p>
     </div>
     <div class="s reveal">
-      <h3>+120</h3>
+      <h3 id="stat-empresas">+120</h3>
       <p>Empresas conectadas</p>
     </div>
     <div class="s reveal">
@@ -1509,15 +1533,13 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     <h2 class="reveal">Filtra por categoría</h2>
     <p class="sub">Encuentra el talento perfecto según el área que necesitas</p>
     <div class="categorias-grid" id="catGrid">
-      <button class="cat-btn activa" data-cat="todos">🌐 Todos <span class="count"
-          id="cnt-todos"><?= count($dbTalentos) ?></span></button>
-      <button class="cat-btn" data-cat="tecnologia">💻 Tecnología <span class="count" id="cnt-tec">0</span></button>
-      <button class="cat-btn" data-cat="arte">🎨 Arte &amp; Diseño <span class="count" id="cnt-art">0</span></button>
-      <button class="cat-btn" data-cat="musica">🎵 Música &amp; DJ <span class="count" id="cnt-mus">0</span></button>
-      <button class="cat-btn" data-cat="educacion">📚 Educación <span class="count" id="cnt-edu">0</span></button>
-      <button class="cat-btn" data-cat="salud">🏥 Salud <span class="count" id="cnt-sal">0</span></button>
-      <button class="cat-btn" data-cat="administrativo">💼 Administrativo <span class="count"
-          id="cnt-adm">0</span></button>
+      <button class="cat-btn activa" data-cat="todos"><span class="cat-emoji">🌐</span> Todos <span class="count" id="cnt-todos"><?= count($dbTalentos) ?></span></button>
+      <button class="cat-btn" data-cat="tecnologia"><span class="cat-emoji">💻</span> Tecnología <span class="count" id="cnt-tec">0</span></button>
+      <button class="cat-btn" data-cat="arte"><span class="cat-emoji">🎨</span> Arte &amp; Diseño <span class="count" id="cnt-art">0</span></button>
+      <button class="cat-btn" data-cat="musica"><span class="cat-emoji">🎵</span> Música &amp; DJ <span class="count" id="cnt-mus">0</span></button>
+      <button class="cat-btn" data-cat="educacion"><span class="cat-emoji">📚</span> Educación <span class="count" id="cnt-edu">0</span></button>
+      <button class="cat-btn" data-cat="salud"><span class="cat-emoji">🏥</span> Salud <span class="count" id="cnt-sal">0</span></button>
+      <button class="cat-btn" data-cat="administrativo"><span class="cat-emoji">💼</span> Administrativo <span class="count" id="cnt-adm">0</span></button>
     </div>
     <div class="filtros-tipo" id="filtrosTipo">
       <button class="filtro-btn activo" data-tipo="todos">Todos</button>
@@ -1563,7 +1585,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
           <div class="talento-card" data-cat="<?= detectarCategoria($talento['profesion'], $talento['skills']) ?>"
             data-tipo="disponible" data-uid="<?= $talento['id'] ?>" data-nombre="<?= $nb ?>" data-profesion="<?= $pro ?>" data-ubicacion="<?= $ciu ?>"
             data-skills="<?= $ski ?>" data-grad="<?= $grd ?>" data-initials="<?= $ini ?>" data-desc="<?= $bio ?>"
-            data-foto="<?= !empty($talento['foto']) ? 'uploads/fotos/' . htmlspecialchars($talento['foto']) : '' ?>"
+            data-foto="<?= !empty($talento['foto']) ? (str_starts_with($talento['foto'], 'http') ? htmlspecialchars($talento['foto']) : 'uploads/fotos/' . htmlspecialchars($talento['foto'])) : '' ?>"
             data-badges-json="<?= htmlspecialchars(json_encode($talento['badges'] ?? []), ENT_QUOTES) ?>"
             data-tiene-verificado="<?= $talento['tiene_verificado'] ? '1' : '0' ?>"
             data-tiene-premium="<?= $talento['tiene_premium'] ? '1' : '0' ?>"
@@ -1573,7 +1595,8 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 
             <div class="talento-avatar" style="background:<?= $grd ?>;overflow:hidden">
               <?php if (!empty($talento['foto'])): ?>
-                <img src="uploads/fotos/<?= htmlspecialchars($talento['foto']) ?>" alt="<?= $ini ?>"
+                <?php $fotoSrc = str_starts_with($talento['foto'], 'http') ? htmlspecialchars($talento['foto']) : 'uploads/fotos/' . htmlspecialchars($talento['foto']); ?>
+                <img src="<?= $fotoSrc ?>" alt="<?= $ini ?>"
                   style="width:100%;height:100%;object-fit:cover;display:block">
               <?php else: ?>
                 <?= $ini ?>
@@ -1992,6 +2015,27 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 <script>
 function abrirModalLogin(){document.getElementById("qc-login-modal").style.display="flex";document.body.style.overflow="hidden";}
 function cerrarModalLogin(){document.getElementById("qc-login-modal").style.display="none";document.body.style.overflow="";}
+
+/* STATS EN TIEMPO REAL */
+(async function(){
+  try {
+    const r = await fetch('stats.php');
+    const d = await r.json();
+    function animCount(el, target) {
+      if (!el) return;
+      let c = 0, s = Math.ceil(target / 60);
+      const id = setInterval(() => {
+        c += s; if (c >= target) { c = target; clearInterval(id); }
+        el.textContent = '+' + c;
+      }, 20);
+    }
+    if (d.total_talentos) animCount(document.getElementById('stat-talentos'), d.total_talentos);
+    if (d.total_empresas) animCount(document.getElementById('stat-empresas'), d.total_empresas);
+    // hero badge
+    const badge = document.querySelector('.hero-badge');
+    if (badge && d.total_talentos) badge.textContent = '🌟 +' + d.total_talentos + ' talentos registrados';
+  } catch(e) {}
+})();
 </script>
 </body>
 
