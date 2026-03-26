@@ -3124,7 +3124,7 @@ if ($subTipo === 'servicio') {
             <div style="font-size:14px;color:#546e7a;margin-bottom:14px">
               Esta función está disponible desde el plan <strong style="color:#f9a825">Amarillo Oro</strong>.
             </div>
-            <a href="empresas.php#planes" style="display:inline-block;padding:9px 22px;background:#f9a825;color:#fff;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(249,168,37,.3)">
+            <a href="empresas.php#precios" style="display:inline-block;padding:9px 22px;background:#f9a825;color:#fff;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(249,168,37,.3)">
               Ver planes →
             </a>
           </div>
