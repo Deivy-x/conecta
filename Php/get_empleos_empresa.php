@@ -1,6 +1,5 @@
 <?php
-// Php/get_empleos_empresa.php — Convocatorias activas de una empresa
-// Columnas reales: empresa_id, salario_texto, tipo_contrato, modalidad
+
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache');
 

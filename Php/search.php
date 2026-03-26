@@ -1,8 +1,5 @@
 <?php
-// ============================================================
-// Php/search.php — Búsqueda global QuibdóConecta
-// Devuelve: candidatos, empresas, empleos, convocatorias
-// ============================================================
+
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache');
 
@@ -18,7 +15,6 @@ try {
     $db  = getDB();
     $like = '%' . $q . '%';
 
-    // ── 1. CANDIDATOS ────────────────────────────────────────
     $stmt = $db->prepare("
         SELECT u.id, u.nombre, u.apellido, u.ciudad, u.foto,
                u.verificado,
@@ -46,7 +42,6 @@ try {
     $stmt->execute([':q' => $like]);
     $candidatos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // ── 2. EMPRESAS ──────────────────────────────────────────
     $stmt = $db->prepare("
         SELECT u.id, u.nombre, u.ciudad, u.verificado,
                ep.nombre_empresa, ep.sector, ep.descripcion,
@@ -72,8 +67,6 @@ try {
     $stmt->execute([':q' => $like]);
     $empresas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // ── 3. EMPLEOS ───────────────────────────────────────────
-    // JOIN con usuarios para obtener nombre de empresa
     $stmt = $db->prepare("
         SELECT e.id, e.titulo, e.descripcion, e.categoria,
                e.ciudad, e.creado_en,
@@ -100,7 +93,6 @@ try {
     $stmt->execute([':q' => $like]);
     $empleos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // ── 4. CONVOCATORIAS ─────────────────────────────────────
     $stmt = $db->prepare("
         SELECT id, entidad, titulo, modalidad, nivel,
                salario, lugar, estado, icono,

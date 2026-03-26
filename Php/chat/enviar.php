@@ -1,19 +1,15 @@
 <?php
-// ============================================================
-// Php/chat/enviar.php — Enviar mensaje (POST)
-// ============================================================
+
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../db.php';
 
-// Solo POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['ok' => false, 'msg' => 'Método no permitido.']);
     exit;
 }
 
-// Verificar sesión
 if (!isset($_SESSION['usuario_id'])) {
     http_response_code(401);
     echo json_encode(['ok' => false, 'msg' => 'Debes iniciar sesión.']);
@@ -24,7 +20,6 @@ $de = (int) $_SESSION['usuario_id'];
 $para = (int) ($_POST['para_usuario'] ?? 0);
 $mensaje = trim($_POST['mensaje'] ?? '');
 
-// Validaciones
 if (!$para) {
     echo json_encode(['ok' => false, 'msg' => 'Destinatario no válido.']);
     exit;
@@ -44,7 +39,6 @@ if (mb_strlen($mensaje) > 2000) {
 
 $db = getDB();
 
-// Verificar que el destinatario existe y está activo
 $check = $db->prepare("SELECT id FROM usuarios WHERE id = ? AND activo = 1");
 $check->execute([$para]);
 if (!$check->fetch()) {
@@ -52,7 +46,6 @@ if (!$check->fetch()) {
     exit;
 }
 
-// Insertar mensaje
 $stmt = $db->prepare("INSERT INTO mensajes (de_usuario, para_usuario, mensaje) VALUES (?, ?, ?)");
 $stmt->execute([$de, $para, $mensaje]);
 

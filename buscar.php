@@ -6,7 +6,6 @@ header("Expires: 0");
 session_start();
 $logueado = isset($_SESSION['usuario_id']);
 
-// Si no está logueado, mostrar pantalla de acceso y salir
 if (!$logueado):
 ?>
 <!DOCTYPE html>
@@ -53,7 +52,6 @@ endif;
     }
     body{font-family:"Plus Jakarta Sans",sans-serif;background:var(--surface);color:var(--ink);min-height:100vh;overflow-x:hidden}
 
-    /* ── NAVBAR ── */
     .navbar{
       position:fixed;top:0;left:0;width:100%;height:64px;
       display:flex;align-items:center;justify-content:space-between;
@@ -100,7 +98,6 @@ endif;
     .ham.open span:nth-child(2){opacity:0;transform:scaleX(0)}
     .ham.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 
-    /* ── MOBILE MENU ── */
     .mob-menu{
       display:none;position:fixed;top:64px;left:0;width:100%;
       background:#fff;border-bottom:1px solid var(--border);
@@ -124,7 +121,6 @@ endif;
     .mob-in{border:2px solid var(--blue);color:var(--blue)}
     .mob-reg{background:var(--blue);color:#fff}
 
-    /* ── HERO ── */
     .hero{
       padding-top:64px;
       background:linear-gradient(160deg,#040810 0%,#0b1428 45%,#060f22 100%);
@@ -159,7 +155,6 @@ endif;
     .hero-inner h1 em{color:#60a5fa;font-style:normal}
     .hero-inner .hero-sub{color:rgba(255,255,255,.5);font-size:clamp(13px,2vw,15px);margin-bottom:36px;line-height:1.6}
 
-    /* ── SEARCH BOX ── */
     .hero-search-wrap{
       position:relative;z-index:10;
       max-width:680px;margin:0 auto;
@@ -194,7 +189,6 @@ endif;
     #searchBtn:hover{opacity:.88}
     #searchBtn:active{transform:scale(.97)}
 
-    /* ── STATS BAR ── */
     .stats-bar{
       background:#fff;border-bottom:1px solid var(--border);
       display:flex;justify-content:center;
@@ -210,10 +204,8 @@ endif;
     .stat-n{font-size:20px;font-weight:800;color:var(--ink)}
     .stat-l{font-size:11px;color:var(--muted);font-weight:500;margin-top:1px}
 
-    /* ── LAYOUT 3 COLS ── */
     .page-wrap{max-width:1240px;margin:0 auto;padding:24px 20px 80px;display:grid;grid-template-columns:256px 1fr 272px;gap:22px;align-items:start}
 
-    /* ── SIDEBAR LEFT ── */
     .sl{position:sticky;top:80px}
     .s-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px}
     .s-head{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:space-between}
@@ -241,7 +233,6 @@ endif;
     .qi:hover{background:var(--surface);color:var(--blue)}
     .qi .q-ic{font-size:14px;width:18px;text-align:center}
 
-    /* ── FEED ── */
     .feed{min-width:0}
     .tabs-row{
       display:flex;gap:4px;background:var(--card);
@@ -263,7 +254,6 @@ endif;
     .tc{background:#eff4ff;color:var(--blue);font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center}
     .tb.active .tc{background:var(--blue);color:#fff}
 
-    /* ── ESTADOS ── */
     .ei{text-align:center;padding:52px 20px;background:var(--card);border-radius:var(--radius);border:1px solid var(--border)}
     .ei .e-ico{font-size:48px;display:block;margin-bottom:14px}
     .ei h2{font-size:19px;font-weight:800;margin-bottom:8px}
@@ -292,12 +282,10 @@ endif;
     .panel{display:none}
     .panel.active{display:block}
 
-    /* ── GRIDS ── */
     .gcands{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
     .gemps{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
     .glist{display:flex;flex-direction:column;gap:11px}
 
-    /* ── CARD CANDIDATO ── */
     .cc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:17px;transition:all .22s;text-decoration:none;color:inherit;display:block;position:relative}
     .cc:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.1);border-color:#c7d7ff}
     .cc-av{width:50px;height:50px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;margin-bottom:11px;overflow:hidden;flex-shrink:0}
@@ -311,7 +299,6 @@ endif;
     .cc-sk{display:flex;flex-wrap:wrap;gap:4px}
     .sk{background:var(--surface);color:#475569;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
 
-    /* ── CARD EMPRESA ── */
     .ce{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:17px;transition:all .22s;text-decoration:none;color:inherit;display:block;position:relative}
     .ce:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.1);border-color:#c7d7ff}
     .ce-av{width:50px;height:50px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;margin-bottom:11px;overflow:hidden}
@@ -321,7 +308,6 @@ endif;
     .ce-loc{font-size:11px;color:var(--muted);margin-bottom:8px}
     .ce-chip{background:var(--surface);color:#475569;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;display:inline-block}
 
-    /* ── CARD EMPLEO ── */
     .cemp{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:15px 17px;display:flex;align-items:center;gap:13px;transition:all .22s;text-decoration:none;color:inherit}
     .cemp:hover{box-shadow:0 6px 20px rgba(0,0,0,.08);border-color:#bfdbfe;transform:translateX(3px)}
     .cemp-ico{width:42px;height:42px;flex-shrink:0;background:linear-gradient(135deg,#eff4ff,#dbeafe);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
@@ -337,7 +323,6 @@ endif;
     .ch-v{background:#f5f3ff;color:#6d28d9}
     .arr{color:#cbd5e1;font-size:16px;flex-shrink:0}
 
-    /* ── CARD CONVOCATORIA ── */
     .cconv{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:15px 17px;display:flex;align-items:center;gap:13px;transition:all .22s;text-decoration:none;color:inherit}
     .cconv:hover{box-shadow:0 6px 20px rgba(0,0,0,.08);border-color:#bbf7d0;transform:translateX(3px)}
     .cconv-ico{width:42px;height:42px;flex-shrink:0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px}
@@ -346,13 +331,11 @@ endif;
     .cconv-co{font-size:11px;color:var(--muted);margin-bottom:5px}
     .cconv-chips{display:flex;flex-wrap:wrap;gap:4px}
 
-    /* ── SEC HEADER ── */
     .sh{display:flex;align-items:center;justify-content:space-between;margin:20px 0 12px;padding-bottom:9px;border-bottom:1px solid var(--border)}
     .sh h3{font-size:15px;font-weight:800}
     .sh a{font-size:12px;font-weight:700;color:var(--blue);text-decoration:none}
     .sh a:hover{text-decoration:underline}
 
-    /* ── SIDEBAR RIGHT ── */
     .sr{position:sticky;top:80px}
     .sr-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
     .sr-card h4{font-size:13px;font-weight:800;margin-bottom:12px}
@@ -377,7 +360,6 @@ endif;
     .cta-card a.out{background:transparent;border:1.5px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-weight:600}
     .cta-card a.out:hover{border-color:#60a5fa;color:#60a5fa}
 
-    /* ── MODAL LOGIN ── */
     .modal-overlay{
       display:none;position:fixed;inset:0;
       background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
@@ -410,12 +392,11 @@ endif;
     footer{background:#0a0e1a;border-top:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.4);text-align:center;padding:20px;font-size:12px}
     footer span{color:#60a5fa}
 
-    /* ── RESPONSIVE TABLET ── */
     @media(max-width:1100px){
       .page-wrap{grid-template-columns:240px 1fr}
       .sr{display:none}
     }
-    /* ── RESPONSIVE MOBILE 2026 ── */
+    
     @media(max-width:768px){
       .navbar{padding:0 14px;height:60px;gap:8px}
       .nav-links,.nav-auth,.nav-search-wrap{display:none}
@@ -434,10 +415,10 @@ endif;
       .stat-l{font-size:10px}
       .page-wrap{grid-template-columns:1fr;padding:16px 12px 60px;gap:14px}
       .sl{display:none}
-      /* Mobile tabs más grandes y scrollables */
+      
       .tabs-row{padding:4px}
       .tb{padding:9px 14px;font-size:13px}
-      /* Cards full width en móvil */
+      
       .gcands,.gemps{grid-template-columns:1fr 1fr;gap:10px}
       .cc,.ce{padding:14px}
       .cemp,.cconv{padding:13px 14px}
@@ -661,24 +642,21 @@ endif;
 <footer><p>© 2026 <span>QuibdóConecta</span> — Conectando el talento del Chocó con el mundo.</p></footer>
 
 <script>
-// ── VARS GLOBALES ──
+
 const LOGUEADO = <?php echo $logueado ? 'true' : 'false'; ?>;
 let tabActual = 'todos', ultimaQ = '', datos = {candidatos:[],empresas:[],empleos:[],convocatorias:[]};
 let pendingQ = '';
 
-// ── NAVBAR SCROLL ──
 window.addEventListener('scroll', () => {
   document.getElementById('navbar').style.boxShadow = window.scrollY > 20 ? '0 4px 20px rgba(0,0,0,.1)' : 'none';
 }, {passive:true});
 
-// ── HAMBURGER ──
 const ham = document.getElementById('ham'), mob = document.getElementById('mobMenu');
 ham.addEventListener('click', () => { ham.classList.toggle('open'); mob.classList.toggle('open'); });
 document.addEventListener('click', e => {
   if (!ham.contains(e.target) && !mob.contains(e.target)) { ham.classList.remove('open'); mob.classList.remove('open'); }
 });
 
-// ── SYNC BUSCADORES ──
 const navInp = document.getElementById('navSearchInput');
 const inp = document.getElementById('searchInput');
 navInp.addEventListener('input', () => { inp.value = navInp.value; });
@@ -690,7 +668,6 @@ inp.addEventListener('input', () => {
   document.getElementById('clearBtn').classList.toggle('visible', inp.value.length > 0);
 });
 
-// ── MODAL LOGIN ──
 function mostrarModal(q) {
   pendingQ = q || '';
   document.getElementById('loginModal').classList.add('open');
@@ -703,7 +680,7 @@ function cerrarModal() {
 document.getElementById('loginModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) cerrarModal();
 });
-// Redirigir a inicio_sesion con redirect de vuelta
+
 document.querySelectorAll('#loginModal .m-primary').forEach(a => {
   a.addEventListener('click', e => {
     if (pendingQ) {
@@ -713,7 +690,6 @@ document.querySelectorAll('#loginModal .m-primary').forEach(a => {
   });
 });
 
-// ── INICIAR BÚSQUEDA (verifica login) ──
 function iniciarBusqueda(q) {
   q = (q || '').trim();
   if (!q) return;
@@ -724,7 +700,6 @@ function iniciarBusqueda(q) {
   buscar(q);
 }
 
-// ── TABS ──
 document.querySelectorAll('.tb').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
@@ -736,14 +711,12 @@ function switchTab(tab) {
   updInfo();
 }
 
-// ── FILTER CHIPS ──
 function filtrar(el) {
   document.querySelectorAll('.fc[data-v]').forEach(c => c.classList.remove('on'));
   el.classList.add('on');
   switchTab(el.dataset.v === 'todos' ? 'todos' : el.dataset.v);
 }
 
-// ── HELPERS ──
 function v(id) { document.getElementById(id)?.classList.add('v'); }
 function hv(id) { document.getElementById(id)?.classList.remove('v'); }
 function se(id) { const el=document.getElementById(id); if(el) el.style.display=''; }

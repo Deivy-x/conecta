@@ -1,9 +1,5 @@
 <?php
-// ============================================
-// registro.php — Registro unificado v2
-// 4 tipos: candidato | empresa | negocio
-// GET → formulario  |  POST → JSON
-// ============================================
+
 session_start();
 require_once 'Php/db.php';
 
@@ -11,9 +7,6 @@ if (isset($_SESSION['usuario_id'])) {
     header('Location: dashboard.php'); exit;
 }
 
-// ============================================
-// POST: procesar registro
-// ============================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
 
@@ -26,11 +19,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ciudad   = trim($_POST['ciudad']   ?? '');
     $tipo     = trim($_POST['tipo']     ?? 'candidato');
 
-    // Candidato
     $profesion_tipo   = trim($_POST['profesion_tipo']  ?? '');
     $fecha_nac_val    = trim($_POST['fecha_nacimiento']?? '');
 
-    // Empresa
     $nombre_empresa   = trim($_POST['nombre_empresa']  ?? '');
     $sector           = trim($_POST['sector']          ?? '');
     $nit              = trim($_POST['nit']             ?? '');
@@ -43,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipo_empresa     = trim($_POST['tipo_empresa_reg']?? '');
     $camara_comercio  = trim($_POST['camara_comercio'] ?? '');
 
-    // Negocio
     $nombre_negocio   = trim($_POST['nombre_negocio']  ?? '');
     $categoria_neg    = trim($_POST['categoria_neg']   ?? '');
     $tipo_negocio_reg = trim($_POST['tipo_negocio_reg']?? 'emp');
@@ -55,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $precio_desde_neg = trim($_POST['precio_desde_neg']?? '');
     $link_neg_virtual = trim($_POST['link_neg_virtual'] ?? '');
 
-    // ── Validaciones base ──
     if (!$nombre || !$correo || !$pass) {
         echo json_encode(['ok'=>false,'msg'=>'Completa todos los campos obligatorios.']); exit;
     }
@@ -74,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($tipo === 'candidato' && !$fecha_nac_val) {
         echo json_encode(['ok'=>false,'msg'=>'La fecha de nacimiento es obligatoria.']); exit;
     }
-    // Validar edad mínima 16 años
+    
     if ($tipo === 'candidato' && $fecha_nac_val) {
         $nacimiento = new DateTime($fecha_nac_val);
         $hoy = new DateTime();
@@ -93,14 +82,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db = getDB();
 
-        // Correo duplicado en usuarios
         $st = $db->prepare("SELECT id FROM usuarios WHERE correo = ?");
         $st->execute([$correo]); 
         if ($st->fetch()) {
             echo json_encode(['ok'=>false,'msg'=>'Este correo ya está registrado.']); exit;
         }
 
-        // Solicitud pendiente
         $st2 = $db->prepare("SELECT id, estado FROM solicitudes_ingreso WHERE correo = ? ORDER BY creado_en DESC LIMIT 1");
         $st2->execute([$correo]);
         $solEx = $st2->fetch();
@@ -117,13 +104,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cedula = trim($_POST['cedula'] ?? '');
         $tipo_doc = trim($_POST['tipo_documento_hidden'] ?? 'cedula') ?: 'cedula';
 
-        // Validación documento solo candidatos
         if ($tipo === 'candidato') {
             if (!$cedula) { echo json_encode(['ok'=>false,'msg'=>'El número de documento es obligatorio.']); exit; }
             if (empty($_FILES['doc_cedula']['name'])) { echo json_encode(['ok'=>false,'msg'=>'Debes subir la foto o PDF de tu documento.']); exit; }
         }
 
-        // Subir documento
         $docUrl = null;
         if (!empty($_FILES['doc_cedula']['name'])) {
             $upDir = __DIR__ . '/uploads/verificaciones/';
@@ -142,15 +127,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $docUrl = 'uploads/verificaciones/' . $fn;
         }
 
-        // Fecha: candidatos usan fecha_nacimiento; empresas y negocios usan fecha_fundacion
         $fecha_nac_final = null;
         if ($tipo === 'candidato') $fecha_nac_final = $fecha_nac_val ?: null;
 
-        // Nombre para la respuesta
         $nombreResp = $tipo === 'empresa' ? $nombre_empresa : ($tipo === 'negocio' ? $nombre_negocio : $nombre);
 
-        // ── Guardar en solicitudes_ingreso ──
-        // Reutilizamos columnas existentes + nuevos campos en nota_admin como JSON
         $extras = json_encode([
             'profesion_tipo'   => $profesion_tipo,
             'tipo_empresa'     => $tipo_empresa,
@@ -173,7 +154,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'link_neg_virtual' => $link_neg_virtual,
         ]);
 
-        // tipo BD: candidato | empresa | negocio → guardamos 'negocio' como 'empresa' para compatibilidad
         $tipoBD = $tipo === 'negocio' ? 'empresa' : $tipo;
         $nombreEmpresaBD = $tipo === 'empresa' ? $nombre_empresa : ($tipo === 'negocio' ? $nombre_negocio : '');
 
@@ -216,10 +196,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
     html,body{min-height:100%}
     body{font-family:'DM Sans',sans-serif;background:#060e07;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;position:relative;overflow-x:hidden}
-    /* Fondo con foto de Quibdó + overlay bandera */
+    
     body::before{content:'';position:fixed;inset:0;background:url('Imagenes/quibdo 3.jpg') center/cover no-repeat;z-index:0}
     body::after{content:'';position:fixed;inset:0;background:linear-gradient(160deg,rgba(4,21,11,.93) 0%,rgba(13,92,46,.8) 40%,rgba(0,57,166,.75) 100%);z-index:0}
-    /* Franja inferior bandera */
+    
     .bandera-bot{position:fixed;bottom:0;left:0;right:0;height:5px;display:flex;z-index:99}
     .bandera-bot span{flex:1}
     .bandera-bot span:nth-child(1){background:var(--verde2)}
@@ -232,7 +212,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     @media(max-width:640px){.container{border-left:none;border-top:4px solid;border-image:linear-gradient(to right,var(--verde2),var(--oro),var(--rio2)) 1;border-radius:0 0 24px 24px;margin:0;padding:44px 24px 40px}}
     @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 
-    /* HEADER */
     .header{display:flex;align-items:center;gap:14px;margin-bottom:32px}
     .header img{width:44px;filter:drop-shadow(0 2px 8px rgba(245,200,0,.35))}
     .header-txt{}
@@ -242,7 +221,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .progress-bar{background:rgba(255,255,255,.08);border-radius:10px;height:4px;margin-bottom:28px;overflow:hidden}
     .progress-fill{height:100%;background:linear-gradient(90deg,var(--verde2),var(--oro));border-radius:10px;transition:width .4s ease;width:0%}
 
-    /* SELECTOR 4 TIPOS */
     .tipo-selector{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
     .tipo-btn{padding:12px 8px;border-radius:18px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.55);font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .25s;text-align:center;letter-spacing:.2px}
     .tipo-btn .tipo-icon{font-size:20px;display:block;margin-bottom:5px}
@@ -251,7 +229,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .tipo-btn.active-azul{border-color:var(--rio2);background:rgba(26,86,219,.18);color:white;box-shadow:0 0 0 3px rgba(26,86,219,.12)}
     .tipo-btn.active-tierra{border-color:#b45309;background:rgba(180,83,9,.15);color:white;box-shadow:0 0 0 3px rgba(180,83,9,.1)}
 
-    /* CAMPOS */
     .row{display:flex;gap:14px}
     .grupo{flex:1;margin-bottom:14px}
     .grupo.full{flex:0 0 100%;width:100%}
@@ -269,7 +246,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .sec-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.35);margin:20px 0 12px;display:flex;align-items:center;gap:10px}
     .sec-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
 
-    /* UPLOAD */
     .upload-doc-area{border:2px dashed rgba(255,255,255,.15);border-radius:14px;padding:22px;text-align:center;cursor:pointer;transition:all .25s;background:rgba(255,255,255,.03);color:rgba(255,255,255,.5);font-size:14px}
     .upload-doc-area:hover{border-color:var(--lima);background:rgba(74,222,128,.05);color:white}
     .upload-doc-area.tiene-archivo{border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.06);text-align:left;cursor:default;display:flex;align-items:center}
@@ -277,7 +253,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .campos-tipo{display:none}
     .campos-tipo.show{display:block}
 
-    /* TERMINOS Y BTN */
     .terminos{display:flex;align-items:flex-start;gap:10px;margin:16px 0;font-size:13px;color:rgba(255,255,255,.5)}
     .terminos input[type="checkbox"]{width:16px;height:16px;flex-shrink:0;margin-top:1px;accent-color:var(--verde2)}
     .terminos a{color:var(--lima);text-decoration:none}
@@ -292,7 +267,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .link-abajo{text-align:center;margin-top:22px;font-size:14px;color:rgba(255,255,255,.4)}
     .link-abajo a{color:var(--lima);font-weight:700;text-decoration:none}
 
-    /* SUCCESS */
     .success-screen{display:none;text-align:center;padding:20px 0;animation:fadeUp .5s ease both}
     .success-screen .big-icon{font-size:60px;margin-bottom:16px}
     .success-screen h2{font-family:'Fraunces',serif;font-size:28px;color:var(--lima);margin-bottom:10px}
@@ -302,7 +276,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .btn-ir:hover{transform:translateY(-2px)}
     .btn-ir.secundario{background:rgba(255,255,255,.08);box-shadow:none}
 
-    /* INFO BOX */
     .info-box{background:rgba(245,200,0,.07);border:1px solid rgba(245,200,0,.2);border-radius:12px;padding:12px 16px;font-size:12px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:14px}
     .info-box strong{color:var(--oro2)}
 
@@ -947,7 +920,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script>
-  // CANVAS FONDO
+  
   const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth; canvas.height = window.innerHeight;
   window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
@@ -956,48 +929,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   for(let i=0;i<50;i++) parts.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,e:emojis[Math.floor(Math.random()*emojis.length)],s:Math.random()*18+8,vy:Math.random()*1.1+0.3,vx:(Math.random()-.5)*.5,r:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.04,o:Math.random()*.45+.1});
   (function anim(){ctx.clearRect(0,0,canvas.width,canvas.height);parts.forEach(p=>{ctx.save();ctx.globalAlpha=p.o;ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.font=p.s+'px serif';ctx.fillText(p.e,0,0);ctx.restore();p.y+=p.vy;p.x+=p.vx;p.r+=p.rs;if(p.y>canvas.height+20){p.y=-20;p.x=Math.random()*canvas.width;}});requestAnimationFrame(anim);})();
 
-  // SELECTOR TIPO
   const activeClasses = {candidato:'active', empresa:'active-azul', negocio:'active-tierra', servicio:'active-dorado'};
   function setTipo(tipo, btn, cls) {
     document.querySelectorAll('.tipo-btn').forEach(b=>b.className='tipo-btn');
     btn.classList.add(cls);
-    document.getElementById('tipo').value = tipo === 'servicio' ? 'candidato' : tipo; // servicios se registran como candidatos
-    // Mostrar/ocultar campos
+    document.getElementById('tipo').value = tipo === 'servicio' ? 'candidato' : tipo; 
+    
     document.getElementById('camposCandidato').classList.toggle('show', tipo==='candidato');
     document.getElementById('camposEmpresa').classList.toggle('show',   tipo==='empresa');
     document.getElementById('camposNegocio').classList.toggle('show',   tipo==='negocio');
     document.getElementById('camposServicio').classList.toggle('show',  tipo==='servicio');
-    // Apellido: empresas no lo necesitan como obligatorio
+    
     document.getElementById('grupoApellido').style.display = tipo==='empresa' ? 'none' : 'block';
     updateProgress();
   }
 
-  // TIPO NEGOCIO (cc vs independiente vs virtual)
   function toggleNegocioTipo() {
     const esCC      = document.getElementById('neg_cc').checked;
     const esVirtual = document.getElementById('neg_virtual').checked;
-    const esFisico  = !esVirtual; // emp o cc
+    const esFisico  = !esVirtual; 
 
     document.getElementById('camposCC').style.display = esCC ? 'block' : 'none';
     document.getElementById('camposFotoLocal').style.display  = esFisico ? 'block' : 'none';
     document.getElementById('camposNegVirtual').style.display = esVirtual ? 'block' : 'none';
     document.getElementById('grupoBarrioNegocio').style.display = esVirtual ? 'none' : 'block';
 
-    // Estilo bordes botones
     document.getElementById('lbl-neg-emp').style.borderColor     = (!esCC && !esVirtual) ? '#b45309' : 'rgba(255,255,255,.12)';
     document.getElementById('lbl-neg-cc').style.borderColor      = esCC      ? '#b45309' : 'rgba(255,255,255,.12)';
     document.getElementById('lbl-neg-virtual').style.borderColor = esVirtual ? '#1a56db' : 'rgba(255,255,255,.12)';
   }
-  toggleNegocioTipo(); // Init
+  toggleNegocioTipo(); 
 
-  // MOSTRAR/OCULTAR campo "Otra área" en candidato
   document.getElementById('profesion_tipo').addEventListener('change', function() {
     const esOtro = this.value === 'otro';
     document.getElementById('grupoOtraArea').style.display = esOtro ? 'block' : 'none';
     if (!esOtro) document.getElementById('otra_area').value = '';
   });
 
-  // FOTOS DEL LOCAL
   function previsualizarFoto(input, tipo) {
     const file = input.files[0]; if (!file) return;
     if (file.size > 5*1024*1024) { showMsg('La foto no debe superar 5MB.','error'); input.value=''; return; }
@@ -1029,7 +997,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 
-  // DOCUMENTO CANDIDATO
   const docConfig = {
     cedula:            {emoji:'🪪',texto:'Sube tu cédula',           placeholder:'Ej: 1234567890', soloNum:true},
     tarjeta_identidad: {emoji:'🪪',texto:'Sube tu tarjeta de identidad',placeholder:'Ej: 1234567890', soloNum:true},
@@ -1092,12 +1059,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const tipoReal = document.getElementById('tipo').value;
     const tipoUI = document.querySelector('.tipo-btn[class*="active"]')?.textContent?.includes('servicio')?'servicio':tipoReal;
 
-    // Validaciones por tipo
     if(tipoReal==='candidato'){
       if(!document.getElementById('tipo_documento').value){showMsg('Selecciona el tipo de documento.','error');return;}
       if(!document.getElementById('cedula').value.trim()){showMsg('El número de documento es obligatorio.','error');return;}
       if(!document.getElementById('doc_cedula').files[0]){showMsg('Debes subir la foto o PDF de tu documento.','error');return;}
-      // Si eligió "Otro" en área, validar el campo
+      
       if(document.getElementById('profesion_tipo').value==='otro' && !document.getElementById('otra_area').value.trim()){
         showMsg('Especifica tu área o perfil.','error');return;
       }
@@ -1124,14 +1090,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     btn.disabled=true; btn.textContent='⏳ Enviando...';
 
     const data = new FormData();
-    // Campos comunes
+    
     const campos=['nombre','apellido','correo','contrasena','contrasena2','telefono','ciudad','tipo','tipo_documento_hidden'];
     campos.forEach(id=>{const el=document.getElementById(id);if(el) data.append(id,el.value);});
 
-    // Campos por tipo
     if(tipoReal==='candidato'){
       ['fecha_nacimiento','cedula'].forEach(id=>{const el=document.getElementById(id);if(el) data.append(id,el.value);});
-      // Si eligió "Otro" en área, usar el campo de texto
+      
       const areaVal = document.getElementById('profesion_tipo').value;
       if(areaVal==='otro'){
         data.append('profesion_tipo', document.getElementById('otra_area').value.trim());
@@ -1153,24 +1118,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       ['nombre_negocio','categoria_neg','nombre_cc','local_numero','barrio_negocio',
        'whatsapp_neg','descripcion_neg'
       ].forEach(id=>{const el=document.getElementById(id);if(el) data.append(id,el.value);});
-      // Fotos del local físico
+      
       if(!esVirtualNeg){
         const ff=document.getElementById('foto_fachada'); if(ff&&ff.files[0]) data.append('foto_fachada',ff.files[0]);
         const fi=document.getElementById('foto_interior'); if(fi&&fi.files[0]) data.append('foto_interior',fi.files[0]);
       } else {
         const lv=document.getElementById('link_neg_virtual'); if(lv) data.append('link_neg_virtual',lv.value);
       }
-      // Área de candidato si eligió "Otro"
+      
       if(document.getElementById('profesion_tipo')?.value==='otro'){
         data.append('profesion_tipo', document.getElementById('otra_area').value.trim());
       }
-      // Documento del negocio
+      
       const tipDocNeg=document.getElementById('tipo_documento_neg').value;
       const cedulaNeg=document.getElementById('cedula_neg').value;
       data.set('tipo_documento_hidden',tipDocNeg);
       data.append('cedula',cedulaNeg);
     }
-    // Servicio (tipo candidato con datos extras)
+    
     if(document.getElementById('camposServicio').classList.contains('show')){
       const profServ=document.getElementById('profesion_tipo_servicio').value;
       const precioServ=document.getElementById('precio_desde_serv').value;

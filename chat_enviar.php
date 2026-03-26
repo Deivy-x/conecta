@@ -28,7 +28,6 @@ if (mb_strlen($mensaje) > 2000) { echo json_encode(['ok' => false, 'msg' => 'Men
 
 $db = getDB();
 
-// ── Datos del destinatario (correo + nombre) ─────────────────
 $checkDest = $db->prepare("SELECT id, nombre, correo FROM usuarios WHERE id = ? AND activo = 1");
 $checkDest->execute([$para]);
 $destino = $checkDest->fetch();
@@ -37,22 +36,16 @@ if (!$destino) {
     exit;
 }
 
-// ── Datos del remitente (nombre) ─────────────────────────────
 $checkDe = $db->prepare("SELECT nombre FROM usuarios WHERE id = ?");
 $checkDe->execute([$de]);
 $remitente = $checkDe->fetch();
 
-// ── Verificar límite de mensajes del plan ────────────────────
 $lim = verificarLimite($db, $de, 'mensajes');
 if (!$lim['puede']) {
     echo msgLimiteSuperado($lim['plan'], 'mensajes', $lim['limite']);
     exit;
 }
 
-// ── Verificar si el chat está activo (el destinatario tiene la
-//    ventana de chat abierta con este remitente en los últimos
-//    30 segundos). Si está activo, no enviamos correo para no
-//    spamear conversaciones en tiempo real.
 $activo = false;
 try {
     $stmtAct = $db->prepare("
@@ -63,21 +56,17 @@ try {
     ");
     $stmtAct->execute([$para, $de]);
     $activo = (bool) $stmtAct->fetch();
-} catch (Exception $e) { /* ignora si la consulta falla */ }
+} catch (Exception $e) {  }
 
-// ── Guardar mensaje ──────────────────────────────────────────
 $stmt = $db->prepare("INSERT INTO mensajes (de_usuario, para_usuario, mensaje) VALUES (?, ?, ?)");
 $stmt->execute([$de, $para, $mensaje]);
 $nuevoId = (int) $db->lastInsertId();
 
 registrarAccion($db, $de, 'mensajes');
 
-// ── Notificación por correo (solo si el destinatario no está
-//    respondiendo activamente en la misma conversación) ────────
 if (!$activo && !empty($destino['correo'])) {
     $nombreDe = $remitente['nombre'] ?? 'Alguien';
-    // Usamos register_shutdown_function para que el correo se
-    // envíe DESPUÉS de responder al cliente → no bloquea la UI
+    
     $correoD  = $destino['correo'];
     $nombreD  = $destino['nombre'];
     register_shutdown_function(function () use ($nombreDe, $correoD, $nombreD, $mensaje, $de) {

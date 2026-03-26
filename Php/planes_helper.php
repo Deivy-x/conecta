@@ -1,21 +1,14 @@
 <?php
-// ============================================================
-// Php/planes_helper.php — Sistema central de planes y límites
-// QuibdóConecta 2026
-// ============================================================
-// Usar en cualquier endpoint: require_once __DIR__ . '/planes_helper.php';
-// ============================================================
 
-// ── Definición de planes con sus límites ─────────────────────
 const PLANES = [
     'semilla' => [
         'nombre'         => 'Semilla',
         'aplicaciones'   => 3,
         'vacantes'       => 1,
         'mensajes'       => 10,
-        'ver_candidatos' => 5,   // perfiles de candidatos que puede ver la empresa
-        'ver_empresas'   => 5,   // perfiles de empresas que puede ver el candidato
-        'visitantes'     => 0,   // cuántos visitantes puede ver
+        'ver_candidatos' => 5,   
+        'ver_empresas'   => 5,   
+        'visitantes'     => 0,   
         'candidatos_por_vacante' => 3,
         'logo'           => false,
         'alertas'        => false,
@@ -52,7 +45,7 @@ const PLANES = [
     ],
     'amarillo_oro' => [
         'nombre'         => 'Amarillo Oro',
-        'aplicaciones'   => -1,  // ilimitado
+        'aplicaciones'   => -1,  
         'vacantes'       => -1,
         'mensajes'       => 150,
         'ver_candidatos' => -1,
@@ -78,13 +71,13 @@ const PLANES = [
         'mensajes'       => -1,
         'ver_candidatos' => -1,
         'ver_empresas'   => -1,
-        'visitantes'     => -1,  // todas
+        'visitantes'     => -1,  
         'candidatos_por_vacante' => -1,
         'logo'           => true,
         'alertas'        => true,
         'portafolio'     => true,
         'verificado'     => true,
-        'banner'         => true,  // 15 días/mes
+        'banner'         => true,  
         'reporte_pdf'    => true,
         'redes'          => true,
         'estadisticas'   => 'completas',
@@ -92,7 +85,7 @@ const PLANES = [
         'posicion'       => 'primero_siempre',
         'historial_dias' => 90,
     ],
-    // ── Plan especial de demostración ────────────────────────
+    
     'demo' => [
         'nombre'         => '🧪 Modo Demo',
         'aplicaciones'   => -1,
@@ -116,7 +109,7 @@ const PLANES = [
     ],
     'microempresa' => [
         'nombre'         => 'Microempresa',
-        'aplicaciones'   => 0,   // no aplica para empresas
+        'aplicaciones'   => 0,   
         'vacantes'       => 2,
         'mensajes'       => 40,
         'ver_candidatos' => 15,
@@ -137,53 +130,46 @@ const PLANES = [
     ],
 ];
 
-// ── Mapeo badge nombre → clave de plan ───────────────────────
-// Incluye variantes y aliases chocoanos
 const BADGE_A_PLAN = [
-    // Verde Selva
+    
     'verde selva'        => 'verde_selva',
     'verde_selva'        => 'verde_selva',
     'selva verde'        => 'verde_selva',
     'plan verde'         => 'verde_selva',
-    // Amarillo Oro
+    
     'amarillo oro'       => 'amarillo_oro',
     'amarillo_oro'       => 'amarillo_oro',
     'oro amarillo'       => 'amarillo_oro',
     'plan oro'           => 'amarillo_oro',
-    // Azul Profundo
+    
     'azul profundo'      => 'azul_profundo',
     'azul_profundo'      => 'azul_profundo',
     'profundo azul'      => 'azul_profundo',
     'plan azul'          => 'azul_profundo',
     'azul'               => 'azul_profundo',
-    // Demo / prueba
+    
     'modo demo'          => 'demo',
     'demo'               => 'demo',
     'modo_demo'          => 'demo',
     'prueba'             => 'demo',
     'test'               => 'demo',
     '🧪 modo demo'       => 'demo',
-    // Microempresa
+    
     'microempresa'       => 'microempresa',
     'micro empresa'      => 'microempresa',
     'micro'              => 'microempresa',
     'plan micro'         => 'microempresa',
 ];
 
-// ── Orden de prioridad de planes (mayor = mejor) ─────────────
 const PLAN_PRIORIDAD = [
     'semilla'      => 0,
     'microempresa' => 1,
     'verde_selva'  => 2,
     'amarillo_oro' => 3,
     'azul_profundo'=> 4,
-    'demo'         => 5,  // supera todo — acceso total
+    'demo'         => 5,  
 ];
 
-/**
- * Detecta el plan activo del usuario según sus badges
- * Retorna clave de plan ('semilla', 'verde_selva', etc.)
- */
 function getPlanUsuario(PDO $db, int $userId): string {
     try {
         $stmt = $db->prepare("SELECT badges_custom FROM usuarios WHERE id = ?");
@@ -218,9 +204,6 @@ function getPlanUsuario(PDO $db, int $userId): string {
     }
 }
 
-/**
- * Crea la tabla uso_acciones si no existe
- */
 function crearTablaUsoSiNoExiste(PDO $db): void {
     $db->exec("CREATE TABLE IF NOT EXISTS uso_acciones (
         id          INT AUTO_INCREMENT PRIMARY KEY,
@@ -233,18 +216,11 @@ function crearTablaUsoSiNoExiste(PDO $db): void {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
 
-/**
- * Verifica si el usuario puede realizar una acción según su plan
- * Retorna array: ['puede' => bool, 'usado' => int, 'limite' => int, 'plan' => string]
- *
- * @param string $accion  'mensajes' | 'aplicaciones' | 'vacantes' | 'ver_candidatos' | 'ver_empresas'
- */
 function verificarLimite(PDO $db, int $userId, string $accion): array {
     $plan   = getPlanUsuario($db, $userId);
     $config = PLANES[$plan] ?? PLANES['semilla'];
     $limite = $config[$accion] ?? 0;
 
-    // -1 = ilimitado
     if ($limite === -1) {
         return ['puede' => true, 'usado' => 0, 'limite' => -1, 'plan' => $plan];
     }
@@ -267,9 +243,6 @@ function verificarLimite(PDO $db, int $userId, string $accion): array {
     ];
 }
 
-/**
- * Registra el uso de una acción (llama después del INSERT exitoso)
- */
 function registrarAccion(PDO $db, int $userId, string $accion): void {
     $periodo = date('Y-m');
     try {
@@ -279,14 +252,10 @@ function registrarAccion(PDO $db, int $userId, string $accion): void {
                       ON DUPLICATE KEY UPDATE cantidad = cantidad + 1")
            ->execute([$userId, $accion, $periodo]);
     } catch (Exception $e) {
-        // silencioso — no bloquear la operación principal
+        
     }
 }
 
-/**
- * Retorna el JSON de error estándar cuando se supera el límite
- * Incluye el plan siguiente recomendado
- */
 function msgLimiteSuperado(string $plan, string $accion, int $limite): string {
     $planesOrden = ['semilla', 'microempresa', 'verde_selva', 'amarillo_oro', 'azul_profundo'];
     $idx = array_search($plan, $planesOrden);
@@ -308,19 +277,12 @@ function msgLimiteSuperado(string $plan, string $accion, int $limite): string {
     return json_encode(['ok' => false, 'msg' => $msg, 'limite_plan' => true, 'plan_actual' => $plan, 'plan_siguiente' => $siguiente]);
 }
 
-/**
- * Verifica si el usuario tiene un beneficio booleano según su plan
- * @param string $beneficio  'logo' | 'alertas' | 'portafolio' | 'verificado' | 'banner' | 'reporte_pdf' | 'redes'
- */
 function tieneBeneficio(PDO $db, int $userId, string $beneficio): bool {
     $plan   = getPlanUsuario($db, $userId);
     $config = PLANES[$plan] ?? PLANES['semilla'];
     return !empty($config[$beneficio]);
 }
 
-/**
- * Obtiene todos los datos del plan del usuario (para mostrar en dashboard)
- */
 function getDatosPlan(PDO $db, int $userId): array {
     $plan   = getPlanUsuario($db, $userId);
     $config = PLANES[$plan] ?? PLANES['semilla'];

@@ -1,10 +1,4 @@
 <?php
-// ============================================================
-// crear_carpeta_logos.php
-// SUBE este archivo a la raíz del proyecto y ábrelo UNA VEZ
-// Crea la carpeta uploads/logos/ con los permisos correctos
-// BÓRRALO inmediatamente después
-// ============================================================
 
 $resultados = [];
 
@@ -12,7 +6,6 @@ $base      = __DIR__ . '/uploads/';
 $logosDir  = __DIR__ . '/uploads/logos/';
 $fotosDir  = __DIR__ . '/uploads/fotos/';
 
-// Crear uploads/ si no existe
 if (!is_dir($base)) {
     if (@mkdir($base, 0755, true)) {
         $resultados[] = ['ok', "✅ Carpeta <code>uploads/</code> creada"];
@@ -23,7 +16,6 @@ if (!is_dir($base)) {
     $resultados[] = ['ok', "✅ Carpeta <code>uploads/</code> ya existe"];
 }
 
-// Crear uploads/logos/
 if (!is_dir($logosDir)) {
     if (@mkdir($logosDir, 0755, true)) {
         $resultados[] = ['ok', "✅ Carpeta <code>uploads/logos/</code> creada correctamente"];
@@ -34,7 +26,6 @@ if (!is_dir($logosDir)) {
     $resultados[] = ['ok', "✅ Carpeta <code>uploads/logos/</code> ya existe"];
 }
 
-// Crear uploads/fotos/ (para talentos) también por si acaso
 if (!is_dir($fotosDir)) {
     if (@mkdir($fotosDir, 0755, true)) {
         $resultados[] = ['ok', "✅ Carpeta <code>uploads/fotos/</code> creada correctamente"];
@@ -45,7 +36,6 @@ if (!is_dir($fotosDir)) {
     $resultados[] = ['ok', "✅ Carpeta <code>uploads/fotos/</code> ya existe"];
 }
 
-// Test de escritura en logos/
 if (is_dir($logosDir)) {
     $testFile = $logosDir . 'test_write_' . time() . '.tmp';
     if (@file_put_contents($testFile, 'test') !== false) {

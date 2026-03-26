@@ -1,20 +1,10 @@
 <?php
-// ============================================================
-// diagnostico_logos.php — Diagnóstico de logos de empresas
-// INSTRUCCIONES: Sube este archivo a la raíz del proyecto
-// Ábrelo en el navegador: tudominio.com/diagnostico_logos.php
-// BORRARLO después de usarlo por seguridad
-// ============================================================
-session_start();
 
-// Protección básica — solo admin o sin sesión
-// Puedes quitar esto si no tienes login de admin
-// if (empty($_SESSION['admin'])) die('Acceso denegado');
+session_start();
 
 require_once __DIR__ . '/Php/db.php';
 $db = getDB();
 
-// ── 1. Leer todas las empresas con su logo ──────────────────
 $stmt = $db->query("
     SELECT u.id, u.nombre, 
            ep.nombre_empresa, ep.logo, ep.avatar_color
@@ -29,7 +19,6 @@ $stmt = $db->query("
 ");
 $empresas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// ── 2. Verificar carpeta uploads/logos ─────────────────────
 $carpeta = __DIR__ . '/uploads/logos/';
 $carpetaExiste = is_dir($carpeta);
 $archivosEnCarpeta = $carpetaExiste ? scandir($carpeta) : [];
@@ -113,7 +102,6 @@ $archivosEnCarpeta = array_filter($archivosEnCarpeta, fn($f) => !in_array($f, ['
     $ini = strtoupper(mb_substr($nombre, 0, 2));
     $grd = $e['avatar_color'] ?: 'linear-gradient(135deg,#1a56db,#3b82f6)';
 
-    // Detectar tipo y construir ruta
     if (empty($logo)) {
       $tipo = 'empty';
       $rutaWeb = '';
@@ -123,7 +111,7 @@ $archivosEnCarpeta = array_filter($archivosEnCarpeta, fn($f) => !in_array($f, ['
       $tipo = 'cloudinary';
       $rutaWeb = $logo;
       $rutaAbs = '(URL remota)';
-      $existe = true; // asumimos que existe si hay URL
+      $existe = true; 
     } elseif (str_starts_with($logo, 'uploads/')) {
       $tipo = 'path_completo';
       $rutaWeb = $logo;

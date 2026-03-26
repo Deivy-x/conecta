@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// chat.php — Chat interno QuibdóConecta
-// ============================================================
+
 ini_set('session.gc_maxlifetime', 604800);
 ini_set('session.cookie_lifetime', 604800);
 session_set_cookie_params(['lifetime' => 604800, 'path' => '/', 'samesite' => 'Lax', 'httponly' => true]);
@@ -128,11 +126,9 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,400&display=swap"
         rel="stylesheet">
     <style>
-        /* ═══════════════════════════════════════════════════
-   TOKENS DE DISEÑO
-═══════════════════════════════════════════════════ */
+        
         :root {
-            /* Verdes marca */
+            
             --g900: #052e16;
             --g700: #15803d;
             --g500: #22c55e;
@@ -140,7 +136,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             --g100: #dcfce7;
             --g50: #f0fdf4;
 
-            /* Neutrales cálidos */
             --n950: #0c0d0e;
             --n800: #1e2124;
             --n600: #434750;
@@ -150,41 +145,33 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             --n50: #f6f7f9;
             --white: #ffffff;
 
-            /* Acento ámbar */
             --amber: #f59e0b;
             --amber-light: #fef3c7;
 
-            /* Azul acento */
             --blue: #3b82f6;
             --blue-light: #eff6ff;
 
-            /* Semánticos */
             --danger: #ef4444;
 
-            /* Superficies */
             --surface-app: var(--n50);
             --surface-panel: var(--white);
             --surface-sidebar: var(--white);
             --surface-input: var(--n50);
 
-            /* Bordes */
             --border-subtle: #eceef2;
             --border-default: #d4d7de;
 
-            /* Sombras */
             --shadow-xs: 0 1px 2px rgba(0, 0, 0, .05);
             --shadow-sm: 0 2px 8px rgba(0, 0, 0, .06);
             --shadow-md: 0 8px 24px rgba(0, 0, 0, .09);
             --shadow-lg: 0 24px 64px rgba(0, 0, 0, .13);
 
-            /* Radio */
             --r-sm: 8px;
             --r-md: 14px;
             --r-lg: 20px;
             --r-xl: 28px;
             --r-full: 999px;
 
-            /* Fuentes */
             --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
             --font-display: 'Fraunces', Georgia, serif;
         }
@@ -211,7 +198,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             overflow: hidden;
         }
 
-        /* scrollbar */
         ::-webkit-scrollbar {
             width: 4px;
             height: 4px;
@@ -230,9 +216,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             background: var(--n400);
         }
 
-        /* ═══════════════════════════════════════════════════
-   SIDEBAR
-═══════════════════════════════════════════════════ */
         .sidebar {
             width: 232px;
             flex-shrink: 0;
@@ -401,9 +384,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             opacity: 1;
         }
 
-        /* ═══════════════════════════════════════════════════
-   MAIN
-═══════════════════════════════════════════════════ */
         .main {
             flex: 1;
             display: flex;
@@ -413,7 +393,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             min-width: 0;
         }
 
-        /* topbar */
         .topbar {
             background: var(--white);
             height: 58px;
@@ -480,9 +459,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             box-shadow: 0 0 0 2px var(--g100);
         }
 
-        /* ═══════════════════════════════════════════════════
-   CHAT LAYOUT
-═══════════════════════════════════════════════════ */
         .chat-wrap {
             flex: 1;
             display: flex;
@@ -490,7 +466,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             min-height: 0;
         }
 
-        /* ─── PANEL IZQUIERDO: conversaciones ─── */
         .conv-panel {
             width: 300px;
             flex-shrink: 0;
@@ -587,7 +562,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             overflow-y: auto;
         }
 
-        /* items de conversación */
         .conv-empty {
             padding: 48px 20px;
             text-align: center;
@@ -633,7 +607,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             border-radius: var(--r-full) 0 0 var(--r-full);
         }
 
-        /* avatar en conversación */
         .cav {
             width: 42px;
             height: 42px;
@@ -743,20 +716,18 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             justify-content: center;
         }
 
-        /* ─── PANEL DERECHO: área de mensajes ─── */
         .msg-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
             background: var(--surface-app);
             min-width: 0;
-            /* fondo sutil con patrón puntitos */
+            
             background-image: radial-gradient(circle, var(--n200) 1px, transparent 1px);
             background-size: 24px 24px;
             background-color: var(--n50);
         }
 
-        /* estado vacío */
         .msg-empty {
             flex: 1;
             display: flex;
@@ -794,7 +765,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             line-height: 1.6;
         }
 
-        /* cabecera del chat activo */
         .msg-header {
             background: var(--white);
             border-bottom: 1px solid var(--border-subtle);
@@ -848,7 +818,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             margin-top: 1px;
         }
 
-        /* burbujas */
         .msg-body {
             flex: 1;
             overflow-y: auto;
@@ -899,7 +868,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             position: relative;
         }
 
-        /* enviado — verde marca */
         .bubble.sent {
             align-self: flex-end;
             background: linear-gradient(135deg, var(--g700) 0%, var(--g500) 100%);
@@ -908,7 +876,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             box-shadow: 0 3px 12px rgba(21, 128, 61, .22);
         }
 
-        /* recibido — blanco limpio */
         .bubble.recv {
             align-self: flex-start;
             background: var(--white);
@@ -933,7 +900,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             color: var(--n400);
         }
 
-        /* grupos de burbujas consecutivas */
         .bubble.sent+.bubble.sent {
             border-top-right-radius: 6px;
         }
@@ -942,7 +908,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             border-top-left-radius: 6px;
         }
 
-        /* input área */
         .msg-input-bar {
             background: var(--white);
             border-top: 1px solid var(--border-subtle);
@@ -1009,9 +974,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             box-shadow: none;
         }
 
-        /* ═══════════════════════════════════════════════════
-   MODAL NUEVO CHAT
-═══════════════════════════════════════════════════ */
         .overlay {
             display: none;
             position: fixed;
@@ -1165,9 +1127,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             font-size: 12.5px;
         }
 
-        /* ═══════════════════════════════════════════════════
-   RESPONSIVE
-═══════════════════════════════════════════════════ */
         @media (max-width:960px) {
             .sidebar {
                 width: 60px;
@@ -1434,7 +1393,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
         let conversaciones = [];
         const API = q => 'chat.php?' + q;
 
-        /* ─── init ─── */
         document.addEventListener('DOMContentLoaded', () => {
             cargarConvs();
             <?php if ($conUsuario > 0): ?>
@@ -1450,7 +1408,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarNuevoChat(); });
         });
 
-        /* ─── conversaciones ─── */
         async function cargarConvs() {
             try {
                 const r = await fetch(API('action=conversaciones'));
@@ -1503,7 +1460,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             }).join('');
         }
 
-        /* ─── abrir chat ─── */
         async function abrirChat(uid) {
             chatActivo = uid;
             renderConvs();
@@ -1522,7 +1478,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             document.getElementById('msgInput').focus();
         }
 
-        /* ─── cargar mensajes ─── */
         async function cargarMensajes(uid, silent = false) {
             try {
                 const r = await fetch(API(`action=mensajes&con=${uid}`));
@@ -1544,7 +1499,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             } catch (e) { if (!silent) toast('Error de conexión.'); }
         }
 
-        /* ─── render burbujas ─── */
         function renderMensajes(msgs) {
             const box = document.getElementById('msgBody');
             let html = '', lastDate = '';
@@ -1563,7 +1517,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             if (atBottom || !msgs.length) box.scrollTop = box.scrollHeight;
         }
 
-        /* ─── enviar ─── */
         async function enviar() {
             const inp = document.getElementById('msgInput');
             const btn = document.getElementById('sendBtn');
@@ -1590,7 +1543,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             inp.focus();
         }
 
-        /* ─── modal nuevo chat ─── */
         function abrirNuevoChat() { document.getElementById('overlayNuevo').classList.add('open'); document.getElementById('modalSearch').focus(); }
         function cerrarNuevoChat() { document.getElementById('overlayNuevo').classList.remove('open'); }
 
@@ -1619,7 +1571,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
 
         function seleccionar(id) { cerrarNuevoChat(); abrirChat(id); }
 
-        /* ─── volver a lista (mobile) ─── */
         function volverALista() {
             document.getElementById('convPanel').classList.remove('mobile-hide');
             document.getElementById('msgPanel').classList.remove('mobile-open');
@@ -1628,7 +1579,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             cargarConvs();
         }
 
-        /* ─── toast ─── */
         function toast(msg) {
             let t = document.getElementById('_toast');
             if (!t) {
@@ -1641,7 +1591,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             t._t = setTimeout(() => { t.style.opacity = '0'; }, 3500);
         }
 
-        /* ─── utilidades ─── */
         function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
         function fmtFecha(s) {

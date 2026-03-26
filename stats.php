@@ -1,8 +1,5 @@
 <?php
-/**
- * stats.php — Estadísticas en tiempo real para el index
- * Va en la raíz del proyecto (junto a index.html)
- */
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 

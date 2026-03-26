@@ -1,11 +1,8 @@
 <?php
-// ============================================
-// Php/logout.php — Cerrar sesión
-// ============================================
+
 session_start();
 require_once __DIR__ . '/db.php';
 
-// Registrar hora de salida
 if (isset($_SESSION['usuario_id'])) {
     try {
         $db = getDB();

@@ -1,5 +1,4 @@
 <?php
-// Php/cloudinary_upload.php — Subida de archivos a Cloudinary sin SDK
 
 function cloudinary_upload(string $filePath, string $folder = 'quibdoconecta'): array {
     $cloudName  = getenv('CLOUDINARY_CLOUD_NAME');

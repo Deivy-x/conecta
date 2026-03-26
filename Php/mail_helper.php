@@ -1,26 +1,9 @@
 <?php
-// ============================================================
-// Php/mail_helper.php — Envío de correos para QuibdóConecta
-// Usa Resend API (https://resend.com) — solo necesita curl
-//
-// Variable de entorno requerida en Railway:
-//   RESEND_API_KEY = re_xxxxxxxxxxxx
-//
-// Remitente: configura MAIL_FROM abajo o como variable de entorno
-// ============================================================
 
 defined('MAIL_FROM')      or define('MAIL_FROM',      getenv('MAIL_FROM')      ?: 'QuibdóConecta <noreply@quibdoconecta.com>');
 defined('RESEND_API_KEY') or define('RESEND_API_KEY',  getenv('RESEND_API_KEY') ?: '');
 defined('BASE_URL')       or define('BASE_URL',        getenv('BASE_URL')       ?: 'https://conecta-production-818e.up.railway.app');
 
-/**
- * Envía un correo usando Resend API.
- *
- * @param string $para      Correo destino
- * @param string $asunto    Asunto del correo
- * @param string $html      Cuerpo HTML
- * @return bool             true si se envió correctamente
- */
 function enviarCorreo(string $para, string $asunto, string $html): bool
 {
     $apiKey = RESEND_API_KEY;
@@ -60,16 +43,6 @@ function enviarCorreo(string $para, string $asunto, string $html): bool
     return false;
 }
 
-/**
- * Construye y envía la notificación de nuevo mensaje de chat.
- *
- * @param string $nombreRemitente   Nombre de quien envió el mensaje
- * @param string $correoDest        Correo del destinatario
- * @param string $nombreDest        Nombre del destinatario
- * @param string $mensajeTexto      Texto del mensaje (se muestra resumido)
- * @param int    $deUsuarioId       ID del remitente (para el enlace al chat)
- * @return bool
- */
 function notificarNuevoMensaje(
     string $nombreRemitente,
     string $correoDest,

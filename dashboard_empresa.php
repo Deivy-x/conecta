@@ -1,8 +1,5 @@
 <?php
-// ============================================================
-// dashboard_empresa.php — Panel de gestión para empresas
-// QuibdóConecta 2026
-// ============================================================
+
 session_start();
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
@@ -18,16 +15,14 @@ $stmt = $db->prepare("SELECT * FROM usuarios WHERE id = ? AND activo = 1");
 $stmt->execute([$_SESSION['usuario_id']]);
 $usuario = $stmt->fetch();
 if (!$usuario || $usuario['tipo'] !== 'empresa') {
-    // Si no es empresa, redirigir al dashboard normal
+    
     header('Location: dashboard.php'); exit;
 }
 
-// ── ACCIONES POST ────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     $action = $_POST['_action'] ?? '';
 
-    // ── EDITAR PERFIL EMPRESA ────────────────────────────────
     if ($action === 'editar_empresa') {
         $nombreEmp  = trim($_POST['nombre_empresa'] ?? '');
         $sector     = trim($_POST['sector']         ?? '');
@@ -41,17 +36,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$nombreEmp) {
             echo json_encode(['ok' => false, 'msg' => 'El nombre de la empresa es obligatorio.']); exit;
         }
-        // Actualizar tabla usuarios
+        
         $db->prepare("UPDATE usuarios SET nombre=?, telefono=?, ciudad=? WHERE id=?")
            ->execute([$nombreEmp, $telefonoEmp, $ciudad, $usuario['id']]);
 
-        // Verificar si ya existe fila en perfiles_empresa
         $existeStmt = $db->prepare("SELECT id FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
         $existeStmt->execute([$usuario['id']]);
         $filaExistente = $existeStmt->fetchColumn();
 
         if ($filaExistente) {
-            // UPDATE: nunca tocar la columna logo
+            
             $db->prepare("UPDATE perfiles_empresa SET
                 nombre_empresa   = ?,
                 sector           = ?,
@@ -64,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               WHERE usuario_id = ? ORDER BY id DESC LIMIT 1")
                ->execute([$nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio, $usuario['id']]);
         } else {
-            // INSERT solo si no existe fila — logo queda vacío hasta que suba uno
+            
             $db->prepare("INSERT INTO perfiles_empresa
                 (usuario_id, nombre_empresa, sector, nit, descripcion, sitio_web, telefono_empresa, municipio)
                 VALUES (?,?,?,?,?,?,?,?)")
@@ -74,7 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // ── TOGGLE VISIBILIDAD ───────────────────────────────────
     if ($action === 'toggle_visibilidad') {
         $visible = (int) ($_POST['visible'] ?? 1);
         $db->prepare("UPDATE perfiles_empresa SET visible = ? WHERE usuario_id = ? ORDER BY id DESC LIMIT 1")
@@ -83,8 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // ── SUBIR LOGO ───────────────────────────────────────────
-    // ── ELIMINAR LOGO ────────────────────────────────────────
     if ($action === 'eliminar_logo') {
         $epOld = $db->prepare("SELECT logo FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
         $epOld->execute([$usuario['id']]);
@@ -109,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($_FILES['logo']['size'] > 2 * 1024 * 1024) {
             echo json_encode(['ok' => false, 'msg' => 'Imagen demasiado grande (máx 2 MB).']); exit;
         }
-        // Crear carpeta si no existe con manejo robusto de permisos
+        
         $dir = __DIR__ . '/uploads/logos/';
         if (!is_dir(__DIR__ . '/uploads/')) @mkdir(__DIR__ . '/uploads/', 0755, true);
         if (!is_dir($dir)) @mkdir($dir, 0755, true);
@@ -134,7 +125,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // ── SUBIR BANNER ─────────────────────────────────────────
     if ($action === 'subir_banner') {
         if (!isset($_FILES['banner']) || $_FILES['banner']['error'] !== 0) {
             echo json_encode(['ok' => false, 'msg' => 'No se recibió imagen.']); exit;
@@ -158,7 +148,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // ── ELIMINAR BANNER ──────────────────────────────────────
     if ($action === 'eliminar_banner') {
         try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
         $db->prepare("UPDATE usuarios SET banner='' WHERE id=?")->execute([$usuario['id']]);
@@ -166,7 +155,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // ── PUBLICAR VACANTE (empresa) ───────────────────────────────
     if ($action === 'publicar_vacante') {
         $titulo      = trim($_POST['titulo']      ?? '');
         $tipo        = trim($_POST['tipo']        ?? '');
@@ -182,13 +170,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['ok'=>false,'msg'=>'Faltan campos obligatorios (título, tipo, descripción y requisitos).']); exit;
         }
 
-        // Obtener nombre empresa
         $peStmt = $db->prepare("SELECT nombre_empresa FROM perfiles_empresa WHERE usuario_id=? LIMIT 1");
         $peStmt->execute([$usuario['id']]);
         $peRow = $peStmt->fetch();
         $nombreEmp = $peRow ? $peRow['nombre_empresa'] : ($usuario['nombre'] ?? 'Empresa');
 
-        // ── Verificar límite de vacantes del plan ────────────────────
         if (function_exists('verificarLimite')) {
             $lim = verificarLimite($db, $usuario['id'], 'vacantes');
             if (!$lim['puede']) {
@@ -220,7 +206,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // ── ELIMINAR CUENTA EMPRESA ──────────────────────────────
     if ($action === 'eliminar_cuenta') {
         $confirmar = trim($_POST['confirmar'] ?? '');
         if ($confirmar !== $usuario['correo']) {
@@ -228,16 +213,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         try {
-            // Borrar logo del servidor
+            
             $logoViejo = $ep['logo'] ?? '';
             if ($logoViejo && file_exists(__DIR__ . '/uploads/logos/' . $logoViejo)) {
                 @unlink(__DIR__ . '/uploads/logos/' . $logoViejo);
             }
-            // Borrar tablas sin CASCADE
+            
             foreach (['perfiles_empresa','sesiones','negocios_locales'] as $tabla) {
                 try { $db->prepare("DELETE FROM $tabla WHERE usuario_id=?")->execute([$usuario['id']]); } catch(Exception $e) {}
             }
-            // Borrar usuario (CASCADE limpia empleos, mensajes, verificaciones, talento_perfil, admin_roles)
+            
             $db->prepare("DELETE FROM usuarios WHERE id=?")->execute([$usuario['id']]);
             $_SESSION = [];
             session_destroy();
@@ -251,7 +236,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode(['ok' => false, 'msg' => 'Acción desconocida.']); exit;
 }
 
-// ── LOGOUT — debe estar ANTES de cualquier output HTML ───────
 if (isset($_GET['salir'])) {
     if (isset($_COOKIE['qc_remember'])) {
         try { $db->prepare("DELETE FROM sesiones WHERE token=?")->execute([$_COOKIE['qc_remember']]); } catch(Exception $e) {}
@@ -263,19 +247,17 @@ if (isset($_GET['salir'])) {
     exit;
 }
 
-// ── CARGAR DATOS EMPRESA ──────────────────────────────────────
 $epStmt = $db->prepare("SELECT * FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
 $epStmt->execute([$usuario['id']]);
 $ep = $epStmt->fetch();
 
-// Si la fila más reciente no tiene logo, buscar una que sí tenga
 if ($ep && empty($ep['logo'])) {
     $epLogo = $db->prepare("SELECT logo FROM perfiles_empresa WHERE usuario_id=? AND logo != '' AND logo IS NOT NULL ORDER BY id DESC LIMIT 1");
     $epLogo->execute([$usuario['id']]);
     $logoGuardado = $epLogo->fetchColumn();
     if ($logoGuardado) {
         $ep['logo'] = $logoGuardado;
-        // También actualizar la fila principal para que queden sincronizadas
+        
         $db->prepare("UPDATE perfiles_empresa SET logo=? WHERE usuario_id=? ORDER BY id DESC LIMIT 1")->execute([$logoGuardado, $usuario['id']]);
     }
 }
@@ -293,7 +275,7 @@ if (!$ep) {
 require_once __DIR__ . '/Php/badges_helper.php';
 $badgesUsuario = getBadgesUsuario($db, $usuario['id']);
 $badgesHTML    = renderBadges($badgesUsuario);
-// Plan datos
+
 $datosPlan  = function_exists('getDatosPlan') ? getDatosPlan($db, $usuario['id']) : [];
 $planActual = $datosPlan['plan'] ?? 'semilla';
 $tieneVerificado = (bool)($usuario['verificado'] ?? false)
@@ -303,18 +285,15 @@ $tienePremium    = tieneBadge($badgesUsuario, 'Premium');
 $tieneDestacado  = tieneBadge($badgesUsuario, 'Destacado') || (int)($ep['destacado'] ?? 0);
 $tieneTop        = tieneBadge($badgesUsuario, 'Top');
 
-// Chat no leídos
 $nrChat = $db->prepare("SELECT COUNT(*) FROM mensajes WHERE para_usuario=? AND leido=0");
 $nrChat->execute([$usuario['id']]);
 $chatNoLeidos = (int)$nrChat->fetchColumn();
 
-// Estado verificación
 $stmtV = $db->prepare("SELECT estado FROM verificaciones WHERE usuario_id=? ORDER BY creado_en DESC LIMIT 1");
 $stmtV->execute([$usuario['id']]);
 $verifDoc = $stmtV->fetch();
 $estadoVerif = $verifDoc ? $verifDoc['estado'] : null;
 
-// Vacantes publicadas (activas + en revisión)
 $vacantesActivas = 0;
 try {
     $vStmt = $db->prepare("SELECT COUNT(*) FROM empleos WHERE empresa_id=?");
@@ -322,7 +301,6 @@ try {
     $vacantesActivas = (int)$vStmt->fetchColumn();
 } catch(Exception $e) { $vacantesActivas = 0; }
 
-// Historial de vacantes publicadas
 $historialVacantes = [];
 try {
     $hvStmt = $db->prepare("SELECT titulo, ciudad, modalidad, activo, creado_en FROM empleos WHERE empresa_id=? ORDER BY creado_en DESC LIMIT 10");
@@ -330,7 +308,6 @@ try {
     $historialVacantes = $hvStmt->fetchAll();
 } catch(Exception $e) { $historialVacantes = []; }
 
-// Porcentaje perfil completado
 $campos = ['nombre_empresa', 'sector', 'descripcion', 'sitio_web', 'telefono_empresa', 'municipio'];
 $llenos = array_filter($campos, fn($c) => !empty($ep[$c]));
 $pct = (int)(count($llenos) / count($campos) * 100);
@@ -344,9 +321,9 @@ $ciudad         = htmlspecialchars($usuario['ciudad'] ?? '');
 $logoUrl        = !empty($ep['logo'])
     ? (str_starts_with($ep['logo'], 'http') ? htmlspecialchars($ep['logo']) : 'uploads/logos/' . htmlspecialchars($ep['logo']))
     : '';
-// Auto-migrar columna banner
+
 try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
-// Releer usuario para incluir banner
+
 $usuarioRe = $db->prepare("SELECT * FROM usuarios WHERE id=?"); $usuarioRe->execute([$usuario['id']]); $usuarioRe = $usuarioRe->fetch();
 $bannerUrl = !empty($usuarioRe['banner']) ? (str_starts_with($usuarioRe['banner'], 'http') ? htmlspecialchars($usuarioRe['banner']) : 'uploads/banners/' . htmlspecialchars($usuarioRe['banner'])) : '';
 $fechaRegistro  = date('d \de F Y', strtotime($usuario['creado_en']));
@@ -375,7 +352,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     html{scroll-behavior:smooth}
     body{font-family:'Cabinet Grotesk',sans-serif;background:var(--papel);color:var(--ink);min-height:100vh}
 
-    /* ── NAVBAR ── */
     .navbar{position:sticky;top:0;z-index:200;background:#0a1a3e;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:56px;border-bottom:1px solid rgba(255,255,255,.06)}
     .nav-marca{display:flex;align-items:center;gap:10px;text-decoration:none}
     .nav-marca img{width:28px;filter:drop-shadow(0 2px 6px rgba(96,165,250,.3))}
@@ -396,7 +372,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .notif-dot{position:absolute;top:4px;right:4px;width:9px;height:9px;border-radius:50%;background:#e74c3c;border:2px solid #0a1a3e;animation:pulse-dot 1.5s infinite}
     @keyframes pulse-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
 
-    /* ── HERO ── */
     .hero{background:linear-gradient(135deg,#0a1a3e 0%,#1a3060 60%,#0a1a3e 100%);padding:48px 40px 36px;position:relative;overflow:hidden}
     .hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(26,86,219,.15) 0%,transparent 60%);pointer-events:none}
     .hero-inner{position:relative;z-index:2;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
@@ -418,7 +393,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .hs-lab{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
     .hero-deco{position:absolute;right:40px;bottom:-10px;font-size:120px;opacity:.06;pointer-events:none;z-index:1}
 
-    /* ── ALERTAS ── */
     .alerta{display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:14px;margin:0 40px 24px;border:1px solid}
     .alerta .a-ico{font-size:22px;flex-shrink:0}
     .alerta .a-txt{flex:1;font-size:13px;line-height:1.5}
@@ -429,14 +403,12 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .ar{background:#fff1f2;border-color:#fca5a5;color:#991b1b}
     .av{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
 
-    /* ── GRID ── */
     .contenido{padding:32px 40px}
     .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
     .span2{grid-column:span 2}
     .span3{grid-column:span 3}
     .card{background:var(--blanco);border:1px solid var(--borde);border-radius:18px;padding:22px;box-shadow:var(--sombra)}
 
-    /* ── MINI CARDS ── */
     .mini{display:flex;align-items:center;gap:14px}
     .m-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
     .ig{background:#dbeafe}
@@ -447,7 +419,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .m-lab{font-size:12px;color:var(--ink3);font-weight:600;margin-top:1px}
     .m-sub{font-size:11px;color:var(--azul);font-weight:700;margin-top:2px;cursor:pointer}
 
-    /* ── ACCIONES RÁPIDAS ── */
     .ca-tit{font-size:13px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px}
     .ac-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
     .ac{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border-radius:14px;background:var(--papel);border:1px solid var(--borde);text-decoration:none;transition:all .2s;position:relative}
@@ -457,7 +428,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .ac-desc{font-size:11px;color:var(--ink3);text-align:center}
     .ac-badge{position:absolute;top:-6px;right:-6px;background:#e74c3c;color:white;font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;white-space:nowrap}
 
-    /* ── TARJETAS VACANTES / TALENTOS ── */
     .ce-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
     .ce-tit{font-size:14px;font-weight:800;color:var(--ink)}
     .ce-ver{font-size:12px;font-weight:700;color:var(--azul);text-decoration:none}
@@ -472,7 +442,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .ce-met{font-size:11px;color:var(--azul);font-weight:600;margin-top:2px}
     .ce-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;background:var(--azul-claro);color:var(--azul);white-space:nowrap;flex-shrink:0}
 
-    /* ── PERFIL EMPRESA CARD ── */
     .cp-head{display:flex;flex-direction:column;align-items:center;text-align:center;padding-bottom:16px;border-bottom:1px solid var(--borde)}
     .cp-av{width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,var(--azul),var(--azul2));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:white;margin-bottom:12px;cursor:pointer;border:3px solid rgba(26,86,219,.2);overflow:hidden;transition:all .2s}
     .cp-av:hover{border-color:var(--azul)}
@@ -482,7 +451,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .cp-fil{display:flex;align-items:center;gap:8px}
     .cp-ico{font-size:16px;flex-shrink:0}
 
-    /* ── VISIBILIDAD TOGGLE ── */
     .vis-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--papel);border-radius:12px;border:1px solid var(--borde);margin-top:4px}
     .vis-label{font-size:13px;font-weight:700;color:var(--ink2)}
     .vis-sub{font-size:11px;color:var(--ink3);margin-top:2px}
@@ -497,13 +465,11 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .pv-chip.ok{background:#d1fae5;color:#065f46}
     .pv-chip.off{background:#fef3c7;color:#92400e}
 
-    /* ── PROGRESO ── */
     .prog-w{margin:12px 0}
     .prog-h{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px;color:var(--ink3)}
     .prog-t{height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden}
     .prog-f{height:100%;background:linear-gradient(90deg,var(--azul),var(--azul2));border-radius:4px;transition:width 1s ease}
 
-    /* ── HISTORIAL ── */
     .hist-tit{font-size:13px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
     .hist-list{display:flex;flex-direction:column;gap:8px}
     .hist-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:var(--papel);border:1px solid var(--borde)}
@@ -515,7 +481,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .hist-meta{font-size:11px;color:var(--ink3);margin-top:2px}
     .hist-fecha{font-size:11px;color:var(--ink3);flex-shrink:0;white-space:nowrap}
 
-    /* ── BADGES ── */
     .badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
     .bdg{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700}
     .bdg-v{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
@@ -523,13 +488,11 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .bdg-d{background:#f3e8ff;color:#6b21a8;border:1px solid #d8b4fe}
     .bdg-t{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
 
-    /* ── BTN EDITAR ── */
     .btn-edit{width:100%;padding:11px;border-radius:12px;background:linear-gradient(135deg,var(--azul),var(--azul2));color:white;border:none;font-size:13px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;margin-top:14px;transition:all .2s;box-shadow:0 4px 12px rgba(26,86,219,.3)}
     .btn-edit:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(26,86,219,.4)}
     .btn-sec{width:100%;padding:11px;border-radius:12px;background:transparent;color:var(--azul);border:2px solid var(--azul);font-size:13px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;margin-top:8px;transition:all .2s}
     .btn-sec:hover{background:var(--azul-claro)}
 
-    /* ── MODAL ── */
     .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
     .modal-ov.open{display:flex}
     .modal-box{background:var(--blanco);border-radius:22px;max-width:560px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.2);animation:fadeUp .3s ease;max-height:90vh;overflow-y:auto;position:relative}
@@ -553,7 +516,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     .btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,86,219,.45)}
     .btn-save:disabled{opacity:.6;cursor:not-allowed;transform:none}
 
-    /* ── RESPONSIVE ── */
     @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.span3{grid-column:1/-1}.span2{grid-column:1/-1}}
     @media(max-width:640px){
       .navbar{padding:0 16px}.nav-links{display:none}
@@ -1103,7 +1065,7 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
 </div>
 
 <script>
-  // ── MODAL ──────────────────────────────────────────────────
+  
   function abrirModal() { document.getElementById('modalEditar').classList.add('open') }
   function cerrarModal() { document.getElementById('modalEditar').classList.remove('open') }
   document.getElementById('modalEditar').addEventListener('click', e => {
@@ -1111,7 +1073,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarModal(); cerrarEliminarCuenta(); } });
 
-  // ── ELIMINAR CUENTA ────────────────────────────────────────
   function abrirEliminarCuenta() {
     const m = document.getElementById('modalEliminarCuenta');
     m.style.display = 'flex';
@@ -1155,7 +1116,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     if (e.target === document.getElementById('modalEliminarCuenta')) cerrarEliminarCuenta();
   });
 
-  // Animar barra de progreso al cargar
   window.addEventListener('load', () => {
     const b = document.getElementById('progBar');
     if (b) setTimeout(() => { b.style.width = '<?= $pct ?>%' }, 400);
@@ -1166,7 +1126,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     e.textContent = t; e.className = 'mmsg ' + c; e.style.display = 'block';
   }
 
-  // ── ELIMINAR LOGO ──────────────────────────────────────────
   async function eliminarLogo() {
     if (!confirm('¿Eliminar el logo de la empresa?')) return;
     const msg = document.getElementById('logoMsg');
@@ -1191,7 +1150,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     } catch(e) { msg.textContent = '❌ Error de conexión'; msg.style.color = '#e74c3c'; }
   }
 
-  // ── SUBIR LOGO ─────────────────────────────────────────────
   async function subirLogo(input) {
     const file = input.files[0];
     if (!file) return;
@@ -1219,7 +1177,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     input.value = '';
   }
 
-  // ── GUARDAR EMPRESA ────────────────────────────────────────
   async function guardarEmpresa() {
     const btn = document.getElementById('btnGuardar');
     const n = document.getElementById('editNombreEmp').value.trim();
@@ -1253,7 +1210,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     btn.disabled = false; btn.textContent = '💾 Guardar cambios';
   }
 
-  // ── TOGGLE VISIBILIDAD ─────────────────────────────────────
   async function toggleVisibilidad(visible) {
     const chip = document.getElementById('visChip');
     const fd = new FormData();
@@ -1269,7 +1225,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     } catch(e) { console.error(e); }
   }
 
-  // ── MODAL PUBLICAR VACANTE ────────────────────────────────────
   function abrirModalVacante() {
     document.getElementById('modal-vacante').classList.add('open');
     document.getElementById('vacante-msg').style.display = 'none';
@@ -1310,8 +1265,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     }
   }
 
-  // ── BANNER: subir ─────────────────────────────────────────
-  // ── BANNER CROP ────────────────────────────────────────────
   let cropperBannerInstance = null;
 
   function subirBanner(input) {
@@ -1355,7 +1308,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     const canvas = cropperBannerInstance.getCroppedCanvas({ width: 1200, height: 300, imageSmoothingQuality: 'high' });
     const dataUrl = canvas.toDataURL('image/jpeg', .92);
 
-    // Preview inmediato
     const zone = document.getElementById('bannerZone');
     let img = document.getElementById('bannerImg');
     const ph = document.getElementById('bannerPlaceholder');
@@ -1400,7 +1352,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     }, 'image/jpeg', .92);
   }
 
-  // ── BANNER: eliminar ──────────────────────────────────────
   async function eliminarBanner() {
     if (!confirm('¿Quitar el banner?')) return;
     const fd = new FormData();
@@ -1512,7 +1463,6 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
     </div>
   </div>
 </div>
-
 
 <!-- Widget de sesión activa — QuibdóConecta -->
 <script src="js/sesion_widget.js"></script>

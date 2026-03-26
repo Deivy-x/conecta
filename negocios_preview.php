@@ -1,12 +1,5 @@
 <?php
-/**
- * negocios_preview.php — Hasta 6 negocios destacados para el index
- * Solo aparecen si:
- *   - visible = 1  (el negocio está activo en la BD)
- *   - visible_admin = 1  (activado desde el panel admin)
- *   - usuario activo
- * El orden prioriza: destacado DESC → verificado DESC → id ASC
- */
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 

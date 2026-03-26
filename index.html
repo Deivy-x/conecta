@@ -24,28 +24,24 @@
             --gris2: #e8ecf0;
             --texto: #111;
 
-            /* ══ IMÁGENES DE SECCIONES ══
-               Para cambiar el fondo de cualquier sección, reemplaza 'none' con url('ruta/imagen.jpg')
-               Ejemplo: --img-stats: url('Imagenes/mi-foto.jpg');
-            ══════════════════════════════ */
             --img-hero: url('Imagenes/quibdo4.jpg');
-            /* Hero principal */
+            
             --img-stats: url('Imagenes/quibdo2.jpg');
-            /* Sección de estadísticas */
+            
             --img-cats: none;
-            /* Categorías rápidas – pon url('...') para imagen */
+            
             --img-como: none;
-            /* Cómo funciona – pon url('...') para imagen */
+            
             --img-empleos: none;
-            /* Empleos destacados – pon url('...') para imagen */
+            
             --img-talentos: none;
-            /* Talentos preview – pon url('...') para imagen */
+            
             --img-testimonios: none;
-            /* Testimonios – pon url('...') para imagen */
+            
             --img-cta: url('Imagenes/quibdo2.jpg');
-            /* CTA final */
+            
             --img-videos: none;
-            /* Video showcase – pon url('...') para imagen de fondo */
+            
         }
 
         *,
@@ -72,7 +68,6 @@
             background: linear-gradient(90deg, var(--verde) 33.3%, var(--dorado) 33.3% 66.6%, var(--azul) 66.6%)
         }
 
-        /* ════ NAVBAR ════ */
         .navbar {
             position: fixed;
             top: 5px;
@@ -298,7 +293,6 @@
             color: white
         }
 
-        /* ════ HERO ════ */
         .hero {
             position: relative;
             height: 100vh;
@@ -526,7 +520,6 @@
             transform: translateY(-2px)
         }
 
-        /* ════ REVEAL ════ */
         .reveal {
             opacity: 0;
             transform: translateY(36px);
@@ -538,8 +531,6 @@
             transform: translateY(0)
         }
 
-        /* ════ STATS ════ */
-        /* Para imagen: cambia --img-stats en :root arriba */
         .stats {
             position: relative;
             background: var(--img-stats) center/cover no-repeat;
@@ -593,7 +584,6 @@
             color: rgba(255, 255, 255, .4)
         }
 
-        /* ════ LABELS ════ */
         .section-label {
             display: inline-block;
             background: var(--verde-o);
@@ -617,8 +607,6 @@
             color: var(--azul2)
         }
 
-        /* ════ QUICK CATS ════ */
-        /* Para imagen: cambia --img-cats en :root (actualmente none = fondo degradado) */
         .quick-cats {
             position: relative;
             background: var(--img-cats) center/cover no-repeat;
@@ -636,7 +624,6 @@
             z-index: 0
         }
 
-        /* Cuando hay imagen, el overlay oscurece: */
         .quick-cats-overlay {
             position: absolute;
             inset: 0;
@@ -739,8 +726,6 @@
             transform: scale(1.25) rotate(-5deg)
         }
 
-        /* ════ HOW IT WORKS ════ */
-        /* Para imagen: cambia --img-como en :root */
         .how-it-works {
             padding: 110px 48px;
             text-align: center;
@@ -823,8 +808,6 @@
             line-height: 1.65
         }
 
-        /* ════ FEATURED JOBS ════ */
-        /* Para imagen: cambia --img-empleos en :root */
         .featured-jobs {
             padding: 110px 48px;
             position: relative;
@@ -961,9 +944,6 @@
             border-color: var(--verde)
         }
 
-        /* ════ SERVICIOS EVENTOS ════ */
-        /* Para imagen: cambia --img-eventos en :root */
-        /* ════ SERVICIOS & EVENTOS — REDISEÑO ════ */
         .servicios-eventos {
             padding: 100px 48px;
             color: white;
@@ -1270,7 +1250,6 @@
             margin-top: 48px
         }
 
-        /* ════ LOCALES & NEGOCIOS — REDISEÑO ════ */
         .locales {
             padding: 100px 48px;
             position: relative;
@@ -1631,8 +1610,6 @@
             display: none
         }
 
-        /* ════ TALENTOS ════ */
-        /* Para imagen: cambia --img-talentos en :root */
         .talentos-preview {
             padding: 100px 48px;
             position: relative;
@@ -1751,8 +1728,6 @@
             color: white
         }
 
-        /* ════ TESTIMONIOS ════ */
-        /* Para imagen: cambia --img-testimonios en :root */
         .testimonios {
             padding: 110px 48px;
             text-align: center;
@@ -1841,7 +1816,6 @@
             color: #888
         }
 
-        /* ════ FINAL CTA ════ */
         .final-cta {
             padding: 120px 48px;
             text-align: center;
@@ -1938,8 +1912,6 @@
             color: #4ade80
         }
 
-        /* ════ VIDEO SHOWCASE ════ */
-        /* Para imagen de fondo: cambia --img-videos en :root */
         .video-showcase {
             background: var(--img-videos) center/cover no-repeat;
             background-color: transparent;
@@ -1955,7 +1927,6 @@
             z-index: 0
         }
 
-        /* Cuando hay imagen en --img-videos, descomenta la línea de abajo en el JS */
         .vs-bg-overlay {
             position: absolute;
             inset: 0;
@@ -2457,7 +2428,6 @@
             color: var(--dorado2)
         }
 
-        /* ════ FOOTER ════ */
         footer {
             background: #050a12;
             border-top: 1px solid rgba(255, 255, 255, .05);
@@ -2561,7 +2531,6 @@
             color: #4ade80
         }
 
-        /* ════ SKELETONS ════ */
         @keyframes shimmer {
             0% {
                 background-position: -400px 0
@@ -2588,7 +2557,6 @@
             animation: shimmer 1.4s infinite linear
         }
 
-        /* ════ KEYFRAMES ════ */
         @keyframes fadeUp {
             from {
                 opacity: 0;
@@ -2613,7 +2581,6 @@
             }
         }
 
-        /* ════ RESPONSIVE ════ */
         @media(max-width:1200px) {
             .hero h1 {
                 font-size: 56px
@@ -2867,7 +2834,6 @@
         </div>
     </div>
 
-    <!-- HERO — imagen: --img-hero en :root -->
     <section class="hero">
         <div class="hero-overlay"></div>
         <div class="hero-franja"></div>
@@ -2892,7 +2858,6 @@
         </div>
     </section>
 
-    <!-- STATS — imagen: --img-stats en :root -->
     <section class="stats">
         <div class="stats-overlay"></div>
         <div class="stats-inner">
@@ -2924,7 +2889,6 @@
         </div>
     </section>
 
-    <!-- CATEGORÍAS — imagen: --img-cats en :root (actualmente none = degradado de colores) -->
     <section class="quick-cats reveal">
         <div class="quick-cats-bg"></div>
         <div class="quick-cats-overlay" id="qcOverlay"></div>
@@ -2966,7 +2930,6 @@
         </div>
     </section>
 
-    <!-- CÓMO FUNCIONA — imagen: --img-como en :root -->
     <section class="how-it-works">
         <div class="how-overlay"></div>
         <div class="how-inner">
@@ -2994,7 +2957,6 @@
         </div>
     </section>
 
-    <!-- EMPLEOS — imagen: --img-empleos en :root -->
     <section class="featured-jobs">
         <div class="jobs-overlay"></div>
         <div class="jobs-inner">
@@ -3019,11 +2981,6 @@
         </div>
     </section>
 
-
-
-
-
-    <!-- TALENTOS — imagen: --img-talentos en :root -->
     <section class="talentos-preview">
         <div class="talentos-overlay"></div>
         <div class="talentos-inner">
@@ -3041,7 +2998,6 @@
         </div>
     </section>
 
-    <!-- TESTIMONIOS — imagen: --img-testimonios en :root -->
     <section class="testimonios">
         <div class="testimonios-overlay"></div>
         <div class="testimonios-inner">
@@ -3077,9 +3033,6 @@
         </div>
     </section>
 
-    <!-- ══════════════════════════════════════════
-     SERVICIOS & EVENTOS
-══════════════════════════════════════════ -->
     <section class="servicios-eventos reveal" id="servicios-eventos">
         <div class="se-noise"></div>
         <div class="se-orb1"></div>
@@ -3109,9 +3062,6 @@
         </div>
     </section>
 
-    <!-- ══════════════════════════════════════════
-     LOCALES & NEGOCIOS
-══════════════════════════════════════════ -->
     <section class="locales reveal" id="locales">
         <div class="loc-bg-shape1"></div>
         <div class="loc-bg-shape2"></div>
@@ -3152,7 +3102,6 @@
         </div>
     </section>
 
-    <!-- CTA FINAL — imagen: --img-cta en :root -->
     <section class="final-cta">
         <div class="cta-overlay"></div>
         <div class="final-cta-franja"></div>
@@ -3166,12 +3115,6 @@
         </div>
     </section>
 
-    <!-- ══════════════════════════════════════════
-     VIDEO SHOWCASE
-     imagen de fondo: --img-videos en :root
-     Para activar imagen: pon url('ruta') en --img-videos
-     y descomenta el display:block del .vs-bg-overlay en JS
-══════════════════════════════════════════ -->
     <section class="video-showcase reveal">
         <div class="vs-bg"></div>
         <div class="vs-bg-overlay" id="vsBgOverlay"></div>
@@ -3196,10 +3139,8 @@
                 </div>
             </div>
 
-            <!-- GRID 4 MINIATURAS -->
             <div class="vs-grid">
 
-                <!-- MINIATURA 1 -->
                 <div class="vs-thumb reveal active" data-id="06JcKFWzsQU" data-title="Mi Raza"
                     data-sub="Luis Eduardo Acústico" onclick="abrirModal(this)">
                     <span class="vs-thumb-badge">🎵 Música</span>
@@ -3212,7 +3153,6 @@
                     </div>
                 </div>
 
-                <!-- MINIATURA 2 — Chirimía -->
                 <div class="vs-thumb reveal" data-id="LZ0JC1c54PA" data-title="Chirimía Chocoana"
                     data-sub="Patrimonio del Chocó" onclick="abrirModal(this)">
                     <span class="vs-thumb-badge">🎺 Chirimía</span>
@@ -3225,7 +3165,6 @@
                     </div>
                 </div>
 
-                <!-- MINIATURA 3 — Agrega tu video: cambia data-id por el ID de YouTube -->
                 <div class="vs-thumb reveal" data-id="" data-title="Video 3" data-sub="QuibdóConecta"
                     onclick="abrirModal(this)">
                     <span class="vs-thumb-badge">💼 Empleo</span>
@@ -3240,7 +3179,6 @@
                     </div>
                 </div>
 
-                <!-- MINIATURA 4 — Agrega tu video -->
                 <div class="vs-thumb reveal" data-id="" data-title="Video 4" data-sub="QuibdóConecta"
                     onclick="abrirModal(this)">
                     <span class="vs-thumb-badge">🎧 Eventos</span>
@@ -3255,27 +3193,6 @@
                     </div>
                 </div>
 
-                <!--
-            ╔══════════════════════════════════════════════════════╗
-            ║  PARA AGREGAR MÁS MINIATURAS, descomenta y edita:   ║
-            ╚══════════════════════════════════════════════════════╝
-
-            <div class="vs-thumb reveal"
-                 data-id="ID_DE_YOUTUBE"
-                 data-title="Título del video"
-                 data-sub="Artista o descripción"
-                 onclick="abrirModal(this)">
-                <span class="vs-thumb-badge">🏙️ Quibdó</span>
-                <div class="vs-play-btn">▶</div>
-                <span class="vs-thumb-cta">Ver ahora</span>
-                <img src="https://img.youtube.com/vi/ID_DE_YOUTUBE/mqdefault.jpg"
-                     style="width:100%;height:100%;object-fit:cover;display:block;" alt="Video">
-                <div class="vs-thumb-overlay">
-                    <span class="vs-thumb-title">Tu título aquí</span>
-                </div>
-            </div>
-            -->
-
             </div>
 
             <div class="vs-cta reveal">
@@ -3288,7 +3205,6 @@
         </div>
     </section>
 
-    <!-- MODAL LIGHTBOX -->
     <div class="vs-modal-backdrop" id="vsModal" onclick="cerrarModalBackdrop(event)">
         <div class="vs-modal-box">
             <button class="vs-modal-close" onclick="cerrarModal()" title="Cerrar">✕</button>
@@ -3308,7 +3224,6 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
     <footer>
         <div class="footer-franja"></div>
         <div class="footer-grid">
@@ -3348,40 +3263,37 @@
     </footer>
 
     <script>
-        /* NAVBAR */
+        
         window.addEventListener("scroll", () => { document.getElementById("navbar").classList.toggle("abajo", window.scrollY > 50) });
         const ham = document.getElementById("hamburger"), mob = document.getElementById("mobileMenu");
         ham.addEventListener("click", () => { ham.classList.toggle("open"); mob.classList.toggle("open") });
         document.addEventListener("click", e => { if (!ham.contains(e.target) && !mob.contains(e.target)) { ham.classList.remove("open"); mob.classList.remove("open") } });
 
-        /* TYPING */
         const phrases = ["La plataforma de empleo hecha para Quibdó y el Chocó", "Conecta tu talento con empresas locales", "DJs, artistas y servicios para tus eventos", "Convocatorias públicas y empleos reales del Chocó", "El empleo chocoano, digital y al alcance de todos"];
         let pi = 0, ci = 0, del = false;
         const tEl = document.getElementById("typingText");
         function type() { const p = phrases[pi]; if (!del) { ci++; tEl.innerHTML = p.slice(0, ci) + '<span class="cursor-blink"></span>'; if (ci === p.length) { del = true; setTimeout(type, 2200); return } } else { ci--; tEl.innerHTML = p.slice(0, ci) + '<span class="cursor-blink"></span>'; if (ci === 0) { del = false; pi = (pi + 1) % phrases.length } } setTimeout(type, del ? 36 : 60) }
         type();
 
-        /* REVEAL */
         const ro = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible") } else { if (e.target.getBoundingClientRect().top < 0) e.target.classList.remove("visible") } }) }, { threshold: .12 });
         document.querySelectorAll(".reveal").forEach(el => ro.observe(el));
 
-        /* ACTIVAR OVERLAY DE IMAGEN si --img-videos no es none */
         (function () {
             const root = document.documentElement;
             const cs = getComputedStyle(root);
-            // Video section
+            
             const vs = cs.getPropertyValue('--img-videos').trim();
             if (vs && vs !== 'none') {
                 const el = document.getElementById('vsBgOverlay');
                 if (el) el.style.display = 'block';
             }
-            // Categorías section
+            
             const qc = cs.getPropertyValue('--img-cats').trim();
             if (qc && qc !== 'none') {
                 const el = document.getElementById('qcOverlay');
                 if (el) el.style.display = 'block';
             }
-            // Mapa de variables CSS -> overlays por sección
+            
             const secciones = [
                 { varName: '--img-como', selector: '.how-overlay' },
                 { varName: '--img-empleos', selector: '.jobs-overlay' },
@@ -3393,7 +3305,7 @@
                 if (val && val !== 'none') {
                     const el = document.querySelector(s.selector);
                     if (el) {
-                        // Oscurecer el overlay cuando hay imagen
+                        
                         if (s.selector === '.how-overlay')
                             el.style.background = 'rgba(255,255,255,0.82)';
                         else if (s.selector === '.jobs-overlay')
@@ -3409,17 +3321,13 @@
             });
         })();
 
-        /* STATS */
         async function cargarStats() { try { const res = await fetch('stats.php'); const data = await res.json(); document.querySelectorAll('.count-up[data-key]').forEach(el => { const key = el.dataset.key; if (data[key] !== undefined) el.dataset.target = data[key] }); const trends = { 'trend-talentos': data.trend_talentos, 'trend-empresas': data.trend_empresas, 'trend-empleos': data.trend_empleos, 'trend-artistas': data.trend_artistas, 'trend-satisfaccion': data.trend_satisfaccion }; Object.entries(trends).forEach(([id, val]) => { const el = document.getElementById(id); if (!el || val === undefined) return; if (val > 0) { el.textContent = `↑ +${val} esta semana`; el.className = 'stat-trend up' } else if (val < 0) { el.textContent = `↓ ${val} esta semana`; el.className = 'stat-trend down' } else { el.textContent = '— sin cambios'; el.className = 'stat-trend eq' } }) } catch (e) { document.querySelectorAll('.stat-trend').forEach(el => { el.textContent = '' }) } }
         cargarStats();
 
-        /* COUNT-UP */
         let cnt = new Set();
         const co = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting && !cnt.has(e.target)) { cnt.add(e.target); const t = +e.target.dataset.target; let c = 0; const s = Math.ceil(t / 60); const id = setInterval(() => { c += s; if (c >= t) { c = t; clearInterval(id) } const esSatisfaccion = e.target.dataset.key === 'satisfaccion'; e.target.textContent = (t >= 50 && !esSatisfaccion ? "+" : "") + c + (esSatisfaccion ? "%" : "") }, 28) } }) }, { threshold: .4 });
         document.querySelectorAll(".count-up").forEach(el => co.observe(el));
 
-        /* EMPLEOS */
-        // ── Estado de sesión ─────────────────────────────────────────
         let _qcSesionTipo = null;
         async function detectarSesionIndex() {
             try {
@@ -3688,10 +3596,6 @@
         document.getElementById("searchBtn").addEventListener("click", buscar);
         ["searchCargo", "searchLugar"].forEach(id => document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") buscar() }));
 
-
-
-
-
         /* MUTE */
         let vsMuted = true;
         function toggleMute() { const btn = document.getElementById('vsMuteBtn'); const iframe = document.getElementById('vsMainIframe'); if (!iframe) return; if (vsMuted) { const src = iframe.src.replace('&mute=1', '').replace('mute=1&', ''); iframe.src = src.includes('mute=') ? src : src.replace('autoplay=1', 'autoplay=1&mute=0'); btn.textContent = '🔊'; btn.classList.add('unmuted'); btn.title = 'Silenciar'; vsMuted = false } else { const src = iframe.src.replace('mute=0', 'mute=1'); iframe.src = src.includes('mute=') ? src : src.replace('autoplay=1', 'autoplay=1&mute=1'); btn.textContent = '🔇'; btn.classList.remove('unmuted'); btn.title = 'Activar sonido'; vsMuted = true } }
@@ -3705,7 +3609,6 @@
 
     <script src="js/sesion_widget.js"></script>
 
-    <!-- MINI MODAL SOLICITAR VACANTE — index.html -->
     <div id="qc-mini-sol-modal"
         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)">
         <div
@@ -3732,13 +3635,13 @@
             </div>
         </div>
     </div>
-    <!-- Modal: Iniciar sesión para buscar -->
+    
     <div id="qc-login-modal"
         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)"
         onclick="if(event.target===this)cerrarModalLogin()">
         <div
             style="background:#fff;border-radius:24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;animation:qcLoginIn .35s cubic-bezier(.34,1.56,.64,1)">
-            <!-- Header verde -->
+            
             <div
                 style="background:linear-gradient(135deg,#1f9d55,#2ecc71);padding:28px 28px 22px;text-align:center;position:relative">
                 <button onclick="cerrarModalLogin()"
@@ -3749,7 +3652,7 @@
                 <p style="margin:8px 0 0;color:rgba(255,255,255,.88);font-size:14px;font-family:'DM Sans',sans-serif">
                     Encuentra empleos y oportunidades en Quibdó</p>
             </div>
-            <!-- Body -->
+            
             <div style="padding:28px 28px 24px;text-align:center">
                 <p style="margin:0 0 22px;color:#555;font-size:14.5px;line-height:1.6;font-family:'DM Sans',sans-serif">
                     Para usar el buscador necesitas tener una cuenta. ¡Es gratis y solo toma un minuto!</p>
@@ -3780,21 +3683,21 @@
         }
     </style>
     <script>
-        // Si viene de un redirect post-login con búsqueda guardada, ejecutarla
+        
         (function () {
             const rd = sessionStorage.getItem("qc_search_redirect");
             if (rd) {
                 sessionStorage.removeItem("qc_search_redirect");
-                // Solo redirigir si ya está logueado (widget lo confirma vía cookie de sesión)
+                
                 fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' })
                     .then(r => r.json())
                     .then(d => { if (d.ok && d.usuario) window.location.href = rd; })
                     .catch(() => { });
             }
-            // Actualizar href del botón login para incluir redirect si aplica
+            
             const btn = document.getElementById("qc-login-btn-redirect");
             if (btn) {
-                // El redirect lo manejamos via sessionStorage, no query param, por simplicidad
+                
             }
         })();
     </script>

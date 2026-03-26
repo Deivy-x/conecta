@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// verificar_cuenta.php — Página de verificación para usuarios
-// ============================================================
+
 session_start();
 require_once __DIR__ . '/Php/db.php';
 
@@ -23,12 +21,10 @@ if (!$usuario) {
     exit;
 }
 
-// Leer estado de verificación
 $stmt = $db->prepare("SELECT * FROM verificaciones WHERE usuario_id = ?");
 $stmt->execute([$userId]);
 $verificacion = $stmt->fetch();
 
-// Leer badge
 $stmt2 = $db->prepare("SELECT verificado FROM talento_perfil WHERE usuario_id = ?");
 $stmt2->execute([$userId]);
 $tp = $stmt2->fetch();
@@ -72,7 +68,6 @@ $esEmpresa = $tipo === 'empresa';
         h1 span { color:var(--verde2); }
         .subtitulo { color:rgba(255,255,255,.6); font-size:15px; margin-bottom:40px; }
 
-        /* ── ESTADO ACTUAL ── */
         .estado-card {
             border-radius:20px; padding:28px; margin-bottom:32px;
             border:1px solid; display:flex; align-items:center; gap:20px;
@@ -91,7 +86,6 @@ $esEmpresa = $tipo === 'empresa';
             margin-top:10px;
         }
 
-        /* ── PASOS ── */
         .pasos { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:36px; }
         .paso {
             background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
@@ -106,7 +100,6 @@ $esEmpresa = $tipo === 'empresa';
         .paso h4 { font-size:13px; font-weight:700; margin-bottom:4px; }
         .paso p  { font-size:12px; opacity:.6; line-height:1.4; }
 
-        /* ── FORMULARIO ── */
         .form-card {
             background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
             border-radius:22px; padding:36px;
@@ -347,7 +340,6 @@ async function enviarSolicitud() {
     }
 }
 
-// Drag & drop visual
 document.querySelectorAll('.upload-area').forEach(area => {
     area.addEventListener('dragover',  e => { e.preventDefault(); area.classList.add('dragover'); });
     area.addEventListener('dragleave', () => area.classList.remove('dragover'));

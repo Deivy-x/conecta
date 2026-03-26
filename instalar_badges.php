@@ -1,16 +1,7 @@
 <?php
-// ============================================================
-// instalar_badges.php — INSTALADOR AUTOMÁTICO
-// ============================================================
-// Sube SOLO este archivo a htdocs/ en InfinityFree
-// Visita: https://quibdoconecta.infinityfree.me/instalar_badges.php
-// Creará Php/badges_helper.php automáticamente
-// BORRAR DESPUÉS DE USAR
-// ============================================================
 
 $resultados = [];
 
-// 1. Crear directorio Php/ si no existe
 if (!is_dir(__DIR__ . '/Php')) {
     mkdir(__DIR__ . '/Php', 0755, true);
     $resultados[] = '✅ Carpeta Php/ creada';
@@ -18,7 +9,6 @@ if (!is_dir(__DIR__ . '/Php')) {
     $resultados[] = '📁 Carpeta Php/ ya existe';
 }
 
-// 2. Crear uploads/verificaciones/ si no existe
 if (!is_dir(__DIR__ . '/uploads/verificaciones')) {
     mkdir(__DIR__ . '/uploads/verificaciones', 0755, true);
     $resultados[] = '✅ Carpeta uploads/verificaciones/ creada';
@@ -28,12 +18,8 @@ if (!is_dir(__DIR__ . '/uploads/fotos')) {
     $resultados[] = '✅ Carpeta uploads/fotos/ creada';
 }
 
-// 3. Crear Php/badges_helper.php
 $badges_helper = <<<'PHPCODE'
 <?php
-// ============================================================
-// badges_helper.php — Helper central de badges para QuibdóConecta
-// ============================================================
 
 function getUserBadges(PDO $db, int $userId): array {
     $stmt = $db->prepare("SELECT badges_custom FROM usuarios WHERE id = ?");
@@ -135,21 +121,18 @@ if (file_put_contents($path, $badges_helper) !== false) {
     $resultados[] = '❌ ERROR al crear Php/badges_helper.php';
 }
 
-// 4. Verificar que db.php existe
 if (file_exists(__DIR__ . '/Php/db.php')) {
     $resultados[] = '✅ Php/db.php existe';
 } else {
     $resultados[] = '⚠️ Php/db.php NO existe (necesario para la BD)';
 }
 
-// 5. Verificar que talentos.php existe
 if (file_exists(__DIR__ . '/talentos.php')) {
     $resultados[] = '✅ talentos.php existe';
 } else {
     $resultados[] = '⚠️ talentos.php NO existe';
 }
 
-// Mostrar resultados
 ?>
 <!DOCTYPE html>
 <html lang="es">

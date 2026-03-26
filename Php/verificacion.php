@@ -1,11 +1,5 @@
 <?php
-// ============================================================
-// Php/verificacion.php — Sistema de verificación de usuarios
-// POST _action=solicitar  → candidato/empresa sube documentos
-// POST _action=aprobar    → admin aprueba verificación
-// POST _action=rechazar   → admin rechaza con nota
-// GET  _action=estado     → consulta estado actual
-// ============================================================
+
 session_start();
 header('Content-Type: application/json');
 require_once __DIR__ . '/db.php';
@@ -19,7 +13,6 @@ $db     = getDB();
 $userId = (int)$_SESSION['usuario_id'];
 $action = $_POST['_action'] ?? $_GET['_action'] ?? '';
 
-// ── Leer usuario ─────────────────────────────────────────────
 $stmt = $db->prepare("SELECT id, nombre, tipo, activo FROM usuarios WHERE id = ?");
 $stmt->execute([$userId]);
 $usuario = $stmt->fetch();
@@ -29,15 +22,11 @@ if (!$usuario) {
     exit;
 }
 
-// ────────────────────────────────────────────────────────────
-// GET: estado de verificación
-// ────────────────────────────────────────────────────────────
 if ($action === 'estado') {
     $stmt = $db->prepare("SELECT * FROM verificaciones WHERE usuario_id = ?");
     $stmt->execute([$userId]);
     $ver = $stmt->fetch();
 
-    // También verificar badge en talento_perfil
     $stmt2 = $db->prepare("SELECT verificado FROM talento_perfil WHERE usuario_id = ?");
     $stmt2->execute([$userId]);
     $tp = $stmt2->fetch();
@@ -50,12 +39,8 @@ if ($action === 'estado') {
     exit;
 }
 
-// ────────────────────────────────────────────────────────────
-// POST: solicitar verificación (sube documentos)
-// ────────────────────────────────────────────────────────────
 if ($action === 'solicitar') {
 
-    // Verificar que no tenga ya una solicitud aprobada
     $stmt = $db->prepare("SELECT estado FROM verificaciones WHERE usuario_id = ?");
     $stmt->execute([$userId]);
     $existente = $stmt->fetch();
@@ -65,7 +50,6 @@ if ($action === 'solicitar') {
         exit;
     }
 
-    // ── Validar archivos subidos ──────────────────────────
     $errores = [];
     $docUrl     = null;
     $fotoDocUrl = null;
@@ -73,7 +57,6 @@ if ($action === 'solicitar') {
     $uploadDir = __DIR__ . '/../uploads/verificaciones/';
     if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
-    // Archivo principal: cédula o cámara de comercio
     if (!empty($_FILES['documento']['name'])) {
         $ext  = strtolower(pathinfo($_FILES['documento']['name'], PATHINFO_EXTENSION));
         $permitidos = ['jpg','jpeg','png','pdf'];
@@ -95,7 +78,6 @@ if ($action === 'solicitar') {
         $errores[] = 'Debes subir tu documento de identidad o NIT.';
     }
 
-    // Selfie con documento (opcional pero recomendado)
     if (!empty($_FILES['foto_documento']['name'])) {
         $ext2 = strtolower(pathinfo($_FILES['foto_documento']['name'], PATHINFO_EXTENSION));
         if (in_array($ext2, ['jpg','jpeg','png']) && $_FILES['foto_documento']['size'] <= 5 * 1024 * 1024) {
@@ -114,7 +96,6 @@ if ($action === 'solicitar') {
 
     $tipoDoc = $usuario['tipo'] === 'empresa' ? 'camara_comercio' : 'cedula';
 
-    // ── Insertar o actualizar solicitud ───────────────────
     if ($existente) {
         $stmt = $db->prepare("
             UPDATE verificaciones
@@ -139,17 +120,14 @@ if ($action === 'solicitar') {
     exit;
 }
 
-// ────────────────────────────────────────────────────────────
-// POST: aprobar (solo admin)
-// ────────────────────────────────────────────────────────────
 if ($action === 'aprobar') {
-    // Verificar que quien aprueba sea admin
+    
     $stmt = $db->prepare("SELECT nivel FROM admin_roles WHERE usuario_id = ?");
     $stmt->execute([$userId]);
     $rol = $stmt->fetch();
 
     if (!$rol || !in_array($rol['nivel'], ['superadmin','delegado','dev'])) {
-        // Verificar permisos específicos
+        
         $stmt2 = $db->prepare("SELECT perm_verificar FROM admin_roles WHERE usuario_id = ?");
         $stmt2->execute([$userId]);
         $perms = $stmt2->fetch();
@@ -165,7 +143,6 @@ if ($action === 'aprobar') {
         exit;
     }
 
-    // Aprobar verificación
     $stmt = $db->prepare("
         UPDATE verificaciones
         SET estado='aprobado', revisado_por=?, actualizado=NOW()
@@ -173,8 +150,6 @@ if ($action === 'aprobar') {
     ");
     $stmt->execute([$userId, $targetId]);
 
-    // Activar verificado en talento_perfil SOLO si ya existe la fila
-    // (la fila la crea únicamente el admin desde el panel)
     $db->prepare("UPDATE talento_perfil SET verificado=1 WHERE usuario_id=?")
        ->execute([$targetId]);
 
@@ -182,9 +157,6 @@ if ($action === 'aprobar') {
     exit;
 }
 
-// ────────────────────────────────────────────────────────────
-// POST: rechazar (solo admin)
-// ────────────────────────────────────────────────────────────
 if ($action === 'rechazar') {
     $stmt = $db->prepare("SELECT perm_verificar FROM admin_roles WHERE usuario_id = ?");
     $stmt->execute([$userId]);
@@ -205,7 +177,6 @@ if ($action === 'rechazar') {
     ");
     $stmt->execute([$userId, $nota, $targetId]);
 
-    // Quitar badge si tenía
     $db->prepare("UPDATE talento_perfil SET verificado=0 WHERE usuario_id=?")
        ->execute([$targetId]);
 

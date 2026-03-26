@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// Php/chat_enviar_sub.php — Enviar mensaje (POST)
-// ============================================================
+
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../db.php';
@@ -31,7 +29,6 @@ if (mb_strlen($mensaje) > 2000) { echo json_encode(['ok' => false, 'msg' => 'El 
 
 $db = getDB();
 
-// ── Datos del destinatario ───────────────────────────────────
 $checkDest = $db->prepare("SELECT id, nombre, correo FROM usuarios WHERE id = ? AND activo = 1");
 $checkDest->execute([$para]);
 $destino = $checkDest->fetch();
@@ -40,19 +37,16 @@ if (!$destino) {
     exit;
 }
 
-// ── Datos del remitente ──────────────────────────────────────
 $checkDe = $db->prepare("SELECT nombre FROM usuarios WHERE id = ?");
 $checkDe->execute([$de]);
 $remitente = $checkDe->fetch();
 
-// ── Verificar límite de mensajes del plan ────────────────────
 $lim = verificarLimite($db, $de, 'mensajes');
 if (!$lim['puede']) {
     echo msgLimiteSuperado($lim['plan'], 'mensajes', $lim['limite']);
     exit;
 }
 
-// ── Detectar conversación activa (no spamear si están chateando) ──
 $activo = false;
 try {
     $stmtAct = $db->prepare("
@@ -65,14 +59,12 @@ try {
     $activo = (bool) $stmtAct->fetch();
 } catch (Exception $e) {}
 
-// ── Guardar mensaje ──────────────────────────────────────────
 $stmt = $db->prepare("INSERT INTO mensajes (de_usuario, para_usuario, mensaje) VALUES (?, ?, ?)");
 $stmt->execute([$de, $para, $mensaje]);
 $nuevoId = (int) $db->lastInsertId();
 
 registrarAccion($db, $de, 'mensajes');
 
-// ── Notificación por correo ──────────────────────────────────
 if (!$activo && !empty($destino['correo'])) {
     $correoD  = $destino['correo'];
     $nombreD  = $destino['nombre'];

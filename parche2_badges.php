@@ -1,9 +1,4 @@
 <?php
-// ============================================================
-// parche2_badges.php — Agrega renderBadges() y tieneBadge()
-// ============================================================
-// Sube a htdocs/ y visita. BORRAR DESPUÉS.
-// ============================================================
 
 $path = __DIR__ . '/Php/badges_helper.php';
 $resultados = [];
@@ -14,13 +9,11 @@ if (!file_exists($path)) {
     $contenido = file_get_contents($path);
     $agregados = [];
     
-    // Agregar renderBadges() si no existe
     if (strpos($contenido, 'function renderBadges(') === false) {
         $contenido .= <<<'PHPCODE'
 
-// ── renderBadges() — alias usado en talentos.php ──
 function renderBadges(array $badges, string $size = 'small'): string {
-    // Mapear tamaños del servidor a los del helper
+    
     $map = ['small' => 'sm', 'medium' => 'md', 'large' => 'lg', 'sm' => 'sm', 'md' => 'md', 'lg' => 'lg'];
     $mappedSize = $map[$size] ?? 'sm';
     return renderBadgesHTML($badges, $mappedSize);
@@ -29,11 +22,9 @@ PHPCODE;
         $agregados[] = 'renderBadges()';
     }
     
-    // Agregar tieneBadge() si no existe
     if (strpos($contenido, 'function tieneBadge(') === false) {
         $contenido .= <<<'PHPCODE'
 
-// ── tieneBadge() — verifica si un usuario tiene un badge específico ──
 function tieneBadge(array $badges, string $nombreBadge): bool {
     foreach ($badges as $b) {
         if (stripos($b['nombre'] ?? '', $nombreBadge) !== false) {
@@ -59,7 +50,6 @@ PHPCODE;
         $resultados[] = '✅ Todas las funciones ya existían';
     }
     
-    // Listar todas las funciones disponibles
     preg_match_all('/function\s+(\w+)\s*\(/', $contenido, $matches);
     $resultados[] = '🔧 Funciones disponibles: ' . implode(', ', $matches[1]);
     $resultados[] = '📄 Tamaño: ' . strlen($contenido) . ' bytes';

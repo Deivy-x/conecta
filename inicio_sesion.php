@@ -863,7 +863,6 @@
         document.addEventListener('keypress', e => { if (e.key === 'Enter') login(); });
         document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) cerrarModal(); });
 
-        // ── Stats en tiempo real ──────────────────────────────────────────
         function animarContador(el, desde, hasta, duracion) {
             if (desde === hasta) return;
             const inicio = performance.now();
@@ -890,11 +889,11 @@
                     if (!valor) return;
                     const el = document.getElementById(id);
                     if (!el) return;
-                    // Leer valor actual que viene del HTML (ej: "+500" → 500)
+                    
                     const actual = parseInt(el.textContent.replace('+', '')) || 0;
                     animarContador(el, actual, valor, 1200);
                 });
-            } catch (e) { /* falla silenciosa, se quedan los valores por defecto */ }
+            } catch (e) {  }
         }
 
         cargarStatsLogin();

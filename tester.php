@@ -2,7 +2,6 @@
 session_start();
 date_default_timezone_set("America/Bogota");
 
-// ─── Intentar conexión BD ───────────────────────────────────
 $dbOk = false;
 $dbMsg = '';
 $tablas = [];
@@ -18,10 +17,8 @@ try {
     $dbOk = true;
     $dbMsg = 'Conexión exitosa';
 
-    // Listar tablas
     $tablas = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
 
-    // Columnas de mensajes si existe
     if (in_array('mensajes', $tablas)) {
         $cols = $pdo->query("DESCRIBE mensajes")->fetchAll(PDO::FETCH_ASSOC);
         foreach ($cols as $c) $columnasMensajes[] = $c['Field'] . ' (' . $c['Type'] . ')';
@@ -30,7 +27,6 @@ try {
     $dbMsg = $e->getMessage();
 }
 
-// ─── Verificar archivos clave ───────────────────────────────
 $archivos = [
     'Php/db.php'              => 'BD: conexión',
     'chat.php'                => 'Chat: página principal',
@@ -46,11 +42,9 @@ $archivos = [
     'verificar_cuenta.php'    => 'Verificación',
 ];
 
-// ─── Sesión ─────────────────────────────────────────────────
 $sesionActiva = isset($_SESSION['usuario_id']);
 $sesionId     = $_SESSION['usuario_id'] ?? null;
 
-// ─── Permisos de escritura ──────────────────────────────────
 $uploadDir = 'uploads/verificaciones/';
 $uploadWritable = is_dir($uploadDir) && is_writable($uploadDir);
 ?>

@@ -1,8 +1,5 @@
 <?php
-// ============================================================
-// api_usuario.php — API central del usuario (todo en uno)
-// Compatible con InfinityFree — sin fetch a subcarpetas
-// ============================================================
+
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
@@ -18,7 +15,6 @@ $db     = getDB();
 $uid    = (int)$_SESSION['usuario_id'];
 $action = $_GET['action'] ?? 'perfil';
 
-// ── PERFIL COMPLETO + BADGES ────────────────────────────────
 if ($action === 'perfil') {
     $stmt = $db->prepare("
         SELECT u.id, u.nombre, u.apellido, u.correo, u.tipo, u.ciudad,
@@ -49,25 +45,21 @@ if ($action === 'perfil') {
     exit;
 }
 
-// ── BADGES DEL USUARIO ──────────────────────────────────────
 if ($action === 'badges') {
     $badges = getBadgesUsuario($db, $uid);
     echo json_encode(['ok'=>true, 'badges'=>$badges, 'html'=>renderBadges($badges)]);
     exit;
 }
 
-// ── NOTIFICACIONES ──────────────────────────────────────────
 if ($action === 'notificaciones') {
     $notifs = [];
 
-    // Mensajes no leídos
     try {
         $msgs = $db->prepare("SELECT COUNT(*) FROM mensajes WHERE para_usuario = ? AND leido = 0");
         $msgs->execute([$uid]);
         $notifs['mensajes_noLeidos'] = (int)$msgs->fetchColumn();
     } catch(Exception $e) { $notifs['mensajes_noLeidos'] = 0; }
 
-    // Estado verificación
     try {
         $verif = $db->prepare("SELECT estado, nota_admin FROM verificaciones WHERE usuario_id = ? ORDER BY creado_en DESC LIMIT 1");
         $verif->execute([$uid]);
@@ -76,7 +68,6 @@ if ($action === 'notificaciones') {
         $notifs['verificacion_nota']   = $vRow['nota_admin'] ?? null;
     } catch(Exception $e) { $notifs['verificacion_estado'] = null; }
 
-    // Badges nuevos (todos los actuales)
     $notifs['badges'] = getBadgesUsuario($db, $uid);
     $notifs['total_badges'] = count($notifs['badges']);
 

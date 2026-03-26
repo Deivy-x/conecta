@@ -1,8 +1,5 @@
 <?php
-/**
- * convocatorias.php — Convocatorias públicas para el index
- * Va en la raíz del proyecto (junto a index.html)
- */
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
@@ -57,6 +54,6 @@ try {
     echo json_encode($rows);
 
 } catch (Exception $e) {
-    // Array vacío → el JS usa los datos de ejemplo
+    
     echo json_encode([]);
 }

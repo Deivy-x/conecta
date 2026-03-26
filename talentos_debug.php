@@ -1,8 +1,5 @@
 <?php
-// ============================================================
-// talentos.php — Carga usuarios de BD + talentos demo
-// ============================================================
-// BUILD: v20260320001155
+
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
@@ -11,40 +8,31 @@ header("X-Accel-Expires: 0");
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// ── Detectar categoría automáticamente ──────────────────────
 function detectarCategoria($profesion, $skills)
 {
   $texto = strtolower($profesion . ' ' . $skills);
 
-  // SALUD (primero para evitar falsos positivos con "auxilios")
   if (preg_match('/(médic|medico|médica|médico|enferm|enfermero|enfermera|hospital|clínic|clinica|odontolog|odontólogo|farmaceut|farmacéutico|nutricion|nutricionista|fisioterapia|fisioterapeuta|optometr|veterinar|veterinario|cirujano|radiólog|laboratorio|auxiliar de salud|promotor de salud|paramédico|camillero|bacteriólog|microbiólog|psiquiatra|psiquiatría|neurolog|pediatr|pediatra|ginecólog|cardiólog|dermatólog|traumatólog|ortopedista|urólog|oncólog|anestesiólog|intensivista|medicina|salud pública|epidemiolog|salud comunitaria|auxiliar dental|higienista oral|técnico dental|protésico|audiólog|fonoaudiólog|terapia física|terapia respiratoria|oxigenoterapia|vacunador|salud ocupacional|medicina laboral|primeros auxilios|cruz roja|bombero paramédico)\b/i', $texto))
     return 'salud';
 
-  // EDUCACIÓN (antes de música para capturar psicólogo)
   if (preg_match('/(docente|profesor|profe|tutor|tutoría|educaci|licenciado|maestro|enseñanza|colegio|escuela|psicólog|psicolog|psicología|orientador|pedagog|pedagogía|capacitador|instructor|formador|coach educativo|universitario|académico|rector|coordinador académico|director escolar|educador|educadora|auxiliar pedagógico|monitor|catedrático|investigador|ciencias|matemática|física|química|biología|historia|geografía|inglés|español|literatura|filosofía|educación física|preescolar|primera infancia|jardín infantil|guardería|parvularia|fonoaudiología|terapia del lenguaje|logopeda|psicopedagog|educación especial|estimulación temprana|ludoteca|animador sociocultural|orientación vocacional|consejería|bienestar estudiantil|trabajo social escolar|desarrollo infantil)\b/i', $texto))
     return 'educacion';
 
-  // TECNOLOGÍA
   if (preg_match('/(sistem|software|programador|programadora|web developer|desarrollador|desarrolladora|php|javascript|typescript|react|angular|vue|node|python|java|kotlin|swift|sql|mysql|mongodb|tecnolog|informátic|computaci|redes|soporte ti|cctv|windows server|linux|android developer|aplicaciones móviles|datos|base de datos|ciberseguridad|devops|cloud|aws|azure|backend|frontend|fullstack|api rest|git|docker|kubernetes|machine learning|inteligencia artificial|scrum|agile|wordpress developer|shopify|ecommerce técnico|hacker ético|pentesting|firewall|servidor|infraestructura|virtualización|blockchain|criptomonedas|realidad virtual|realidad aumentada|power bi|tableau|analista de datos|ciencia de datos|robótica|electrónica digital|automatización|iot|arduino|raspberry|telecomunicaciones|ingeniero sistemas|ingeniero software|ingeniero electrónico|técnico en sistemas|helpdesk)\b/i', $texto))
     return 'tecnologia';
 
-  // MÚSICA & DJ
   if (preg_match('/(dj|disc jockey|músico|musico|musica|música|cantante|cantautor|productor musical|chirimía|chirimia|currulao|salsa|reggaeton|reggaetón|vallenato|artista musical|banda musical|grupo musical|locutor|locutora|saxofonista|saxofón|saxofon|trompetista|trompeta|guitarrista|guitarra|baterista|batería|bateria|pianista|piano|violinista|violín|bajista|bajo|percusionista|percusión|percusion|acordeonista|acordeón|flautista|flauta|clarinetista|clarinete|compositor|compositora|coro|solista|intérprete|interprete|urbano|hip hop|champeta|porro|cumbia|marimba|afrobeat|electrónica|techno|house|reggae|merengue|bachata|bolero|tango|rock|pop|jazz|blues|soul|funk|gospel|coral|director musical|arreglista|ingeniero de sonido|sonidista|mezclador|karaoke|música en vivo|orquesta|mariachi|ensamble|cuarteto|booking artístico|manager artístico|promotor musical|show musical|animador de eventos)\b/i', $texto))
     return 'musica';
 
-  // ARTE & DISEÑO
   if (preg_match('/(diseñador|diseñadora|diseño gráfico|gráfic|ilustrador|ilustradora|ilustracion|ilustración|fotógrafo|fotógrafa|fotografía|videógrafo|videógrafa|videografía|creativo|creativa|branding|ux designer|ui designer|figma|photoshop|illustrator|after effects|premiere|indesign|corel draw|animador|animación|motion graphics|concept art|pintor|pintora|pintura|escultor|escultura|ceramista|cerámica|artesano|artesana|artesanía|caricaturista|tatuador|tatuadora|maquillador|maquilladora|estilista|modista|moda|fashion|diseño de modas|arquitecto|arquitecta|arquitectura|interiorismo|decorador|decoradora|diseño interior|render|autocad|sketchup|revit|modelado 3d|3d artist|diseño web|editor de video|edición de video|fotografía de bodas|retoque fotográfico|lightroom|cinematografía|producción audiovisual|director de arte|colorista|storyboard|cómic|manga|lettering|tipografía|serigrafía|rotulista|graffiti|muralista|street art|arte digital|nft|contenido visual|creador de contenido)\b/i', $texto))
     return 'arte';
 
-  // ADMINISTRATIVO
   if (preg_match('/(administrador|administradora|contabilidad|contador|contadora|financiero|financiera|recursos humanos|rrhh|secretaria|secretario|gerente|coordinador|coordinadora|asistente administrativo|auxiliar administrativo|recepcionista|atención al cliente|atencion al cliente|vendedor|vendedora|mercadeo|marketing|publicidad|logística|logistica|compras|inventario|facturación|tesorero|tesorera|auditor|auditora|revisor fiscal|economista|economía|comercio|negocios|administración|gestión empresarial|emprendedor|emprendedora|consultor|consultora|asesor comercial|asesora comercial|asesor financiero|analista|planeación|presupuesto|costos|cartera|cobros|pagos|nómina|nomina|talento humano|bienestar laboral|relaciones laborales|abogado laboral|contratos|licitaciones|compras públicas|outsourcing|community manager|social media|redes sociales|marketing digital|comercio electrónico|importación|exportación|comercio exterior|aduana|agente aduanal|supply chain|cadena de suministro|operaciones|gestión de calidad|call center)\b/i', $texto))
     return 'administrativo';
 
-  // GASTRONOMÍA
   if (preg_match('/(cocinero|cocinera|chef|gastronomía|gastronomia|repostero|repostería|panadero|panadería|bartender|barman|barmaid|mesero|mesera|catering|restaurante|pastelero|pastelería|heladero|heladería|cafetero|barista|sommelier|cocina|chef ejecutivo|sous chef|chef pastelero|chef panadero|cocina internacional|cocina colombiana|cocina típica|cocina fusión|cocina vegana|cocina vegetariana|comida saludable|preparación de alimentos|manipulación de alimentos|bromatología|cocina molecular|técnicas culinarias|carnicero|pescadero|chocolatero|bombonero|jugos naturales|smoothies|cocteles|coctelería|mixología|enología|cervecería artesanal|productor de alimentos|galletero|artesano de alimentos)\b/i', $texto))
     return 'gastronomia';
 
-  // TÉCNICO & OFICIOS
   if (preg_match('/(electricista|plomero|plomería|mecánico|mecanico|técnico en|soldador|soldadura|construccion|construcción|albañil|albañilería|carpintero|carpintería|ebanista|conductor|chofer|operario|operador|fontanero|refrigeración|refrigeracion|aire acondicionado|cerrajero|cerrajería|pintor de obra|mantenimiento|instalador|instalaciones eléctricas|instalaciones hidráulicas|herrero|herrería|tornero|fresador|maquinaria pesada|excavadora|grúa|montacargas|camionero|tractorista|bodeguero|almacenista|mensajero|domiciliario|repartidor|vigilante|guardia de seguridad|escolta|portero|conserje|servicios generales|jardinero|jardinería|paisajista|fumigador|control de plagas|lavandero|tintorero)\b/i', $texto))
     return 'tecnico';
 
@@ -57,10 +45,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     require_once __DIR__ . '/Php/db.php';
     require_once __DIR__ . '/Php/badges_helper.php';
     $db = getDB();
-    // Traer todos los candidatos activos con perfil visible
-    // Usamos subquery con id MAX para garantizar UN solo registro por usuario
-    // Subquery con MAX(id) garantiza UN solo registro por usuario,
-    // sin depender de GROUP BY ni UNIQUE en la BD
+    
     $stmt = $db->query("
             SELECT u.id, u.nombre, u.apellido, u.ciudad, u.foto,
                    u.verificado, u.badges_custom,
@@ -78,7 +63,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         ");
     $rawTalentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Dedup en PHP como failsafe adicional
     $vistos = [];
     $dbTalentos = [];
     foreach ($rawTalentos as $row) {
@@ -88,11 +72,10 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         }
     }
 
-    // Agregar badges a cada talento
     foreach ($dbTalentos as &$t) {
       $badges = getBadgesUsuario($db, (int) $t['id']);
       $t['badges'] = $badges;
-      // Excluir badges tipo verificacion del inline (ya aparecen como etiqueta principal)
+      
       $badgesExtras = array_values(array_filter($badges, fn($b) => ($b['tipo'] ?? '') !== 'verificacion'));
       $t['badges_html'] = renderBadges($badgesExtras, 'small');
       $t['tiene_verificado'] = (bool) $t['verificado'] || tieneBadge($badges, 'Verificado') || tieneBadge($badges, 'Usuario Verificado');
@@ -133,7 +116,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       overflow-x: hidden;
     }
 
-    /* NAVBAR */
     .navbar {
       position: fixed;
       top: 0;
@@ -369,7 +351,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       color: white;
     }
 
-    /* HERO */
     .hero-talento {
       padding: 150px 48px 90px;
       background: linear-gradient(135deg, #0f172a 0%, #1a2e1a 60%, #0f172a 100%);
@@ -425,7 +406,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       line-height: 1.6;
     }
 
-    /* SEARCH BAR EN HERO */
     .talent-search {
       display: flex;
       align-items: center;
@@ -508,7 +488,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       border-color: #4ade80;
     }
 
-    /* STATS */
     .stats-band {
       background: white;
       display: grid;
@@ -532,7 +511,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       font-weight: 500;
     }
 
-    /* CATEGORÍAS */
     .categorias {
       padding: 80px 48px;
       background: #f9fafb;
@@ -600,7 +578,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       color: #1f9d55;
     }
 
-    /* FILTROS TIPO */
     .filtros-tipo {
       display: flex;
       gap: 10px;
@@ -629,7 +606,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       color: white;
     }
 
-    /* TALENTOS SECTION */
     .talentos-section {
       padding: 80px 48px;
       background: white;
@@ -662,7 +638,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       margin-top: 32px;
     }
 
-    /* TALENTO CARD */
     .talento-card {
       background: #fafafa;
       border: 1px solid rgba(0, 0, 0, 0.07);
@@ -783,7 +758,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       color: white;
     }
 
-    /* NO RESULTS */
     .no-results {
       grid-column: 1/-1;
       text-align: center;
@@ -797,7 +771,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       margin-bottom: 14px;
     }
 
-    /* MODAL PERFIL */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -959,7 +932,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       transform: translateY(-2px);
     }
 
-    /* DJ SECTION */
     .dj-section {
       padding: 90px 48px;
       background: #0f172a;
@@ -1097,7 +1069,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       margin-top: 3px;
     }
 
-    /* CTA */
     .cta-section {
       padding: 90px 48px;
       background: linear-gradient(135deg, #0f172a, #1a2e1a);
@@ -1142,7 +1113,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       color: #2ecc71;
     }
 
-    /* FOOTER */
     footer {
       background: #0f172a;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -1156,7 +1126,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       color: #2ecc71;
     }
 
-    /* RESPONSIVE */
     @media(max-width:768px) {
       .navbar {
         padding: 0 20px;
@@ -1228,7 +1197,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       }
     }
 
-    /* ── SCROLL REVEAL BIDIRECCIONAL ── */
     .reveal {
       opacity: 0;
       transform: translateY(36px);
@@ -1240,7 +1208,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       transform: translateY(0);
     }
 
-    /* ── RESPONSIVE HERO COMPLETO 2026 ── */
     @media (max-width: 1200px) {
       .hero-talento h1 {
         font-size: 48px;
@@ -1518,7 +1485,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
           $ski = htmlspecialchars($t['skills'] ?: '');
           $grd = htmlspecialchars($t['avatar_color'] ?: 'linear-gradient(135deg,#1f9d55,#2ecc71)');
           $arr = array_filter(array_map('trim', explode(',', $t['skills'] ?? '')));
-          // Badge principal a mostrar
+          
           $badgePrincipalLabel = '';
           if ($t['tiene_top'])
             $badgePrincipalLabel = '<span class="badge-t" style="background:#ff444422;color:#ff4444;border:1px solid #ff444455">👑 Top</span>';
@@ -1664,12 +1631,11 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
   </footer>
 
   <script>
-    // NAVBAR SCROLL
+    
     window.addEventListener('scroll', () => {
       document.getElementById('navbar').classList.toggle('abajo', window.scrollY > 50);
     });
 
-    // HAMBURGER
     const ham = document.getElementById('hamburger');
     const mob = document.getElementById('mobileMenu');
     ham.addEventListener('click', () => { ham.classList.toggle('open'); mob.classList.toggle('open'); });
@@ -1677,10 +1643,8 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       if (!ham.contains(e.target) && !mob.contains(e.target)) { ham.classList.remove('open'); mob.classList.remove('open'); }
     });
 
-    // ALL CARDS
     const allCards = Array.from(document.querySelectorAll('.talento-card'));
 
-    // Calcular conteos por categoría dinámicamente
     (function () {
       const map = { tecnologia: 'cnt-tec', arte: 'cnt-art', musica: 'cnt-mus', educacion: 'cnt-edu', salud: 'cnt-sal', administrativo: 'cnt-adm' };
       Object.entries(map).forEach(([cat, id]) => {
@@ -1721,7 +1685,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       nr.style.display = visible === 0 ? '' : 'none';
     }
 
-    // CATEGORÍAS
     document.querySelectorAll('.cat-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('activa'));
@@ -1732,7 +1695,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       });
     });
 
-    // FILTROS TIPO
     document.querySelectorAll('.filtro-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
@@ -1742,7 +1704,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       });
     });
 
-    // BÚSQUEDA
     function buscar() {
       const nombre = document.getElementById('searchNombre').value.trim().toLowerCase();
       const ubicacion = document.getElementById('searchUbicacion').value.trim().toLowerCase();
@@ -1754,7 +1715,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     document.getElementById('searchNombre').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
     document.getElementById('searchUbicacion').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
 
-    // MODAL
     const overlay = document.getElementById('modalOverlay');
     document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
@@ -1775,7 +1735,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       document.getElementById('mProfesion').textContent = card.dataset.profesion || '';
       document.getElementById('mUbicacion').textContent = '📍 ' + (card.dataset.ubicacion || '');
       document.getElementById('mDesc').textContent = card.dataset.desc || '';
-      // badge
+      
       const badge = card.querySelector('.badge-t');
       const mBadge = document.getElementById('mBadge');
       if (badge) {
@@ -1784,7 +1744,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         mBadge.style.background = badge.classList.contains('badge-artista') ? '#f3e8ff' : badge.classList.contains('badge-disponible') ? '#fef9c3' : '#edfaf3';
         mBadge.style.color = badge.classList.contains('badge-artista') ? '#7c3aed' : badge.classList.contains('badge-disponible') ? '#b45309' : '#1f9d55';
       } else { mBadge.textContent = ''; }
-      // tags
+      
       const skills = (card.dataset.skills || '').split(',');
       document.getElementById('mTags').innerHTML = skills.map(s => `<span class="tag">${s.trim()}</span>`).join('');
       overlay.classList.add('open');
@@ -1794,7 +1754,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       card.querySelector('.btn-perfil').addEventListener('click', () => abrirModal(card));
     });
 
-    // Scroll reveal BIDIRECCIONAL (cards + .reveal elements)
     const observer = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
@@ -1813,7 +1772,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       c.style.opacity = '0'; c.style.transform = 'translateY(24px)'; c.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
       observer.observe(c);
     });
-    // Also observe .reveal elements
+    
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   </script>
 </body>

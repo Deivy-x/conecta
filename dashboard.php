@@ -1,8 +1,5 @@
 <?php
-// ============================================================
-// dashboard.php — Panel unificado QuibdóConecta v3
-// 4 tipos: candidato | empresa | negocio (cc/emp) | servicio
-// ============================================================
+
 session_start();
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
@@ -23,7 +20,6 @@ if (!$usuario) {
   exit;
 }
 
-// ── ACCIONES POST ──────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   header('Content-Type: application/json');
   $action = $_POST['_action'] ?? '';
@@ -43,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db->prepare("UPDATE usuarios SET nombre=?,apellido=?,telefono=?,ciudad=? WHERE id=?")
       ->execute([$nombre, $apellido, $telefono, $ciudad, $usuario['id']]);
     $_SESSION['usuario_nombre'] = $nombre;
-    // Actualizar talento_perfil si se enviaron campos de perfil profesional
+    
     if ($profesion !== '' || $bio !== '' || $skills !== '') {
       $tpChk = $db->prepare("SELECT id FROM talento_perfil WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
       $tpChk->execute([$usuario['id']]);
@@ -59,32 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode(['ok' => true, 'nombre' => $nombre, 'apellido' => $apellido, 'ciudad' => $ciudad, 'profesion' => $profesion]);
     exit;
   }
-  /* 
-      if ($action === 'subir_foto') {
-          if (!isset($_FILES['foto']) || $_FILES['foto']['error'] !== 0) {
-              echo json_encode(['ok'=>false,'msg'=>'No se recibió imagen.']); exit;
-          }
-          $ext = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
-          if (!in_array($ext, ['jpg','jpeg','png','webp'])) {
-              echo json_encode(['ok'=>false,'msg'=>'Solo JPG, PNG o WEBP.']); exit;
-          }
-          if ($_FILES['foto']['size'] > 2*1024*1024) {
-              echo json_encode(['ok'=>false,'msg'=>'Máximo 2 MB.']); exit;
-          }
-          $dir = __DIR__ . '/uploads/fotos/';
-          if (!is_dir($dir)) mkdir($dir, 0755, true);
-          $oldFoto = $usuario['foto'] ?? '';
-          if ($oldFoto && file_exists($dir.$oldFoto)) @unlink($dir.$oldFoto);
-          $fn = 'u'.$usuario['id'].'_'.time().'.'.$ext;
-          if (move_uploaded_file($_FILES['foto']['tmp_name'], $dir.$fn)) {
-              $db->prepare("UPDATE usuarios SET foto=? WHERE id=?")->execute([$fn, $usuario['id']]);
-              echo json_encode(['ok'=>true,'foto'=>'uploads/fotos/'.$fn]);
-          } else {
-              echo json_encode(['ok'=>false,'msg'=>'Error al guardar imagen.']);
-          }
-          exit;
-      } */
-
+  
   if ($action === 'subir_foto') {
     if (!isset($_FILES['foto']) || $_FILES['foto']['error'] !== 0) {
       echo json_encode(['ok' => false, 'msg' => 'No se recibió imagen.']);
@@ -111,14 +82,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── ELIMINAR FOTO DE PERFIL ───────────────────────────────
   if ($action === 'eliminar_foto') {
     $db->prepare("UPDATE usuarios SET foto='' WHERE id=?")->execute([$usuario['id']]);
     echo json_encode(['ok' => true]);
     exit;
   }
 
-  // ── SUBIR BANNER ─────────────────────────────────────────
   if ($action === 'subir_banner') {
     if (!isset($_FILES['banner']) || $_FILES['banner']['error'] !== 0) {
       echo json_encode(['ok' => false, 'msg' => 'No se recibió imagen.']); exit;
@@ -142,7 +111,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── ELIMINAR BANNER ──────────────────────────────────────
   if ($action === 'eliminar_banner') {
     try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
     $db->prepare("UPDATE usuarios SET banner='' WHERE id=?")->execute([$usuario['id']]);
@@ -150,7 +118,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── ELIMINAR CUENTA ───────────────────────────────────────
   if ($action === 'eliminar_cuenta') {
     $confirmar = trim($_POST['confirmar'] ?? '');
     if ($confirmar !== $usuario['correo']) {
@@ -158,20 +125,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       exit;
     }
     try {
-      // Borrar tablas sin CASCADE
+      
       foreach (['perfiles_empresa', 'talento_galeria', 'talento_educacion', 'talento_certificaciones', 'talento_experiencia', 'perfil_vistas', 'sesiones', 'negocios_locales'] as $tabla) {
         try {
           $db->prepare("DELETE FROM $tabla WHERE usuario_id=?")->execute([$usuario['id']]);
         } catch (Exception $e) {
         }
       }
-      // Borrar foto de disco
+      
       if (!empty($usuario['foto']) && !str_starts_with($usuario['foto'], 'http')) {
         @unlink(__DIR__ . '/uploads/fotos/' . $usuario['foto']);
       }
-      // Borrar usuario (CASCADE limpia empleos, mensajes, verificaciones, talento_perfil, admin_roles)
+      
       $db->prepare("DELETE FROM usuarios WHERE id=?")->execute([$usuario['id']]);
-      // Destruir sesión
+      
       $_SESSION = [];
       session_destroy();
       echo json_encode(['ok' => true, 'msg' => 'Cuenta eliminada correctamente.']);
@@ -182,15 +149,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   if ($action === 'subir_evidencia') {
-    // Verificar límite según badge Selva Verde
+    
     if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
     if (file_exists(__DIR__ . '/Php/badges_helper.php')) require_once __DIR__ . '/Php/badges_helper.php';
     $badgesU = function_exists('getBadgesUsuario') ? getBadgesUsuario($db, $usuario['id']) : [];
-    // Usar planes_helper si está disponible, fallback a badge Selva Verde
+    
     $tienePortafolio = function_exists('tieneBeneficio')
         ? tieneBeneficio($db, $usuario['id'], 'portafolio')
         : (function_exists('tieneBadge') && tieneBadge($badgesU, 'Selva Verde'));
-    $tieneSelvaVerde = $tienePortafolio; // alias para compatibilidad
+    $tieneSelvaVerde = $tienePortafolio; 
 
     try {
       $db->exec("CREATE TABLE IF NOT EXISTS talento_galeria (
@@ -209,7 +176,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (Exception $e) {
     }
 
-    // Contar archivos actuales
     $contStmt = $db->prepare("SELECT COUNT(*) FROM talento_galeria WHERE usuario_id=? AND activo=1");
     $contStmt->execute([$usuario['id']]);
     $totalActual = (int) $contStmt->fetchColumn();
@@ -229,7 +195,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $titulo = trim($_POST['titulo'] ?? '');
     $desc = trim($_POST['descripcion'] ?? '');
 
-    // Opción A: URL de video (YouTube/Vimeo)
     if ($tipoMedia === 'video_url') {
       $urlVideo = trim($_POST['url_video'] ?? '');
       if (!$urlVideo) {
@@ -243,7 +208,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       exit;
     }
 
-    // Opción B: archivo subido (foto o video)
     if (!isset($_FILES['archivo']) || $_FILES['archivo']['error'] !== 0) {
       echo json_encode(['ok' => false, 'msg' => 'No se recibió archivo.']);
       exit;
@@ -257,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       echo json_encode(['ok' => false, 'msg' => 'Formato no permitido. Usa JPG, PNG, MP4 o MOV.']);
       exit;
     }
-    $maxSize = $esVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB video, 5MB foto
+    $maxSize = $esVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024; 
     if ($_FILES['archivo']['size'] > $maxSize) {
       echo json_encode(['ok' => false, 'msg' => $esVideo ? 'Máximo 50 MB para videos.' : 'Máximo 5 MB para fotos.']);
       exit;
@@ -279,7 +243,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── ELIMINAR EVIDENCIA ────────────────────────────────────
   if ($action === 'eliminar_evidencia') {
     $gid = (int) ($_POST['galeria_id'] ?? 0);
     if (!$gid) {
@@ -319,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 )");
         $seccion = htmlspecialchars($_POST['seccion'] ?? 'talentos');
         $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-        // Evitar spam: max 1 vista por IP por usuario por hora
+        
         $ck = $db->prepare("SELECT COUNT(*) FROM perfil_vistas WHERE usuario_id=? AND ip=? AND creado_en >= DATE_SUB(NOW(), INTERVAL 1 HOUR)");
         $ck->execute([$uid, $ip]);
         if ((int) $ck->fetchColumn() === 0) {
@@ -337,8 +300,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-
-  // ── GUARDAR EDUCACIÓN ─────────────────────────────────────
   if ($action === 'guardar_educacion') {
     try {
       $db->exec("CREATE TABLE IF NOT EXISTS talento_educacion (
@@ -370,7 +331,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── GUARDAR CERTIFICACIONES ──────────────────────────────
   if ($action === 'guardar_certificaciones') {
     try {
       $db->exec("CREATE TABLE IF NOT EXISTS talento_certificaciones (
@@ -403,7 +363,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── SOLICITAR VACANTE ─────────────────────────────────────
   if ($action === 'solicitar_vacante') {
     try {
       if ($usuario['tipo'] !== 'candidato') {
@@ -415,7 +374,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['ok' => false, 'msg' => 'Vacante no válida.']);
         exit;
       }
-      // Crear tabla si no existe
+      
       $db->exec("CREATE TABLE IF NOT EXISTS solicitudes_empleo (
         id INT AUTO_INCREMENT PRIMARY KEY,
         empleo_id INT NOT NULL,
@@ -427,7 +386,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INDEX idx_empleo (empleo_id),
         INDEX idx_candidato (candidato_id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-      // Verificar que la vacante exista y esté activa
+      
       $chkV = $db->prepare("SELECT id, titulo FROM empleos WHERE id=? AND activo=1 LIMIT 1");
       $chkV->execute([$empleo_id]);
       $vacante = $chkV->fetch();
@@ -435,7 +394,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['ok' => false, 'msg' => 'La vacante no está disponible.']);
         exit;
       }
-      // Verificar que no haya aplicado antes
+      
       $chkS = $db->prepare("SELECT id FROM solicitudes_empleo WHERE empleo_id=? AND candidato_id=?");
       $chkS->execute([$empleo_id, $usuario['id']]);
       if ($chkS->fetch()) {
@@ -452,7 +411,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── VER MIS SOLICITUDES ────────────────────────────────────
   if ($action === 'mis_solicitudes') {
     try {
       $db->exec("CREATE TABLE IF NOT EXISTS solicitudes_empleo (
@@ -486,7 +444,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // ── GUARDAR APTITUDES EXTRA ───────────────────────────────
   if ($action === 'guardar_aptitudes_extra') {
     try {
       $bland = substr(trim($_POST['aptitudes_bland'] ?? ''), 0, 500);
@@ -515,10 +472,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   exit;
 }
 
-// ── CARGAR DATOS SEGÚN TIPO ───────────────────────────────
 $tipo = $usuario['tipo'] ?? 'candidato';
 
-// Talento/servicio (candidatos y artistas)
 $tp = $db->prepare("SELECT * FROM talento_perfil WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
 $tp->execute([$usuario['id']]);
 $talento = $tp->fetch() ?: ['profesion' => '', 'bio' => '', 'skills' => '', 'visible' => 0, 'visible_admin' => 1, 'generos' => '', 'precio_desde' => null, 'tipo_servicio' => '', 'calificacion' => 0];
@@ -529,7 +484,6 @@ function getYoutubeId($url)
   return $m[1] ?? '';
 }
 
-// Galería de evidencias
 $galeriaItems = [];
 $galeriaTotal = 0;
 try {
@@ -555,7 +509,6 @@ try {
   $galeriaTotal = 0;
 }
 
-// Perfil empresa
 $ep = null;
 if ($tipo === 'empresa') {
   $epStmt = $db->prepare("SELECT * FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
@@ -563,7 +516,6 @@ if ($tipo === 'empresa') {
   $ep = $epStmt->fetch() ?: [];
 }
 
-// Perfil negocio
 $np = null;
 if ($tipo === 'negocio' || $tipo === 'empresa') {
   try {
@@ -575,7 +527,6 @@ if ($tipo === 'negocio' || $tipo === 'empresa') {
   }
 }
 
-// Extras del registro (nota_admin = JSON)
 $extras = [];
 try {
   $solStmt = $db->prepare("SELECT nota_admin FROM solicitudes_ingreso WHERE correo=? ORDER BY creado_en DESC LIMIT 1");
@@ -588,8 +539,7 @@ try {
   $extras = [];
 }
 
-// Detectar subtipo desde extras
-$subTipo = ''; // dj, fotografo, negocio_cc, negocio_emp, etc.
+$subTipo = ''; 
 if (!empty($extras['tipo_negocio_reg']))
   $subTipo = $extras['tipo_negocio_reg'] === 'cc' ? 'negocio_cc' : 'negocio_emp';
 if (!empty($extras['profesion_tipo']) && $tipo === 'candidato') {
@@ -607,12 +557,10 @@ $tienePremium = tieneBadge($badgesUsuario, 'Premium');
 $tieneTop = tieneBadge($badgesUsuario, 'Top');
 $tieneDestacado = tieneBadge($badgesUsuario, 'Destacado') || (int) ($talento['destacado'] ?? 0);
 
-// Chat
 $nrChat = $db->prepare("SELECT COUNT(*) FROM mensajes WHERE para_usuario=? AND leido=0");
 $nrChat->execute([$usuario['id']]);
 $chatNoLeidos = (int) $nrChat->fetchColumn();
 
-// Vistas al perfil
 $vistasTotal = 0;
 $vistas7dias = 0;
 try {
@@ -637,7 +585,6 @@ try {
   $vistas7dias = 0;
 }
 
-// ── Plan del usuario y uso mensual ───────────────────────────
 $datosPlan  = [];
 $planActual = 'semilla';
 $maxVisitantes = 0;
@@ -647,7 +594,6 @@ if (function_exists('getDatosPlan')) {
   $maxVisitantes = $datosPlan['config']['visitantes'] ?? 0;
 }
 
-// ── Quién me visitó (limitado por plan) ──────────────────────
 $visitantesRecientes = [];
 if ($maxVisitantes !== 0) {
   try {
@@ -668,14 +614,12 @@ if ($maxVisitantes !== 0) {
   }
 }
 
-// Estado verificación
 $stmtV = $db->prepare("SELECT estado,nota_rechazo FROM verificaciones WHERE usuario_id=? ORDER BY creado_en DESC LIMIT 1");
 $stmtV->execute([$usuario['id']]);
 $verifDoc = $stmtV->fetch();
 $estadoVerif = $verifDoc ? $verifDoc['estado'] : null;
 $notaRechazo = $verifDoc ? ($verifDoc['nota_rechazo'] ?? '') : '';
 
-// Vacantes (empresa)
 $vacantesActivas = 0;
 $historialVacantes = [];
 if ($tipo === 'empresa') {
@@ -690,7 +634,6 @@ if ($tipo === 'empresa') {
   }
 }
 
-// Vacantes disponibles para candidatos (desde la BD)
 $vacantesDisponibles = [];
 if ($tipo === 'candidato' || $subTipo === 'servicio') {
   try {
@@ -720,12 +663,10 @@ if ($tipo === 'candidato' || $subTipo === 'servicio') {
   }
 }
 
-// Datos
-/* $fotoUrl       = !empty($usuario['foto']) ? 'uploads/fotos/'.htmlspecialchars($usuario['foto']) : ''; */
 $fotoUrl = !empty($usuario['foto']) ? (str_starts_with($usuario['foto'], 'http') ? htmlspecialchars($usuario['foto']) : 'uploads/fotos/' . htmlspecialchars($usuario['foto'])) : '';
-// Auto-migrar columna banner si no existe
+
 try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
-// Releer usuario para incluir banner
+
 $usuario = $db->prepare("SELECT * FROM usuarios WHERE id=?"); $usuario->execute([$_SESSION['usuario_id']]); $usuario = $usuario->fetch();
 $bannerUrl = !empty($usuario['banner']) ? (str_starts_with($usuario['banner'], 'http') ? htmlspecialchars($usuario['banner']) : 'uploads/banners/' . htmlspecialchars($usuario['banner'])) : '';
 $inicial = strtoupper(mb_substr($usuario['nombre'], 0, 1));
@@ -735,14 +676,12 @@ $ciudad = htmlspecialchars($usuario['ciudad'] ?? '');
 $telefono = htmlspecialchars($usuario['telefono'] ?? '');
 $fechaRegistro = date('d \de F Y', strtotime($usuario['creado_en']));
 
-// Nombre de empresa/negocio
 $nombreEmpresa = htmlspecialchars($ep['nombre_empresa'] ?? $extras['nombre_negocio'] ?? $usuario['nombre'] ?? '');
 $nombreNegocio = htmlspecialchars($np['nombre_negocio'] ?? $extras['nombre_negocio'] ?? '');
 $sectorEmp = htmlspecialchars($ep['sector'] ?? $extras['sector'] ?? '');
 $catNeg = htmlspecialchars($np['categoria'] ?? $extras['categoria_neg'] ?? '');
 $profesionTipo = htmlspecialchars($extras['profesion_tipo'] ?? $talento['profesion'] ?? '');
 
-// Progreso perfil
 function calcPct(array $usuario, array $talento, string $tipo, array $extras): int
 {
   $base = ['nombre', 'correo', 'telefono', 'ciudad'];
@@ -767,7 +706,6 @@ function calcPct(array $usuario, array $talento, string $tipo, array $extras): i
 }
 $pct = calcPct($usuario, $talento, $tipo, $extras);
 
-// Color del tipo para el dashboard
 $tipoColors = [
   'candidato' => ['border' => 'var(--v3)', 'chip_bg' => 'rgba(39,168,85,.18)', 'chip_color' => 'var(--vlima)', 'label' => '👤 Candidato', 'deco' => '🌿'],
   'empresa' => ['border' => 'var(--r3)', 'chip_bg' => 'rgba(26,86,219,.18)', 'chip_color' => 'var(--rcielo)', 'label' => '🏢 Empresa', 'deco' => '🏢'],
@@ -842,7 +780,6 @@ if ($subTipo === 'servicio') {
       min-height: 100vh
     }
 
-    /* ── FRANJA TRICOLOR TOP ── */
     .franja-top {
       position: fixed;
       top: 0;
@@ -869,7 +806,6 @@ if ($subTipo === 'servicio') {
       background: var(--r3)
     }
 
-    /* ── NAVBAR ── */
     .navbar {
       position: sticky;
       top: 3px;
@@ -1114,7 +1050,6 @@ if ($subTipo === 'servicio') {
       border-color: rgba(231, 76, 60, .25)
     }
 
-    /* ── HERO ── */
     .hero {
       background:
         linear-gradient(160deg, rgba(4, 21, 11, .97) 0%, rgba(8, 24, 14, .92) 50%, rgba(0, 20, 60, .88) 100%),
@@ -1135,7 +1070,6 @@ if ($subTipo === 'servicio') {
       border-radius: 36px 36px 0 0
     }
 
-    /* Borde inferior tipo de usuario */
     .hero-tipo-borde {
       position: absolute;
       bottom: 35px;
@@ -1300,14 +1234,12 @@ if ($subTipo === 'servicio') {
       pointer-events: none
     }
 
-    /* ── CONTENIDO ── */
     .contenido {
       max-width: 1200px;
       margin: 0 auto;
       padding: 28px 36px 80px
     }
 
-    /* ── ALERTAS ── */
     .alerta {
       border-radius: 16px;
       padding: 14px 18px;
@@ -1399,7 +1331,6 @@ if ($subTipo === 'servicio') {
       color: white
     }
 
-    /* ── GRID ── */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -1414,7 +1345,6 @@ if ($subTipo === 'servicio') {
       grid-column: span 3
     }
 
-    /* ── CARD ── */
     .card {
       background: var(--card);
       border-radius: 20px;
@@ -1433,7 +1363,6 @@ if ($subTipo === 'servicio') {
       padding: 22px
     }
 
-    /* ── MINI MÉTRICAS ── */
     .mini {
       padding: 22px;
       display: flex;
@@ -1493,7 +1422,6 @@ if ($subTipo === 'servicio') {
       font-weight: 800
     }
 
-    /* ── ACCIONES RÁPIDAS ── */
     .ca-tit {
       font-size: 11px;
       font-weight: 800;
@@ -1561,7 +1489,6 @@ if ($subTipo === 'servicio') {
       white-space: nowrap
     }
 
-    /* ── EMPLEOS / TALENTOS LIST ── */
     .ce-head {
       display: flex;
       align-items: center;
@@ -1653,7 +1580,6 @@ if ($subTipo === 'servicio') {
       border: 1px solid rgba(163, 240, 181, .15)
     }
 
-    /* ── HISTORIAL VACANTES ── */
     .hist-item {
       display: flex;
       align-items: center;
@@ -1705,7 +1631,6 @@ if ($subTipo === 'servicio') {
       white-space: nowrap
     }
 
-    /* ── PERFIL CARD ── */
     .cp-head {
       display: flex;
       flex-direction: column;
@@ -1770,7 +1695,6 @@ if ($subTipo === 'servicio') {
       flex-shrink: 0
     }
 
-    /* Visibilidad toggle */
     .vis-row {
       display: flex;
       align-items: center;
@@ -1857,7 +1781,6 @@ if ($subTipo === 'servicio') {
       border: 1px solid rgba(245, 200, 0, .2)
     }
 
-    /* Progreso */
     .prog-w {
       padding: 0 22px 8px
     }
@@ -1885,7 +1808,6 @@ if ($subTipo === 'servicio') {
       transition: width 1s ease
     }
 
-    /* Botones */
     .btn-edit {
       margin: 14px 22px 22px;
       padding: 11px;
@@ -1933,7 +1855,6 @@ if ($subTipo === 'servicio') {
       border-color: rgba(163, 240, 181, .4)
     }
 
-    /* Actividad */
     .cact-tit {
       padding: 22px 22px 14px;
       font-size: 11px;
@@ -1991,7 +1912,6 @@ if ($subTipo === 'servicio') {
       margin-top: 1px
     }
 
-    /* Bandera mini en dashboard */
     .bandera-dash {
       width: 52px;
       height: 32px;
@@ -2030,7 +1950,6 @@ if ($subTipo === 'servicio') {
       pointer-events: none
     }
 
-    /* ── MODAL EDITAR ── */
     .modal-ov {
       display: none;
       position: fixed;
@@ -2216,7 +2135,6 @@ if ($subTipo === 'servicio') {
       transform: none
     }
 
-    /* Crop modal */
     .crop-modal {
       display: none;
       position: fixed;
@@ -2238,7 +2156,6 @@ if ($subTipo === 'servicio') {
       box-shadow: 0 20px 60px rgba(0, 0, 0, .5)
     }
 
-    /* ── SECCIONES DE PERFIL (Educación, Certificaciones, Aptitudes) ── */
     .psec {
       background: var(--card);
       border: 1px solid rgba(39, 168, 85, .18);
@@ -2461,7 +2378,6 @@ if ($subTipo === 'servicio') {
       color: var(--v2)
     }
 
-    /* Aptitudes */
     .apt-grupo {
       margin-bottom: 16px
     }
@@ -2501,7 +2417,6 @@ if ($subTipo === 'servicio') {
       font-size: 14px
     }
 
-    /* ── MODAL HOJA DE VIDA + PUBLICAR VACANTE ── */
     .hoja-modal-box {
       background: #fff;
       border: 1px solid var(--borde);
@@ -2678,7 +2593,6 @@ if ($subTipo === 'servicio') {
       width: 0%
     }
 
-    /* ── RESPONSIVE ── */
     @media(max-width:900px) {
       .grid {
         grid-template-columns: 1fr 1fr
@@ -2988,7 +2902,7 @@ if ($subTipo === 'servicio') {
           </div>
         </div>
 
-      <?php else: /* candidato */ ?>
+      <?php else:  ?>
         <div class="card mini">
           <div class="m-ico ig">📋</div>
           <div>
@@ -3070,7 +2984,7 @@ if ($subTipo === 'servicio') {
               <div class="ac-tit">Ver empleos</div>
               <div class="ac-desc">Vacantes del Chocó</div>
             </a>
-          <?php else: /* candidato */ ?>
+          <?php else:  ?>
             <a href="Empleo.html" class="ac">
               <div class="ac-ico">🔍</div>
               <div class="ac-tit">Buscar empleo</div>
@@ -3316,8 +3230,7 @@ if ($subTipo === 'servicio') {
           <div class="ce-list">
             <?php foreach ($historialVacantes as $v): ?>
               <?php
-              // activo=1 → Activa, activo=0 → Pendiente de aprobación o Cerrada
-              // Distinguimos: si fue creada hace menos de 72h y activo=0 → Pendiente
+              
               $horas = (time() - strtotime($v['creado_en'])) / 3600;
               $esPendiente = !$v['activo'] && $horas < 72;
               $estadoLabel = $v['activo']
@@ -3654,7 +3567,6 @@ if ($subTipo === 'servicio') {
         <?php endif; ?>
       </div>
     <?php endif; ?>
-
 
     <?php if ($tipo === 'candidato' || $subTipo === 'servicio' || !empty($talento['precio_desde'])): ?>
       <!-- ══ SECCIONES DE PERFIL EXTENDIDO ══════════════════════ -->
@@ -4155,12 +4067,11 @@ if ($subTipo === 'servicio') {
   </div>
 
   <script>
-    // ── MODAL ──
+    
     function abrirModal() { document.getElementById('modalEditar').classList.add('open') }
     function cerrarModal() { document.getElementById('modalEditar').classList.remove('open') }
     document.getElementById('modalEditar').addEventListener('click', e => { if (e.target === document.getElementById('modalEditar')) cerrarModal() });
 
-    // ── ELIMINAR CUENTA ──
     function abrirEliminarCuenta() {
       document.getElementById('modalEliminarCuenta').style.display = 'flex';
       document.getElementById('inputConfirmarCuenta').value = '';
@@ -4209,7 +4120,7 @@ if ($subTipo === 'servicio') {
     });
 
     <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
-      // ── PUBLICAR VACANTE ─────────────────────────────────────
+      
       function abrirPublicarVacante() { document.getElementById('modalPublicarVacante').classList.add('open'); vacProgress(); }
       function cerrarPublicarVacante() { document.getElementById('modalPublicarVacante').classList.remove('open'); }
       document.getElementById('modalPublicarVacante').addEventListener('click', e => { if (e.target === document.getElementById('modalPublicarVacante')) cerrarPublicarVacante(); });
@@ -4242,7 +4153,7 @@ if ($subTipo === 'servicio') {
     <?php endif; ?>
 
     <?php if ($tipo !== 'empresa' && $tipo !== 'negocio'): ?>
-      // ── HOJA DE VIDA ─────────────────────────────────────────
+      
       function abrirHoja() { document.getElementById('modalHoja').classList.add('open'); hojaProgress(); }
       function cerrarHoja() { document.getElementById('modalHoja').classList.remove('open'); }
       document.getElementById('modalHoja').addEventListener('click', e => { if (e.target === document.getElementById('modalHoja')) cerrarHoja(); });
@@ -4274,7 +4185,6 @@ if ($subTipo === 'servicio') {
       }
     <?php endif; ?>
 
-    // Barra de progreso animada
     window.addEventListener('load', () => {
       const b = document.getElementById('progBar');
       if (b) { const w = b.style.width; b.style.width = '0%'; setTimeout(() => { b.style.width = '<?= $pct ?>%' }, 400) }
@@ -4282,7 +4192,6 @@ if ($subTipo === 'servicio') {
 
     function mostrarMsg(t, c) { const e = document.getElementById('editMsg'); e.textContent = t; e.className = 'mmsg ' + c; e.style.display = 'block' }
 
-    // ── ELIMINAR FOTO ──
     async function eliminarFoto() {
       if (!confirm('¿Eliminar tu foto de perfil?')) return;
       const msg = document.getElementById('fotoMsg');
@@ -4308,7 +4217,6 @@ if ($subTipo === 'servicio') {
       } catch (e) { msg.textContent = '❌ Error de conexión'; msg.style.color = '#e74c3c'; }
     }
 
-    // ── CROP + FOTO ──
     let cropperInstance = null;
     function abrirCrop(input) {
       const file = input.files[0]; if (!file) return;
@@ -4356,7 +4264,6 @@ if ($subTipo === 'servicio') {
       }, 'image/jpeg', .9);
     }
 
-    // ── GUARDAR PERFIL ──
     async function guardarPerfil() {
       const btn = document.getElementById('btnGuardar');
       const n = document.getElementById('editNombre').value.trim();
@@ -4379,9 +4286,9 @@ if ($subTipo === 'servicio') {
           document.getElementById('dNombre').textContent = j.nombre + (j.apellido ? ' ' + j.apellido : '');
           const dc = document.getElementById('dCiudad'); if (dc) dc.textContent = j.ciudad || 'Ciudad no registrada';
           const dt = document.getElementById('dTelefono'); if (dt) dt.textContent = document.getElementById('editTelefono').value.trim() || 'Teléfono no registrado';
-          // Actualizar profesión visible en el hero si existe
+          
           if (j.profesion) { const dp = document.querySelector('.hero-pro'); if (dp) dp.textContent = j.profesion; }
-          // Preservar foto: sincronizar fotoPreview → heroAvatar, cpAvatar, navAvatar
+          
           const fotoPreviewEl = document.getElementById('fotoPreview');
           if (fotoPreviewEl) {
             const imgEl = fotoPreviewEl.querySelector('img');
@@ -4399,20 +4306,17 @@ if ($subTipo === 'servicio') {
       btn.disabled = false; btn.textContent = '💾 Guardar cambios';
     }
 
-    // ── TOGGLE VISIBILIDAD ──
     async function toggleVis(visible) {
       const chip = document.getElementById('pvBadge');
       const fd = new FormData();
-      // Si tiene talento_perfil, actualizar visible
+      
       fd.append('_action', 'toggle_vis');
       fd.append('visible', visible ? '1' : '0');
       chip.textContent = visible ? '🟢 Visible' : '🟡 Oculto';
       chip.className = 'pv-chip ' + (visible ? 'ok' : 'off');
-      // Nota: el endpoint para toggle_vis no existe aún en este dashboard.php
-      // El admin controla visible_admin; el usuario puede controlar visible (autoocultar)
+      
     }
 
-    // ── NOTIFICACIONES ──
     const notifBtn = document.getElementById('navNotif');
     const notifPanel = document.getElementById('notifPanel');
     const notifDot = document.getElementById('notifDot');
@@ -4435,7 +4339,6 @@ if ($subTipo === 'servicio') {
     cargarNotificaciones();
     setInterval(cargarNotificaciones, 30000);
 
-    // ── GALERÍA DE EVIDENCIAS ────────────────────────────────────
     function abrirModalEvidencia() {
       document.getElementById('modal-evidencia').classList.add('open');
       document.getElementById('ev-msg').style.display = 'none';
@@ -4511,8 +4414,7 @@ if ($subTipo === 'servicio') {
       document.getElementById('lbox-titulo').textContent = titulo || '';
       lbox.style.display = 'flex';
     }
-    // ── SECCIONES DE PERFIL EXTENDIDO ──────────────────────────
-    // Datos en memoria (localStorage para persistencia local)
+    
     const STORE_KEY = 'qc_perfil_<?= $usuario["id"] ?>';
     let perfilData = { educacion: [], certificaciones: [], aptitudes_bland: '', aptitudes_idiomas: '' };
     try {
@@ -4524,7 +4426,6 @@ if ($subTipo === 'servicio') {
       try { localStorage.setItem(STORE_KEY, JSON.stringify(perfilData)); } catch (e) { }
     }
 
-    // Renderizar educación
     function renderEdu() {
       const list = document.getElementById('edu-list');
       if (!list) return;
@@ -4557,7 +4458,6 @@ if ($subTipo === 'servicio') {
       }
     }
 
-    // Renderizar certificaciones
     function renderCert() {
       const list = document.getElementById('cert-list');
       if (!list) return;
@@ -4595,7 +4495,6 @@ if ($subTipo === 'servicio') {
       }
     }
 
-    // Renderizar aptitudes
     function renderApt() {
       const list = document.getElementById('apt-list');
       if (!list) return;
@@ -4621,7 +4520,6 @@ if ($subTipo === 'servicio') {
     function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
     function formatMes(m) { if (!m) return ''; const [y, mo] = m.split('-'); const meses = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sep.', 'oct.', 'nov.', 'dic.']; return (meses[parseInt(mo) - 1] || mo) + ' ' + y; }
 
-    // Abrir/cerrar modales
     function abrirFormEdu() { document.getElementById('modal-edu').classList.add('open'); }
     function cerrarFormEdu() { document.getElementById('modal-edu').classList.remove('open'); }
     function abrirFormCert() { document.getElementById('modal-cert').classList.add('open'); }
@@ -4634,7 +4532,6 @@ if ($subTipo === 'servicio') {
     }
     function cerrarFormApt() { document.getElementById('modal-apt').classList.remove('open'); }
 
-    // ── SYNC SERVIDOR ───────────────────────────────────────────
     async function syncEduServidor() {
       try {
         const fd = new FormData();
@@ -4651,7 +4548,7 @@ if ($subTipo === 'servicio') {
       try {
         const fd = new FormData();
         fd.append('_action', 'guardar_certificaciones');
-        // Filtrar base64 grandes: si el archivo es base64 y pesa mucho, omitir del sync (sólo se guarda localmente)
+        
         const itemsSync = perfilData.certificaciones.map(c => {
           const archEs64 = c.archivo && c.archivo.startsWith('data:');
           return { ...c, archivo: archEs64 ? '' : (c.archivo || ''), archivoNom: archEs64 ? c.archivoNom : (c.archivoNom || '') };
@@ -4671,11 +4568,9 @@ if ($subTipo === 'servicio') {
       }
     }
 
-    // Eliminar
     function eliminarEdu(i) { perfilData.educacion.splice(i, 1); savePerfilData(); renderEdu(); syncEduServidor(); }
     function eliminarCert(i) { perfilData.certificaciones.splice(i, 1); savePerfilData(); renderCert(); syncCertServidor(); }
 
-    // Guardar educación
     function guardarEdu() {
       const inst = document.getElementById('edu-inst').value.trim();
       const titulo = document.getElementById('edu-titulo').value.trim();
@@ -4698,7 +4593,6 @@ if ($subTipo === 'servicio') {
       } else { guardar(''); }
     }
 
-    // Guardar certificación
     function guardarCert() {
       const nom = document.getElementById('cert-nom').value.trim();
       const org = document.getElementById('cert-org').value.trim();
@@ -4721,7 +4615,6 @@ if ($subTipo === 'servicio') {
       } else { guardar('', ''); }
     }
 
-    // Guardar aptitudes
     async function guardarApt() {
       const tec = document.getElementById('apt-tec').value.trim();
       const bland = document.getElementById('apt-bland').value.trim();
@@ -4730,7 +4623,7 @@ if ($subTipo === 'servicio') {
       perfilData.aptitudes_bland = bland;
       perfilData.aptitudes_idiomas = idiomas;
       savePerfilData();
-      // Sync aptitudes_bland e idiomas al servidor
+      
       try {
         const fdApt = new FormData();
         fdApt.append('_action', 'guardar_aptitudes_extra');
@@ -4738,7 +4631,7 @@ if ($subTipo === 'servicio') {
         fdApt.append('aptitudes_idiomas', idiomas);
         fetch('dashboard.php', { method: 'POST', body: fdApt }).catch(() => { });
       } catch (e) { }
-      // Sync habilidades técnicas al servidor via editar_perfil
+      
       const fd = new FormData();
       fd.append('_action', 'editar_perfil');
       fd.append('nombre', document.getElementById('editNombre')?.value || '<?= addslashes($usuario["nombre"] ?? "") ?>');
@@ -4756,13 +4649,11 @@ if ($subTipo === 'servicio') {
       } catch (e) { msg.textContent = '❌ Error de conexión'; msg.className = 'mmsg error'; msg.style.display = 'block'; }
     }
 
-    // Cerrar modales con Escape y overlay click
     ['modal-edu', 'modal-cert', 'modal-apt'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
     });
 
-    // Render inicial
     renderEdu(); renderCert(); renderApt();
 
   </script>
@@ -4920,7 +4811,6 @@ if ($subTipo === 'servicio') {
     </div>
   <?php endif; ?>
 
-
   <!-- ══ MODAL SOLICITAR VACANTE ══ -->
   <div class="modal-ov" id="modal-solicitud-vacante">
     <div class="modal-box" style="max-width:480px">
@@ -4954,7 +4844,7 @@ if ($subTipo === 'servicio') {
   </div>
 
   <script>
-  // ── MODAL SOLICITAR VACANTE ───────────────────────────────
+  
   let _solEmpId = 0;
 
   function abrirModalSolicitud(empleoId, titulo, empresa) {
@@ -5017,7 +4907,6 @@ if ($subTipo === 'servicio') {
     }
   }
 
-  // Cerrar modal solicitud con overlay click o Escape
   document.getElementById('modal-solicitud-vacante').addEventListener('click', function(e) {
     if (e.target === this) cerrarModalSolicitud();
   });
@@ -5025,7 +4914,6 @@ if ($subTipo === 'servicio') {
     if (e.key === 'Escape') cerrarModalSolicitud();
   });
 
-  // ── BANNER: abrir crop ────────────────────────────────────
   let cropperBannerInstance = null;
 
   function subirBanner(input) {
@@ -5066,10 +4954,8 @@ if ($subTipo === 'servicio') {
     btn.textContent = '⏳ Guardando…'; btn.disabled = true;
     const msg = document.getElementById('bannerMsg');
 
-    // Canvas a 1200x300
     const canvas = cropperBannerInstance.getCroppedCanvas({ width: 1200, height: 300, imageSmoothingQuality: 'high' });
 
-    // Preview inmediato
     const dataUrl = canvas.toDataURL('image/jpeg', .92);
     const zone = document.getElementById('bannerZone');
     let img = document.getElementById('bannerImg');
@@ -5086,7 +4972,6 @@ if ($subTipo === 'servicio') {
     document.getElementById('cropBannerModal').style.display = 'none';
     if (cropperBannerInstance) { cropperBannerInstance.destroy(); cropperBannerInstance = null; }
 
-    // Subir al servidor
     canvas.toBlob(async blob => {
       const fd = new FormData();
       fd.append('_action', 'subir_banner');
@@ -5116,7 +5001,6 @@ if ($subTipo === 'servicio') {
     }, 'image/jpeg', .92);
   }
 
-  // ── BANNER: eliminar ──────────────────────────────────────
   async function eliminarBanner() {
     if (!confirm('¿Quitar el banner?')) return;
     const fd = new FormData();
@@ -5128,7 +5012,7 @@ if ($subTipo === 'servicio') {
         const img = document.getElementById('bannerImg');
         if (img) img.remove();
         const zone = document.getElementById('bannerZone');
-        // Mostrar placeholder
+        
         let ph = zone.querySelector('#bannerPlaceholder');
         if (!ph) {
           ph = document.createElement('div');
@@ -5139,7 +5023,7 @@ if ($subTipo === 'servicio') {
         } else {
           ph.style.display = 'flex';
         }
-        // Quitar botón quitar
+        
         zone.querySelectorAll('.btn-quitar-banner, button').forEach(b => b.remove());
       }
     } catch(e) {}

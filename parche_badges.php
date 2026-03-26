@@ -1,9 +1,4 @@
 <?php
-// ============================================================
-// parche_badges.php — Parche para badges_helper.php
-// ============================================================
-// Sube a htdocs/ y visita en el navegador. BORRAR DESPUÉS.
-// ============================================================
 
 $path = __DIR__ . '/Php/badges_helper.php';
 $resultados = [];
@@ -13,14 +8,12 @@ if (!file_exists($path)) {
 } else {
     $contenido = file_get_contents($path);
     
-    // Verificar si ya tiene los alias
     if (strpos($contenido, 'getBadgesUsuario') !== false) {
         $resultados[] = '✅ getBadgesUsuario() ya existe en el archivo';
     } else {
-        // Agregar alias al final del archivo
+        
         $aliases = <<<'PHPCODE'
 
-// ── ALIAS de funciones (compatibilidad con talentos.php del servidor) ──
 function getBadgesUsuario(PDO $db, int $userId): array {
     return getUserBadges($db, $userId);
 }
@@ -41,23 +34,19 @@ PHPCODE;
         }
     }
     
-    // Mostrar contenido actual del archivo para debug
     $resultados[] = '📄 Tamaño actual: ' . filesize($path) . ' bytes';
     
-    // Listar funciones definidas en el archivo
     $content = file_get_contents($path);
     preg_match_all('/function\s+(\w+)\s*\(/', $content, $matches);
     $resultados[] = '🔧 Funciones disponibles: ' . implode(', ', $matches[1]);
 }
 
-// También verificar qué funciones usa talentos.php
 $talentosPath = __DIR__ . '/talentos.php';
 if (file_exists($talentosPath)) {
     $talentosContent = file_get_contents($talentosPath);
     preg_match_all('/(?:getBadges|renderBadges|obtenerBadges|getUserBadges|renderBadgesHTML)\w*\s*\(/', $talentosContent, $matches2);
     $resultados[] = '📋 talentos.php usa funciones: ' . implode(', ', array_unique($matches2[0]));
     
-    // Mostrar línea 70 ± 5
     $lines = explode("\n", $talentosContent);
     $start = max(0, 65);
     $end = min(count($lines), 75);

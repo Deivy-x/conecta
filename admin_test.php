@@ -2,7 +2,6 @@
 session_start();
 date_default_timezone_set('America/Bogota');
 
-// Conexión directa sin require
 try {
     $pdo = new PDO(
         'mysql:host=sql213.infinityfree.com;dbname=if0_41408419_quibdo;charset=utf8mb4',
@@ -30,7 +29,6 @@ if ($passIntento) {
         $resultado .= "<p>nivel: <strong>" . $u['nivel'] . "</strong></p>";
         $resultado .= "<p>activo: <strong>" . $u['activo'] . "</strong></p>";
 
-        // Si todo ok, iniciar sesión y redirigir
         if (password_verify($passIntento, $u['contrasena'])) {
             $_SESSION['admin_id']     = $u['id'];
             $_SESSION['admin_nivel']  = $u['nivel'];

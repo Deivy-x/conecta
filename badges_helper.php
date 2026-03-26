@@ -1,16 +1,8 @@
 <?php
-// ============================================================
-// Php/badges_helper.php — Helper central de badges
-// Incluir en cualquier página para obtener/mostrar badges
-// ============================================================
 
-/**
- * Obtiene los badges de un usuario desde la BD
- * Retorna array de badges con emoji, nombre, color
- */
 function getBadgesUsuario(PDO $db, int $userId): array {
     try {
-        // Obtener IDs de badges asignados
+        
         $stmt = $db->prepare("SELECT badges_custom FROM usuarios WHERE id = ?");
         $stmt->execute([$userId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -19,7 +11,6 @@ function getBadgesUsuario(PDO $db, int $userId): array {
         $ids = json_decode($row['badges_custom'], true);
         if (!$ids || !is_array($ids)) return [];
 
-        // Obtener info de cada badge del catálogo
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         $stmt2 = $db->prepare("SELECT id, nombre, emoji, color, tipo, descripcion FROM badges_catalog WHERE id IN ($placeholders) AND activo = 1");
         $stmt2->execute($ids);
@@ -29,9 +20,6 @@ function getBadgesUsuario(PDO $db, int $userId): array {
     }
 }
 
-/**
- * Renderiza los badges de un usuario como HTML
- */
 function renderBadges(array $badges, string $size = 'normal'): string {
     if (empty($badges)) return '';
 
@@ -62,20 +50,14 @@ function renderBadges(array $badges, string $size = 'normal'): string {
     return $html;
 }
 
-/**
- * Obtiene el badge más importante de un usuario (para mostrar uno solo)
- */
 function getBadgePrincipal(array $badges): ?array {
     if (empty($badges)) return null;
-    // Prioridad: verificacion > pago > manual
+    
     $prioridad = ['verificacion' => 3, 'pago' => 2, 'manual' => 1];
     usort($badges, fn($a,$b) => ($prioridad[$b['tipo']]??0) - ($prioridad[$a['tipo']]??0));
     return $badges[0];
 }
 
-/**
- * Verifica si un usuario tiene un badge específico por nombre
- */
 function tieneBadge(array $badges, string $nombre): bool {
     foreach ($badges as $b) {
         if (strtolower($b['nombre']) === strtolower($nombre)) return true;

@@ -1,15 +1,9 @@
-/**
- * sesion_widget.js — QuibdóConecta
- * Widget de sesión activa para todas las páginas
- * Reemplaza los botones de login/register cuando el usuario está autenticado
- */
 
 (function () {
   'use strict';
 
-  // CSS del widget inyectado en <head>
   const WIDGET_CSS = `
-    /* ══ SESION WIDGET ══ */
+    
     .qc-user-widget {
       display: flex;
       align-items: center;
@@ -17,7 +11,6 @@
       position: relative;
     }
 
-    /* Burbuja de notificación de mensajes */
     .qc-notif-bell {
       position: relative;
       width: 38px;
@@ -62,7 +55,6 @@
       50% { box-shadow: 0 0 0 5px rgba(231,76,60,0); }
     }
 
-    /* Botón principal del avatar */
     .qc-avatar-btn {
       display: flex;
       align-items: center;
@@ -86,7 +78,6 @@
       box-shadow: 0 4px 20px rgba(31,157,85,.22);
     }
 
-    /* Foto/Avatar del usuario */
     .qc-avatar-img {
       width: 32px;
       height: 32px;
@@ -111,7 +102,6 @@
       display: block;
     }
 
-    /* Nombre + "Yo ▾" */
     .qc-avatar-info {
       display: flex;
       flex-direction: column;
@@ -143,7 +133,6 @@
       transform: rotate(180deg);
     }
 
-    /* Punto verde de "en línea" */
     .qc-online-dot {
       width: 7px;
       height: 7px;
@@ -158,7 +147,6 @@
       60% { box-shadow: 0 0 0 6px rgba(46,204,113,0); }
     }
 
-    /* Dropdown del menú */
     .qc-dropdown {
       position: absolute;
       top: calc(100% + 10px);
@@ -181,7 +169,6 @@
       pointer-events: all;
     }
 
-    /* Header del dropdown */
     .qc-drop-header {
       padding: 18px 20px 14px;
       background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
@@ -235,7 +222,6 @@
       max-width: 145px;
     }
 
-    /* Badges dentro del dropdown */
     .qc-drop-badges {
       display: flex;
       flex-wrap: wrap;
@@ -251,7 +237,6 @@
       line-height: 1;
     }
 
-    /* Links del menú */
     .qc-drop-menu {
       padding: 8px 0;
     }
@@ -303,14 +288,12 @@
       border-radius: 12px;
     }
 
-    /* Separador */
     .qc-drop-sep {
       height: 1px;
       background: rgba(0,0,0,.06);
       margin: 4px 0;
     }
 
-    /* Cerrar sesión */
     .qc-drop-logout {
       color: #e74c3c !important;
     }
@@ -322,7 +305,6 @@
       color: #c0392b !important;
     }
 
-    /* Skeleton para el widget mientras carga */
     .qc-widget-skeleton {
       width: 130px;
       height: 38px;
@@ -336,7 +318,6 @@
       100% { background-position: 400px 0 }
     }
 
-    /* Mobile: ocultar sub-info en pantallas pequeñas */
     @media (max-width: 768px) {
       .qc-avatar-info { display: none; }
       .qc-avatar-btn { padding: 5px; }
@@ -344,7 +325,6 @@
     }
   `;
 
-  // Tipos de usuario → etiqueta
   const TIPO_LABEL = {
     'admin': '⚙️ Administrador',
     'empresa': '🏢 Empresa',
@@ -354,7 +334,6 @@
     'chef': '🍽️ Chef',
   };
 
-  // Dashboard según tipo
   const TIPO_DASHBOARD = {
     'admin': 'gestion-qbc-2025.php',
     'empresa': 'dashboard_empresa.php',
@@ -367,22 +346,17 @@
   let _usuario = null;
   let _notifs  = null;
 
-  /**
-   * Inicializa el widget: inyecta CSS, reemplaza nav-right
-   */
   function init() {
-    // 1. Inyectar CSS
+    
     const style = document.createElement('style');
     style.textContent = WIDGET_CSS;
     document.head.appendChild(style);
 
-    // 2. Mostrar skeleton mientras carga
     const navRight = document.querySelector('.nav-right');
     if (!navRight) return;
 
     navRight.innerHTML = '<div class="qc-widget-skeleton"></div>';
 
-    // 3. Intentar cargar sesión desde API
     fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' })
       .then(r => r.json())
       .then(data => {
@@ -391,13 +365,12 @@
           renderWidget(navRight);
           cargarNotificaciones();
         } else {
-          // No logueado → botones normales
+          
           restoreAuthButtons(navRight);
         }
       })
       .catch(() => restoreAuthButtons(navRight));
 
-    // 4. También actualizar el menú móvil
     actualizarMenuMovil();
   }
 
@@ -494,7 +467,6 @@
       </div>
     `;
 
-    // Eventos
     const btn   = document.getElementById('qcAvatarBtn');
     const drop  = document.getElementById('qcDropdown');
     const logoutBtn = document.getElementById('qcLogoutBtn');
@@ -515,7 +487,6 @@
       }
     });
 
-    // Escape cierra el dropdown
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         drop.classList.remove('visible');
@@ -534,7 +505,6 @@
         const n = data.notificaciones;
         _notifs = n;
 
-        // Mensajes no leídos
         const count = n.mensajes_noLeidos || 0;
         const bell  = document.getElementById('qcNotifBadge');
         const chatB = document.getElementById('qcChatBadge');
@@ -543,7 +513,6 @@
           if (chatB) { chatB.textContent = count > 99 ? '99+' : count; chatB.style.display = 'inline-block'; }
         }
 
-        // Badges
         renderBadgesDropdown(n.badges || []);
       })
       .catch(() => {});
@@ -571,7 +540,7 @@
   }
 
   function actualizarMenuMovil() {
-    // Actualizar el menú móvil con info de sesión
+    
     fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' })
       .then(r => r.json())
       .then(data => {
@@ -610,18 +579,15 @@
   }
 
   function cerrarSesion() {
-    // Animar el botón
+    
     const btn = document.getElementById('qcLogoutBtn');
     if (btn) { btn.innerHTML = '<span class="qc-dl-icon">⏳</span> Cerrando sesión...'; btn.style.opacity = '.6'; }
 
-    // Redirect directly to logout (which handles session destroy + redirect)
     window.location.href = 'Php/logout.php';
   }
 
-  // Función global para el menú móvil
   window.cerrarSesionQC = cerrarSesion;
 
-  // Utilidades
   function obtenerIniciales(nombre, apellido) {
     const n = (nombre || '').trim();
     const a = (apellido || '').trim();

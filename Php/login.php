@@ -1,7 +1,5 @@
 <?php
-// ============================================
-// Php/login.php — Procesar inicio de sesión
-// ============================================
+
 session_start();
 require_once __DIR__ . '/db.php';
 header('Content-Type: application/json');
@@ -31,7 +29,7 @@ try {
     $usuario = $stmt->fetch();
 
     if (!$usuario || !password_verify($pass, $usuario['contrasena'])) {
-        // Verificar si tiene una solicitud en proceso
+        
         try {
             $sol = $db->prepare("SELECT estado FROM solicitudes_ingreso WHERE correo = ? ORDER BY creado_en DESC LIMIT 1");
             $sol->execute([$correo]);
@@ -46,16 +44,14 @@ try {
                     exit;
                 }
             }
-        } catch (Exception $e) { /* Si la tabla no existe, continuar normal */ }
+        } catch (Exception $e) {  }
         echo json_encode(['ok' => false, 'msg' => 'Correo o contraseña incorrectos.']);
         exit;
     }
 
-    // Registrar hora de ingreso y IP
     $db->prepare("UPDATE usuarios SET ultima_sesion = NOW(), activo = 1 WHERE id = ?")
        ->execute([$usuario['id']]);
 
-    // Registrar en tabla sesiones con IP y user agent
     $ip        = $_SERVER['REMOTE_ADDR'] ?? '';
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
@@ -72,7 +68,6 @@ try {
         setcookie('qc_remember', $token, time() + (30 * 24 * 3600), '/', '', false, true);
     }
 
-    // Redirigir segun tipo de usuario
     $tipo = $usuario['tipo'];
     if ($tipo === 'admin') {
         $redirect = 'gestion-qbc-2025.php';

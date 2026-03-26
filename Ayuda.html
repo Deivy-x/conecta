@@ -21,7 +21,6 @@
             color: #111;
         }
 
-        /* ========================= NAVBAR ========================= */
         .navbar {
             position: fixed;
             top: 0;
@@ -149,7 +148,6 @@
             background: #166f3d;
         }
 
-        /* ========================= HERO ========================= */
         .hero-ayuda {
             padding: 160px 48px 90px;
             background: linear-gradient(135deg, #0f172a 0%, #0b3a7e 50%, #0f172a 100%);
@@ -205,7 +203,6 @@
             line-height: 1.7;
         }
 
-        /* BUSCADOR AYUDA */
         .search-ayuda {
             display: flex;
             align-items: center;
@@ -245,7 +242,6 @@
             opacity: 0.9;
         }
 
-        /* ACCESOS RÁPIDOS */
         .accesos {
             background: white;
             padding: 50px 48px;
@@ -285,7 +281,6 @@
             font-weight: 700;
         }
 
-        /* ========================= TUTORIALES ========================= */
         .tutoriales {
             padding: 90px 48px;
             background: #f9fafb;
@@ -318,7 +313,6 @@
             font-size: 34px;
         }
 
-        /* TABS TUTORIALES */
         .tutorial-tabs {
             display: flex;
             gap: 10px;
@@ -433,7 +427,6 @@
             color: #aaa;
         }
 
-        /* ========================= FAQ ========================= */
         .faq {
             padding: 90px 48px;
             background: white;
@@ -542,7 +535,6 @@
             display: block;
         }
 
-        /* ========================= CONTACTO ========================= */
         .contacto {
             padding: 90px 48px;
             background: #f9fafb;
@@ -622,7 +614,6 @@
             font-weight: 600;
         }
 
-        /* FORMULARIO CONTACTO */
         .contacto-form {
             background: white;
             border-radius: 24px;
@@ -745,7 +736,6 @@
             }
         }
 
-        /* ========================= CHAT WIDGET IA ========================= */
         .chat-btn {
             position: fixed;
             bottom: 28px;
@@ -824,7 +814,6 @@
             line-height: 1;
         }
 
-        /* Indicador web search */
         .chat-web-indicator {
             display: flex; align-items: center; gap: 6px;
             padding: 6px 14px;
@@ -883,7 +872,6 @@
         .chat-msg .time { font-size: 10px; color: #bbb; margin-top: 3px; padding: 0 4px; }
         .chat-msg.user .time { text-align: right; }
 
-        /* Source chips */
         .chat-sources {
             display: flex; flex-wrap: wrap; gap: 5px;
             margin-top: 7px; padding: 0 2px;
@@ -898,7 +886,6 @@
         }
         .chat-source-chip:hover { background: #1f9d55; color: white; border-color: #1f9d55; }
 
-        /* Typing indicator */
         .chat-typing {
             align-self: flex-start;
             display: flex; align-items: center; gap: 5px;
@@ -919,7 +906,6 @@
             40%          { transform: translateY(-6px); opacity: 1; }
         }
 
-        /* Searching indicator */
         .chat-searching {
             align-self: flex-start;
             display: flex; align-items: center; gap: 8px;
@@ -977,7 +963,6 @@
         .chat-send:hover { transform: scale(1.1); }
         .chat-send:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
-        /* ========================= FOOTER ========================= */
         footer {
             background: #0f172a;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -991,8 +976,6 @@
             color: #2ecc71;
         }
 
-
-        /* ── HAMBURGER ── */
         .hamburger {
             display: none;
             flex-direction: column;
@@ -1101,7 +1084,6 @@
             color: white;
         }
 
-        /* ── SCROLL REVEAL BIDIRECCIONAL ── */
         .reveal {
             opacity: 0;
             transform: translateY(36px);
@@ -1113,9 +1095,6 @@
             transform: translateY(0);
         }
 
-        /* ========================= RESPONSIVE ========================= */
-
-        /* ── RESPONSIVE HERO COMPLETO 2026 ── */
         @media (max-width: 1200px) {
             .hero-ayuda h1 {
                 font-size: 44px;
@@ -1241,7 +1220,6 @@
 
 <body>
 
-    <!-- NAVBAR -->
     <header class="navbar">
         <div class="nav-left">
             <img src="Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
@@ -1263,7 +1241,6 @@
         <button class="hamburger" id="hamburger" aria-label="Menú"><span></span><span></span><span></span></button>
     </header>
 
-    <!-- MENÚ MÓVIL -->
     <div class="mobile-menu" id="mobileMenu">
         <a href="index.html">🏠 Inicio</a>
         <a href="Empleo.php">💼 Empleos</a>
@@ -1277,7 +1254,6 @@
                 class="m-reg">Registrarse</a></div>
     </div>
 
-    <!-- HERO -->
     <section class="hero-ayuda">
         <div class="hero-ayuda-content">
             <span class="hero-badge">🤝 Centro de ayuda</span>
@@ -1292,7 +1268,6 @@
         </div>
     </section>
 
-    <!-- ACCESOS RÁPIDOS -->
     <div class="accesos">
         <a class="acceso-card" href="#tutoriales">
             <span class="acc-icon">📚</span>
@@ -1320,7 +1295,6 @@
         </a>
     </div>
 
-    <!-- TUTORIALES -->
     <section class="tutoriales" id="tutoriales">
         <div class="section-header">
             <div>
@@ -1400,7 +1374,6 @@
         </div>
     </section>
 
-    <!-- FAQ -->
     <section class="faq" id="faq">
         <span class="section-label">Preguntas frecuentes</span>
         <h2>Resolvemos tus dudas</h2>
@@ -1523,7 +1496,6 @@
         </div>
     </section>
 
-    <!-- CONTACTO -->
     <section class="contacto" id="contacto">
         <div class="contacto-inner">
 
@@ -1608,18 +1580,15 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer>
         <p>© 2026 <span>QuibdóConecta</span> — Conectando el talento del Chocó con el mundo.</p>
     </footer>
 
-    <!-- CHAT BUTTON -->
     <button class="chat-btn" onclick="toggleChat()" style="position:fixed;bottom:28px;right:28px;" aria-label="Abrir asistente IA">
         🤖
         <span class="chat-badge" id="chatBadge">1</span>
     </button>
 
-    <!-- CHAT WINDOW IA -->
     <div class="chat-window" id="chatWindow">
         <div class="chat-header">
             <div class="avatar">🌿</div>
@@ -1665,12 +1634,11 @@
     </div>
 
     <script>
-        /* ========================= NAVBAR ========================= */
+        
         window.addEventListener("scroll", () => {
             document.querySelector(".navbar").classList.toggle("abajo", window.scrollY > 50);
         });
 
-        /* ========================= FAQ TOGGLE ========================= */
         function toggleFAQ(el) {
             const respuesta = el.nextElementSibling;
             const estaAbierto = el.classList.contains('open');
@@ -1684,7 +1652,6 @@
             }
         }
 
-        /* ========================= FILTRAR FAQ POR TAB ========================= */
         function filtrarFAQTab(cat, btn) {
             document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -1693,7 +1660,6 @@
             });
         }
 
-        /* ========================= FILTRAR FAQ POR BÚSQUEDA ========================= */
         function filtrarFAQ() {
             const q = document.getElementById('searchAyuda').value.toLowerCase();
             document.querySelectorAll('.faq-item').forEach(item => {
@@ -1705,7 +1671,6 @@
             }
         }
 
-        /* ========================= FILTRAR TUTORIALES ========================= */
         function filtrarTutoriales(cat, btn) {
             document.querySelectorAll('.ttab').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -1714,7 +1679,6 @@
             });
         }
 
-        /* ========================= FORMULARIO CONTACTO ========================= */
         function enviarContacto() {
             const nombre = document.getElementById('cfNombre').value.trim();
             const correo = document.getElementById('cfCorreo').value.trim();
@@ -1733,10 +1697,9 @@
             document.getElementById('formSuccess').style.display = 'block';
         }
 
-        /* ========================= CHAT IA CON BÚSQUEDA WEB EN TIEMPO REAL ========================= */
         let chatAbierto  = false;
         let iaOcupada    = false;
-        let historial    = []; // historial para contexto multi-turno
+        let historial    = []; 
 
         function toggleChat() {
             chatAbierto = !chatAbierto;
@@ -1827,30 +1790,24 @@
             const msg   = input.value.trim();
             if (!msg || iaOcupada) return;
 
-            // Ocultar opciones rápidas después del primer mensaje
             document.getElementById('chatOptions').style.display = 'none';
 
-            // Mostrar mensaje del usuario
             addMsg(msg.replace(/\n/g,'<br>'), 'user');
             input.value = '';
             input.style.height = 'auto';
 
-            // Bloquear envío
             iaOcupada = true;
             const btn = document.getElementById('chatSendBtn');
             btn.disabled = true;
 
-            // Agregar al historial
             historial.push({ role: 'user', content: msg });
 
-            // Mostrar "buscando"
             showSearching();
 
             try {
                 const respuesta = await llamarIAConWeb(msg, historial);
                 removeIndicators();
 
-                // Streaming de texto letra por letra
                 const div   = document.createElement('div');
                 div.className = 'chat-msg bot';
                 const bubble = document.createElement('div');
@@ -1860,7 +1817,6 @@
 
                 await streamTexto(bubble, respuesta.texto);
 
-                // Agregar fuentes si hay
                 if (respuesta.fuentes && respuesta.fuentes.length) {
                     const srcDiv = document.createElement('div');
                     srcDiv.className = 'chat-sources';
@@ -1877,10 +1833,8 @@
 
                 document.getElementById('chatMessages').scrollTop = 99999;
 
-                // Guardar en historial
                 historial.push({ role: 'assistant', content: respuesta.texto });
 
-                // Mantener historial corto (últimos 8 turnos)
                 if (historial.length > 16) historial = historial.slice(-16);
 
             } catch(err) {
@@ -1895,7 +1849,7 @@
         }
 
         async function streamTexto(elemento, texto) {
-            // Renderiza el texto con efecto de stream suave
+            
             const palabras = texto.split(' ');
             let acumulado  = '';
             for (let i = 0; i < palabras.length; i++) {
@@ -1907,17 +1861,13 @@
         }
 
         async function llamarIAConWeb(pregunta, historial) {
-            /*
-             * Llama al proxy PHP seguro (Php/chat_ia.php)
-             * El proxy consulta la BD en tiempo real y luego llama a Anthropic.
-             * La API key NUNCA se expone al navegador.
-             */
+            
             const response = await fetch('Php/chat_ia.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message:  pregunta,
-                    messages: historial.slice(0, -1) // historial sin el mensaje actual
+                    messages: historial.slice(0, -1) 
                 })
             });
 
@@ -1937,7 +1887,6 @@
             };
         }
 
-        /* ========================= HAMBURGER ========================= */
         const ham = document.getElementById('hamburger');
         const mob = document.getElementById('mobileMenu');
         if (ham) {
@@ -1945,7 +1894,6 @@
             document.addEventListener('click', e => { if (!ham.contains(e.target) && !mob.contains(e.target)) { ham.classList.remove('open'); mob.classList.remove('open'); } });
         }
 
-        /* ========================= SCROLL REVEAL BIDIRECCIONAL ========================= */
         (function () {
             const reveals = document.querySelectorAll('.reveal');
             if (!reveals.length) return;
@@ -1959,10 +1907,8 @@
         })();
     </script>
 
-
-<!-- Widget de sesión activa — QuibdóConecta -->
 <script src="js/sesion_widget.js"></script>
-<!-- Modal: Iniciar sesión para buscar -->
+
 <div id="qc-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)" onclick="if(event.target===this)cerrarModalLogin()">
   <div style="background:#fff;border-radius:24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;animation:qcLoginIn .35s cubic-bezier(.34,1.56,.64,1)">
     <div style="background:linear-gradient(135deg,#1f9d55,#2ecc71);padding:28px 28px 22px;text-align:center;position:relative">

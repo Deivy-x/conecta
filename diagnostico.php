@@ -1,6 +1,5 @@
 <?php
-// diagnostico.php — Sube este archivo al servidor y abre la URL
-// BORRA este archivo después de usarlo
+
 require_once __DIR__ . '/Php/db.php';
 $db = getDB();
 
@@ -15,7 +14,6 @@ h2{margin-top:30px;border-bottom:2px solid #1f9d55;padding-bottom:6px}
 
 echo "<h1>🔍 Diagnóstico QuibdóConecta</h1>";
 
-// ── 1. ESTADO DE talento_perfil ──────────────────────────────
 echo "<h2>1. Todas las filas en talento_perfil</h2>";
 $rows = $db->query("SELECT id, usuario_id, visible, visible_admin, profesion, creado_en FROM talento_perfil ORDER BY usuario_id, id")->fetchAll(PDO::FETCH_ASSOC);
 echo "<table><tr><th>id</th><th>usuario_id</th><th>visible</th><th>visible_admin</th><th>profesion</th><th>creado_en</th></tr>";
@@ -30,7 +28,6 @@ foreach ($rows as $r) {
 echo "</table>";
 echo $dup ? "<p class='err'>❌ HAY FILAS DUPLICADAS POR usuario_id</p>" : "<p class='ok'>✅ Sin duplicados en talento_perfil</p>";
 
-// ── 2. DUPLICADOS EXPLÍCITOS ─────────────────────────────────
 echo "<h2>2. Usuarios con más de 1 fila en talento_perfil</h2>";
 $dups = $db->query("SELECT usuario_id, COUNT(*) as total FROM talento_perfil GROUP BY usuario_id HAVING COUNT(*) > 1")->fetchAll(PDO::FETCH_ASSOC);
 if ($dups) {
@@ -42,7 +39,6 @@ if ($dups) {
     echo "<p class='ok'>✅ Sin duplicados</p>";
 }
 
-// ── 3. RESULTADO EXACTO DE LA QUERY DE talentos.php ─────────
 echo "<h2>3. Resultado de la query de talentos.php (lo que realmente se muestra)</h2>";
 $final = $db->query("
     SELECT u.id, CONCAT(u.nombre,' ',u.apellido) AS nombre,
@@ -70,7 +66,6 @@ echo "</table>";
 $hay_dup = count($ids) !== count(array_unique($ids));
 echo $hay_dup ? "<p class='err'>❌ LA QUERY DEVUELVE DUPLICADOS</p>" : "<p class='ok'>✅ Sin duplicados en la query (".count($final)." talentos)</p>";
 
-// ── 4. ÍNDICES DE talento_perfil ─────────────────────────────
 echo "<h2>4. Índices de talento_perfil</h2>";
 $idx = $db->query("SHOW INDEX FROM talento_perfil")->fetchAll(PDO::FETCH_ASSOC);
 echo "<table><tr><th>Key_name</th><th>Column</th><th>Non_unique</th></tr>";
@@ -80,7 +75,6 @@ foreach ($idx as $i) {
 }
 echo "</table>";
 
-// ── 5. USUARIOS ACTIVOS ──────────────────────────────────────
 echo "<h2>5. Usuarios activos con su talento_perfil</h2>";
 $us = $db->query("
     SELECT u.id, CONCAT(u.nombre,' ',u.apellido) AS nombre, u.activo,

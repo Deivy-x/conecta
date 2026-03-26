@@ -1,12 +1,5 @@
 <?php
-/**
- * servicios_preview.php — Hasta 4 prestadores de servicios para eventos
- * Se muestran en el index SOLO si:
- *   - visible_admin = 1  (activado desde el panel admin)
- *   - destacado = 1      (marcado como destacado en el panel)
- *   - tipo_servicio o precio_desde no vacíos
- *   - usuario activo
- */
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 

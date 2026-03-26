@@ -1,5 +1,5 @@
 <?php
-// reset_admin.php — BORRAR DESPUÉS DE USAR
+
 require_once __DIR__ . '/Php/db.php';
 $correo = 'cuestadeivy9@outlook.com';
 

@@ -26,7 +26,6 @@
             overflow-x: hidden;
         }
 
-        /* NAVBAR */
         .navbar {
             position: fixed;
             top: 0;
@@ -262,7 +261,6 @@
             color: white;
         }
 
-        /* HERO */
         .hero-talento {
             padding: 150px 48px 90px;
             background: linear-gradient(135deg, #0f172a 0%, #1a2e1a 60%, #0f172a 100%);
@@ -318,7 +316,6 @@
             line-height: 1.6;
         }
 
-        /* SEARCH BAR EN HERO */
         .talent-search {
             display: flex;
             align-items: center;
@@ -401,7 +398,6 @@
             border-color: #4ade80;
         }
 
-        /* STATS */
         .stats-band {
             background: white;
             display: grid;
@@ -425,7 +421,6 @@
             font-weight: 500;
         }
 
-        /* CATEGORÍAS */
         .categorias {
             padding: 80px 48px;
             background: #f9fafb;
@@ -493,7 +488,6 @@
             color: #1f9d55;
         }
 
-        /* FILTROS TIPO */
         .filtros-tipo {
             display: flex;
             gap: 10px;
@@ -522,7 +516,6 @@
             color: white;
         }
 
-        /* TALENTOS SECTION */
         .talentos-section {
             padding: 80px 48px;
             background: white;
@@ -555,7 +548,6 @@
             margin-top: 32px;
         }
 
-        /* TALENTO CARD */
         .talento-card {
             background: #fafafa;
             border: 1px solid rgba(0, 0, 0, 0.07);
@@ -670,7 +662,6 @@
             color: white;
         }
 
-        /* NO RESULTS */
         .no-results {
             grid-column: 1/-1;
             text-align: center;
@@ -684,7 +675,6 @@
             margin-bottom: 14px;
         }
 
-        /* MODAL PERFIL */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -846,7 +836,6 @@
             transform: translateY(-2px);
         }
 
-        /* DJ SECTION */
         .dj-section {
             padding: 90px 48px;
             background: #0f172a;
@@ -984,7 +973,6 @@
             margin-top: 3px;
         }
 
-        /* CTA */
         .cta-section {
             padding: 90px 48px;
             background: linear-gradient(135deg, #0f172a, #1a2e1a);
@@ -1029,7 +1017,6 @@
             color: #2ecc71;
         }
 
-        /* FOOTER */
         footer {
             background: #0f172a;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -1043,7 +1030,6 @@
             color: #2ecc71;
         }
 
-        /* RESPONSIVE */
         @media(max-width:768px) {
             .navbar {
                 padding: 0 20px;
@@ -1115,7 +1101,6 @@
             }
         }
 
-        /* ── SCROLL REVEAL BIDIRECCIONAL ── */
         .reveal {
             opacity: 0;
             transform: translateY(36px);
@@ -1127,7 +1112,6 @@
             transform: translateY(0);
         }
 
-        /* ── RESPONSIVE HERO COMPLETO 2026 ── */
         @media (max-width: 1200px) {
             .hero-talento h1 {
                 font-size: 48px;
@@ -1281,7 +1265,6 @@
 
 <body>
 
-    <!-- NAVBAR -->
     <header class="navbar" id="navbar">
         <div class="nav-left">
             <img src="Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
@@ -1315,7 +1298,6 @@
         </div>
     </div>
 
-    <!-- HERO -->
     <section class="hero-talento">
         <div class="hero-talento-content reveal">
             <span class="hero-badge">🌟 +500 talentos registrados</span>
@@ -1342,7 +1324,6 @@
         </div>
     </section>
 
-    <!-- STATS -->
     <div class="stats-band">
         <div class="s reveal">
             <h3>+500</h3>
@@ -1362,7 +1343,6 @@
         </div>
     </div>
 
-    <!-- CATEGORÍAS -->
     <section class="categorias">
         <h2 class="reveal">Filtra por categoría</h2>
         <p class="sub">Encuentra el talento perfecto según el área que necesitas</p>
@@ -1383,7 +1363,6 @@
         </div>
     </section>
 
-    <!-- TALENTOS -->
     <section class="talentos-section" id="talentos">
         <div class="talentos-header">
             <h2 class="reveal">Talentos del Chocó</h2>
@@ -1576,7 +1555,6 @@
         </div>
     </section>
 
-    <!-- DJ SECTION -->
     <section class="dj-section">
         <div class="dj-inner">
             <div class="dj-texto">
@@ -1630,7 +1608,6 @@
         </div>
     </section>
 
-    <!-- CTA -->
     <section class="cta-section">
         <h2 class="reveal">¿Eres un talento del Chocó?</h2>
         <p>Regístrate gratis, crea tu perfil profesional y conecta con empresas, organizadores y oportunidades reales en
@@ -1641,7 +1618,6 @@
         </div>
     </section>
 
-    <!-- MODAL PERFIL -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-box">
             <button class="modal-close" id="modalClose">✕</button>
@@ -1665,18 +1641,16 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
     <footer>
         <p>© 2026 <span>QuibdóConecta</span> — Conectando el talento del Chocó con el mundo.</p>
     </footer>
 
     <script>
-        // NAVBAR SCROLL
+        
         window.addEventListener('scroll', () => {
             document.getElementById('navbar').classList.toggle('abajo', window.scrollY > 50);
         });
 
-        // HAMBURGER
         const ham = document.getElementById('hamburger');
         const mob = document.getElementById('mobileMenu');
         ham.addEventListener('click', () => { ham.classList.toggle('open'); mob.classList.toggle('open'); });
@@ -1684,7 +1658,6 @@
             if (!ham.contains(e.target) && !mob.contains(e.target)) { ham.classList.remove('open'); mob.classList.remove('open'); }
         });
 
-        // ALL CARDS
         const allCards = Array.from(document.querySelectorAll('.talento-card'));
         let catActiva = 'todos';
         let tipoActivo = 'todos';
@@ -1718,7 +1691,6 @@
             nr.style.display = visible === 0 ? '' : 'none';
         }
 
-        // CATEGORÍAS
         document.querySelectorAll('.cat-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('activa'));
@@ -1729,7 +1701,6 @@
             });
         });
 
-        // FILTROS TIPO
         document.querySelectorAll('.filtro-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
@@ -1739,7 +1710,6 @@
             });
         });
 
-        // BÚSQUEDA
         function buscar() {
             const nombre = document.getElementById('searchNombre').value.trim().toLowerCase();
             const ubicacion = document.getElementById('searchUbicacion').value.trim().toLowerCase();
@@ -1751,7 +1721,6 @@
         document.getElementById('searchNombre').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
         document.getElementById('searchUbicacion').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
 
-        // MODAL
         const overlay = document.getElementById('modalOverlay');
         document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
         overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
@@ -1766,7 +1735,7 @@
             document.getElementById('mProfesion').textContent = card.dataset.profesion || '';
             document.getElementById('mUbicacion').textContent = '📍 ' + (card.dataset.ubicacion || '');
             document.getElementById('mDesc').textContent = card.dataset.desc || '';
-            // badge
+            
             const badge = card.querySelector('.badge-t');
             const mBadge = document.getElementById('mBadge');
             if (badge) {
@@ -1775,7 +1744,7 @@
                 mBadge.style.background = badge.classList.contains('badge-artista') ? '#f3e8ff' : badge.classList.contains('badge-disponible') ? '#fef9c3' : '#edfaf3';
                 mBadge.style.color = badge.classList.contains('badge-artista') ? '#7c3aed' : badge.classList.contains('badge-disponible') ? '#b45309' : '#1f9d55';
             } else { mBadge.textContent = ''; }
-            // tags
+            
             const skills = (card.dataset.skills || '').split(',');
             document.getElementById('mTags').innerHTML = skills.map(s => `<span class="tag">${s.trim()}</span>`).join('');
             overlay.classList.add('open');
@@ -1785,7 +1754,6 @@
             card.querySelector('.btn-perfil').addEventListener('click', () => abrirModal(card));
         });
 
-        // Scroll reveal BIDIRECCIONAL (cards + .reveal elements)
         const observer = new IntersectionObserver(entries => {
             entries.forEach(e => {
                 if (e.isIntersecting) {
@@ -1804,11 +1772,10 @@
             c.style.opacity = '0'; c.style.transform = 'translateY(24px)'; c.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
             observer.observe(c);
         });
-        // Also observe .reveal elements
+        
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     </script>
 
-<!-- Widget de sesión activa — QuibdóConecta -->
 <script src="js/sesion_widget.js"></script>
 </body>
 

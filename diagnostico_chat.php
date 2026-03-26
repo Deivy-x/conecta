@@ -109,7 +109,7 @@ async function testConversaciones() {
 
 async function testMensajes() {
     document.getElementById('resultado').textContent = 'Cargando...';
-    // Get first conversation user ID from BD
+    
     const convUsers = <?= json_encode(array_map(fn($c) => $c['id'], $convs ?: [])) ?>;
     const userId = convUsers.length > 0 ? convUsers[0] : 3;
     document.getElementById('resultado').textContent = 'Probando con usuario ID=' + userId + '...\n';

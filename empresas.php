@@ -1,8 +1,5 @@
 <?php
-// ============================================================
-// empresas.php — Carga empresas de BD + perfiles activos
-// ============================================================
-// BUILD: v20260320001200
+
 session_start();
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
@@ -12,7 +9,6 @@ header("X-Accel-Expires: 0");
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// ── Detectar sector automáticamente ──────────────────────────
 function detectarSector($sector, $descripcion)
 {
   $texto = strtolower($sector . ' ' . $descripcion);
@@ -51,7 +47,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     require_once __DIR__ . '/Php/badges_helper.php';
     $db = getDB();
 
-    // Contar TODAS las empresas activas registradas (sin LIMIT) para el badge del hero
     $stmtTotal = $db->query("
             SELECT COUNT(DISTINCT u.id) AS total
             FROM usuarios u
@@ -63,9 +58,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         ");
     $totalEmpresas = (int) ($stmtTotal->fetchColumn() ?: 0);
 
-    // Traer todas las empresas activas con perfil visible
-    // Subquery con MAX(id) garantiza UN solo registro por usuario,
-    // sin depender de GROUP BY ni UNIQUE en la BD
     $stmt = $db->query("
             SELECT u.id, u.nombre, u.ciudad, u.foto,
                    u.verificado, u.badges_custom,
@@ -87,7 +79,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         ");
     $rawEmpresas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Dedup en PHP como failsafe adicional
     $vistos = [];
     $dbEmpresas = [];
     foreach ($rawEmpresas as $row) {
@@ -97,7 +88,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       }
     }
 
-    // Agregar badges a cada empresa
     foreach ($dbEmpresas as &$e) {
       $badges = getBadgesUsuario($db, (int) $e['id']);
       $e['badges'] = $badges;
@@ -144,7 +134,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       overflow-x: hidden;
     }
 
-    /* NAVBAR */
     .navbar {
       position: fixed;
       top: 0;
@@ -386,7 +375,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       color: white;
     }
 
-    /* HERO */
     .hero-empresa {
       padding: 150px 48px 90px;
       background: linear-gradient(135deg, #0f172a 0%, #1a2540 60%, #0f172a 100%);
@@ -442,7 +430,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       line-height: 1.6;
     }
 
-    /* SEARCH BAR EN HERO */
     .empresa-search {
       display: flex;
       align-items: center;
@@ -547,7 +534,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       transform: translateY(-2px);
     }
 
-    /* STATS */
     .stats-band {
       background: white;
       display: grid;
@@ -571,7 +557,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       font-weight: 500;
     }
 
-    /* CATEGORÍAS / SECTORES */
     .categorias {
       padding: 72px 48px 64px;
       background: #f9fafb;
@@ -650,7 +635,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       color: white;
     }
 
-    /* DIVISOR FILTROS */
     .filtros-divider {
       display: flex;
       align-items: center;
@@ -676,7 +660,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       white-space: nowrap;
     }
 
-    /* FILTROS TIPO */
     .filtros-tipo {
       display: inline-flex;
       gap: 8px;
@@ -714,7 +697,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       box-shadow: 0 3px 10px rgba(26, 86, 219, 0.25);
     }
 
-    /* EMPRESAS SECTION */
     .empresas-section {
       padding: 80px 48px;
       background: white;
@@ -747,7 +729,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       margin-top: 32px;
     }
 
-    /* EMPRESA CARD */
     .empresa-card {
       background: #fafafa;
       border: 1px solid rgba(0, 0, 0, 0.07);
@@ -858,7 +839,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       color: white;
     }
 
-    /* NO RESULTS */
     .no-results {
       grid-column: 1/-1;
       text-align: center;
@@ -872,7 +852,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       margin-bottom: 14px;
     }
 
-    /* ── MODAL PERFIL EMPRESA (profesional) ─────────────────── */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -914,7 +893,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       }
     }
 
-    /* Cover */
     .modal-cover {
       height: 120px;
       border-radius: 24px 24px 0 0;
@@ -922,7 +900,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       position: relative;
     }
 
-    /* Close */
     .modal-close {
       position: absolute;
       top: 14px;
@@ -947,7 +924,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       background: rgba(255, 255, 255, 0.35);
     }
 
-    /* Avatar flotante */
     .modal-avatar-wrap {
       display: flex;
       align-items: flex-end;
@@ -986,7 +962,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       margin-bottom: 6px;
     }
 
-    /* Body */
     .modal-body {
       padding: 4px 28px 28px;
     }
@@ -1054,7 +1029,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       margin: 0 0 20px;
     }
 
-    /* Tabs */
     .modal-tabs {
       display: flex;
       gap: 4px;
@@ -1084,12 +1058,10 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
-    /* Panels */
     .modal-panel {
       min-height: 80px;
     }
 
-    /* Loading spinner */
     .conv-loading {
       display: flex;
       align-items: center;
@@ -1114,7 +1086,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       }
     }
 
-    /* Lista convocatorias */
     .conv-lista {
       display: flex;
       flex-direction: column;
@@ -1191,7 +1162,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       align-self: center;
     }
 
-    /* Empty state */
     .conv-empty {
       text-align: center;
       padding: 32px 20px;
@@ -1209,7 +1179,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       margin: 0;
     }
 
-    /* Info grid */
     .info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1238,7 +1207,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       color: #0f172a;
     }
 
-    /* CTA */
     .modal-cta {
       display: block;
       width: 100%;
@@ -1279,7 +1247,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       }
     }
 
-    /* CTA EMPRESA */
     .cta-empresa {
       padding: 90px 48px;
       background: linear-gradient(135deg, #0f172a, #1a2540);
@@ -1414,7 +1381,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       margin: 0;
     }
 
-    /* FINAL CTA */
     .final-cta {
       padding: 90px 48px;
       background: linear-gradient(135deg, #0f172a, #1a2e1a);
@@ -1459,7 +1425,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       color: #60a5fa;
     }
 
-    /* FOOTER */
     footer {
       background: #0f172a;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -1473,7 +1438,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       color: #60a5fa;
     }
 
-    /* SCROLL REVEAL */
     .reveal {
       opacity: 0;
       transform: translateY(36px);
@@ -1485,7 +1449,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       transform: translateY(0);
     }
 
-    /* RESPONSIVE */
     @media(max-width: 1200px) {
       .hero-empresa h1 {
         font-size: 48px;
@@ -1764,7 +1727,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
           $desc = htmlspecialchars($empresa['descripcion'] ?: 'Empresa del Chocó generando oportunidades para la región.');
           $grd = htmlspecialchars($empresa['avatar_color'] ?: 'linear-gradient(135deg,#1a56db,#3b82f6)');
 
-          // Badge principal a mostrar
           if ($empresa['tiene_top'])
             $badgePrincipalLabel = '<span class="badge-e" style="background:#ff444422;color:#ff4444;border:1px solid #ff444455">👑 Top</span>';
           elseif ($empresa['tiene_premium'])
@@ -1776,7 +1738,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
           else
             $badgePrincipalLabel = '';
 
-          // Resolver URL del logo: puede ser URL completa (Cloudinary) o solo nombre de archivo local
           $logoSrc = '';
           if (!empty($empresa['logo'])) {
             $logoSrc = str_starts_with($empresa['logo'], 'http')
@@ -1880,8 +1841,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       </div>
     </div>
   </section>
-
-
 
   <!-- MODAL PERFIL EMPRESA -->
   <div class="modal-overlay" id="modalOverlay">
@@ -2121,10 +2080,10 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
   </footer>
 
   <script>
-    // ── PLANES Y PRECIOS ────────────────────────────────────────
+    
     (function () {
       let precioTipo = 'empresa';
-      let precioPeriodo = 'semana'; // 'semana' | 'mes' | 'anio'
+      let precioPeriodo = 'semana'; 
 
       const planesData = [
         {
@@ -2247,7 +2206,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
         const grid = document.getElementById('precios-grid');
         if (!grid) return;
 
-        // Filtrar Microempresa si estamos en candidato
         const planes = planesData.filter(p => !(p.soloEmpresa && precioTipo === 'candidato'));
 
         grid.innerHTML = planes.map(p => {
@@ -2270,7 +2228,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
               <div style="font-size:12px;color:#999;margin-top:2px">por mes</div>
               ${!sinSemana ? `<span style="display:inline-block;background:${p.bg};color:${p.color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:8px">o ${fmtPrecio(p.precioSemana)}/semana</span>` : ''}`;
           } else {
-            // semana
+            
             if (sinSemana) {
               precioHTML = `
                 <div style="font-size:34px;font-weight:800;color:${p.color};font-family:'Syne',sans-serif">${fmtPrecio(p.precioMes)}</div>
@@ -2380,12 +2338,11 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
   </script>
 
   <script>
-    // NAVBAR SCROLL
+    
     window.addEventListener('scroll', () => {
       document.getElementById('navbar').classList.toggle('abajo', window.scrollY > 50);
     });
 
-    // HAMBURGER
     const ham = document.getElementById('hamburger');
     const mob = document.getElementById('mobileMenu');
     ham.addEventListener('click', () => { ham.classList.toggle('open'); mob.classList.toggle('open'); });
@@ -2393,7 +2350,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       if (!ham.contains(e.target) && !mob.contains(e.target)) { ham.classList.remove('open'); mob.classList.remove('open'); }
     });
 
-    // STATS EN TIEMPO REAL DESDE BD
     (async function () {
       try {
         const r = await fetch('stats.php');
@@ -2415,13 +2371,11 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
         if (eV && d.total_empleos) animNum(eV, d.total_empleos);
         if (eT && d.total_talentos) animNum(eT, d.total_talentos);
         if (eS && d.satisfaccion) eS.textContent = d.satisfaccion + '%';
-      } catch (e) { /* mantener valores por defecto */ }
+      } catch (e) {  }
     })();
 
-    // ALL CARDS
     const allCards = Array.from(document.querySelectorAll('.empresa-card'));
 
-    // Calcular conteos por sector dinámicamente
     (function () {
       const map = {
         tecnologia: 'cnt-tec', salud: 'cnt-sal', educacion: 'cnt-edu',
@@ -2467,7 +2421,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       nr.style.display = visible === 0 ? '' : 'none';
     }
 
-    // SECTORES
     document.querySelectorAll('.cat-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('activa'));
@@ -2478,7 +2431,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       });
     });
 
-    // FILTROS TIPO
     document.querySelectorAll('.filtro-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
@@ -2488,7 +2440,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       });
     });
 
-    // BÚSQUEDA
     async function buscar() {
       const logueado = <?php echo isset($_SESSION['usuario_id']) ? 'true' : 'false'; ?>;
       if (!logueado) { abrirModalLogin(); return; }
@@ -2502,13 +2453,11 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
     document.getElementById('searchNombre').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
     document.getElementById('searchUbicacion').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
 
-    // MODAL
     const overlay = document.getElementById('modalOverlay');
     document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
 
-    // Tabs
     document.querySelectorAll('.modal-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
@@ -2568,10 +2517,8 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       const grad = card.dataset.grad || 'linear-gradient(135deg,#1a56db,#3b82f6)';
       const uid = card.dataset.uid || '';
 
-      // Cover
       document.getElementById('mCover').style.background = grad;
 
-      // Avatar
       const av = document.getElementById('mAvatar');
       av.style.background = grad;
       const logo = card.dataset.logo || '';
@@ -2582,7 +2529,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
         av.textContent = card.dataset.initials || '';
       }
 
-      // Badge
       const badgeEl = card.querySelector('.badge-e');
       const mBadge = document.getElementById('mBadge');
       if (badgeEl) {
@@ -2594,13 +2540,11 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
         mBadge.style.display = 'none';
       }
 
-      // Texto
       document.getElementById('mNombre').textContent = card.dataset.nombre || '';
       document.getElementById('mSector').textContent = '🏷️ ' + (card.dataset.sector || '');
       document.getElementById('mUbicacion').textContent = '📍 ' + (card.dataset.ubicacion || '');
       document.getElementById('mDesc').textContent = card.dataset.desc || '';
 
-      // Info grid
       const web = card.dataset.web || '';
       document.getElementById('mInfoGrid').innerHTML = `
         <div class="info-item"><div class="i-label">Sector</div><div class="i-val">${card.dataset.sector || '—'}</div></div>
@@ -2608,23 +2552,19 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
         <div class="info-item" style="grid-column:1/-1"><div class="i-label">Sitio web</div><div class="i-val">${web ? `<a href="${web.startsWith('http') ? web : 'https://' + web}" target="_blank" style="color:#1a56db;text-decoration:none">${web}</a>` : '—'}</div></div>
       `;
 
-      // Botón CTA → siempre al perfil de la empresa
       const cta = document.getElementById('mBtnCta');
       cta.href = uid ? `perfil.php?id=${uid}&tipo=empresa` : 'empresas.php';
       cta.target = '';
       cta.textContent = '🏢 Ver perfil completo';
 
-      // Botón perfil completo
       const bpE = document.getElementById('mBtnPerfilE');
       if (bpE) bpE.href = uid ? `perfil.php?id=${uid}&tipo=empresa` : '#';
 
-      // Resetear tabs a convocatorias
       document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
       document.querySelector('.modal-tab[data-tab="convocatorias"]').classList.add('active');
       document.getElementById('panelConvocatorias').style.display = '';
       document.getElementById('panelInfo').style.display = 'none';
 
-      // Registrar vista
       if (uid) {
         const fd = new FormData();
         fd.append('_action', 'registrar_vista');
@@ -2635,7 +2575,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
 
       overlay.classList.add('open');
 
-      // Cargar convocatorias async
       if (uid) cargarConvocatorias(uid, grad);
     }
 
@@ -2643,7 +2582,6 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       card.querySelector('.btn-perfil').addEventListener('click', () => abrirModal(card));
     });
 
-    // SCROLL REVEAL BIDIRECCIONAL
     const observer = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {

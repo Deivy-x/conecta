@@ -1,14 +1,11 @@
 <?php
-// ============================================================
-// chat.php — Chat interno QuibdóConecta (todo en uno)
-// ============================================================
+
 ini_set('session.gc_maxlifetime', 604800);
 ini_set('session.cookie_lifetime', 604800);
 session_set_cookie_params(['lifetime'=>604800,'path'=>'/','samesite'=>'Lax','httponly'=>true]);
 session_start();
 require_once __DIR__ . '/Php/db.php';
 
-// ─── MANEJO DE ACCIONES AJAX ────────────────────────────────
 $action = $_GET['action'] ?? '';
 
 if ($action) {
@@ -23,7 +20,6 @@ if ($action) {
     $yo = (int) $_SESSION['usuario_id'];
     $db = getDB();
 
-    // ── CONVERSACIONES ───────────────────────────────────────
     if ($action === 'conversaciones') {
         $stmt = $db->prepare("
             SELECT u.id, u.nombre, u.apellido, u.foto, u.tipo,
@@ -66,7 +62,6 @@ if ($action) {
         exit;
     }
 
-    // ── MENSAJES ─────────────────────────────────────────────
     if ($action === 'mensajes') {
         $con = (int) ($_GET['con'] ?? 0);
         if (!$con) {
@@ -92,7 +87,6 @@ if ($action) {
         exit;
     }
 
-    // ── ENVIAR ───────────────────────────────────────────────
     if ($action === 'enviar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $para = (int) ($_POST['para_usuario'] ?? 0);
         $mensaje = trim($_POST['mensaje'] ?? '');
@@ -124,7 +118,6 @@ if ($action) {
         exit;
     }
 
-    // ── BUSCAR USUARIOS ──────────────────────────────────────
     if ($action === 'buscar') {
         $q = trim($_GET['q'] ?? '');
         if (mb_strlen($q) < 2) {
@@ -147,7 +140,6 @@ if ($action) {
     exit;
 }
 
-// ─── CARGA NORMAL DE LA PÁGINA ───────────────────────────────
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: inicio_sesion.php');
     exit;
@@ -182,9 +174,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
     <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
     <style>
-        /* ══════════════════════════════════════════════════════
-           VARIABLES — TEMA CLARO QuibdóConecta
-        ══════════════════════════════════════════════════════ */
+        
         :root {
             --verde:       #1a9e4a;
             --verde-med:   #22c55e;
@@ -231,15 +221,11 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             display: flex;
         }
 
-        /* ── SCROLLBAR ── */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* ══════════════════════════════════════════════════════
-           SIDEBAR
-        ══════════════════════════════════════════════════════ */
         .sidebar {
             width: 250px;
             flex-shrink: 0;
@@ -395,9 +381,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             background: #fef2f2;
         }
 
-        /* ══════════════════════════════════════════════════════
-           MAIN
-        ══════════════════════════════════════════════════════ */
         .main {
             flex: 1;
             display: flex;
@@ -406,7 +389,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             overflow: hidden;
         }
 
-        /* ── TOPBAR ── */
         .topbar {
             background: var(--bg2);
             height: 62px;
@@ -472,16 +454,12 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             box-shadow: 0 0 0 2px var(--verde-light);
         }
 
-        /* ══════════════════════════════════════════════════════
-           CHAT LAYOUT
-        ══════════════════════════════════════════════════════ */
         .chat-container {
             flex: 1;
             display: flex;
             overflow: hidden;
         }
 
-        /* ── LISTA CONVERSACIONES ── */
         .chat-list {
             width: 310px;
             flex-shrink: 0;
@@ -641,7 +619,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             text-align: center;
         }
 
-        /* ── BOTÓN NUEVO CHAT ── */
         .new-chat-btn {
             display: flex;
             align-items: center;
@@ -668,9 +645,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             transform: translateY(-1px);
         }
 
-        /* ══════════════════════════════════════════════════════
-           ÁREA DE CHAT
-        ══════════════════════════════════════════════════════ */
         .chat-area {
             flex: 1;
             display: flex;
@@ -710,7 +684,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             color: var(--ink4);
         }
 
-        /* ── CABECERA DEL CHAT ── */
         .chat-header {
             padding: 13px 22px;
             background: var(--bg2);
@@ -763,7 +736,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
 
         .chat-header .ch-back:hover { background: var(--bg); }
 
-        /* ── MENSAJES ── */
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -829,7 +801,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
         .msg-bubble.sent .msg-time   { color: rgba(255,255,255,.6); text-align: right; }
         .msg-bubble.received .msg-time { color: var(--ink4); }
 
-        /* ── INPUT ── */
         .chat-input-area {
             padding: 14px 22px;
             background: var(--bg2);
@@ -889,9 +860,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             box-shadow: none;
         }
 
-        /* ══════════════════════════════════════════════════════
-           MODAL NUEVO MENSAJE
-        ══════════════════════════════════════════════════════ */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -1020,9 +988,6 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             color: var(--ink4);
         }
 
-        /* ══════════════════════════════════════════════════════
-           RESPONSIVE
-        ══════════════════════════════════════════════════════ */
         @media(max-width:900px) {
             .sidebar { width: 62px; }
             .sidebar-brand span, .s-user-info, .nav-item span:not(.ni),

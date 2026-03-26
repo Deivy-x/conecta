@@ -1,18 +1,10 @@
 <?php
-// ============================================================
-// tester_talentos.php — Diagnóstico completo QuibdóConecta
-// Sube este archivo a la raíz del proyecto y ábrelo
-// en el navegador. ELIMÍNALO después de usarlo.
-// ============================================================
+
 define('DB_HOST',    'sql213.infinityfree.com');
 define('DB_NAME',    'if0_41408419_quibdo');
 define('DB_USER',    'if0_41408419');
 define('DB_PASS',    'quibdoconecta');
 define('DB_CHARSET', 'utf8mb4');
-
-// ── Seguridad mínima: solo accessible localmente o con clave ──
-// Descomenta y cambia la clave si quieres protegerlo:
-// if (($_GET['clave'] ?? '') !== 'miclaveSecreta') { http_response_code(403); die('Acceso denegado'); }
 
 function getConn(): PDO {
     static $pdo = null;
@@ -26,7 +18,6 @@ function getConn(): PDO {
     return $pdo;
 }
 
-// ── Acción: limpiar duplicados ─────────────────────────────
 $accion_msg = '';
 if (isset($_POST['limpiar_duplicados'])) {
     try {
@@ -38,7 +29,7 @@ if (isset($_POST['limpiar_duplicados'])) {
               AND tp1.id < tp2.id
         ");
         $accion_msg = "✅ Duplicados eliminados. Filas borradas: $deleted";
-        // Intentar agregar UNIQUE
+        
         try {
             $pdo->exec("ALTER TABLE talento_perfil ADD UNIQUE KEY uq_usuario_id (usuario_id)");
             $accion_msg .= " — UNIQUE KEY agregado ✅";
@@ -50,12 +41,10 @@ if (isset($_POST['limpiar_duplicados'])) {
     }
 }
 
-// ── Recolectar datos ───────────────────────────────────────
 $tests = [];
 $pdo = null;
 $conn_ok = false;
 
-// TEST 1: Conexión
 try {
     $pdo = getConn();
     $pdo->query("SELECT 1");
@@ -67,7 +56,6 @@ try {
 
 if ($conn_ok) {
 
-    // TEST 2: Tablas requeridas
     $tablas_req = ['usuarios','talento_perfil','badges_catalog','admin_roles','admin_auditoria','empleos','mensajes','verificaciones'];
     $tablas_existentes = array_column($pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_NUM), 0);
     $faltantes = array_diff($tablas_req, $tablas_existentes);
@@ -79,7 +67,6 @@ if ($conn_ok) {
             : 'Faltan: ' . implode(', ', $faltantes)
     ];
 
-    // TEST 3: UNIQUE KEY en talento_perfil
     try {
         $keys = $pdo->query("SHOW INDEX FROM talento_perfil WHERE Non_unique = 0 AND Column_name = 'usuario_id'")->fetchAll();
         $tiene_unique = count($keys) > 0;
@@ -94,7 +81,6 @@ if ($conn_ok) {
         $tests[] = ['ok' => false, 'titulo' => '3. UNIQUE KEY talento_perfil', 'detalle' => $e->getMessage()];
     }
 
-    // TEST 4: Duplicados actuales en talento_perfil
     try {
         $dups = $pdo->query("
             SELECT tp.usuario_id,
@@ -122,7 +108,6 @@ if ($conn_ok) {
         $tests[] = ['ok' => false, 'titulo' => '4. Duplicados en talento_perfil', 'detalle' => $e->getMessage()];
     }
 
-    // TEST 5: Query VIEJA — cuántos resultados devuelve (detecta el bug)
     try {
         $vieja = $pdo->query("
             SELECT u.id, CONCAT(u.nombre,' ',COALESCE(u.apellido,'')) AS nombre, tp.profesion
@@ -150,7 +135,6 @@ if ($conn_ok) {
         $tests[] = ['ok' => false, 'titulo' => '5. Query VIEJA', 'detalle' => $e->getMessage()];
     }
 
-    // TEST 6: Query NUEVA — MAX(id) subquery
     try {
         $nueva = $pdo->query("
             SELECT u.id, CONCAT(u.nombre,' ',COALESCE(u.apellido,'')) AS nombre,
@@ -180,7 +164,6 @@ if ($conn_ok) {
         $tests[] = ['ok' => false, 'titulo' => '6. Query NUEVA', 'detalle' => $e->getMessage()];
     }
 
-    // TEST 7: Query talentos_preview (3 para el index)
     try {
         $preview = $pdo->query("
             SELECT u.id, CONCAT(u.nombre,' ',COALESCE(u.apellido,'')) AS nombre,
@@ -209,7 +192,6 @@ if ($conn_ok) {
         $tests[] = ['ok' => false, 'titulo' => '7. Query talentos_preview', 'detalle' => $e->getMessage()];
     }
 
-    // TEST 8: Estado general de talento_perfil
     try {
         $stats = $pdo->query("
             SELECT
@@ -233,7 +215,6 @@ if ($conn_ok) {
         $tests[] = ['ok' => false, 'titulo' => '8. Estado talento_perfil', 'detalle' => $e->getMessage()];
     }
 
-    // TEST 9: Tabla usuarios
     try {
         $usrs = $pdo->query("
             SELECT u.id, CONCAT(u.nombre,' ',COALESCE(u.apellido,'')) AS nombre,
@@ -262,7 +243,6 @@ if ($conn_ok) {
         $tests[] = ['ok' => false, 'titulo' => '9. Usuarios', 'detalle' => $e->getMessage()];
     }
 
-    // TEST 10: Badges catalog
     try {
         $badges = $pdo->query("SELECT id, emoji, nombre, tipo, activo FROM badges_catalog ORDER BY tipo, nombre")->fetchAll();
         if (empty($badges)) {
@@ -275,7 +255,6 @@ if ($conn_ok) {
         $tests[] = ['ok' => false, 'titulo' => '10. Badges catalog', 'detalle' => $e->getMessage()];
     }
 
-    // TEST 11: admin_roles
     try {
         $cols = array_column($pdo->query("SHOW COLUMNS FROM admin_roles")->fetchAll(), 'Field');
         $necesarias = ['perm_usuarios','perm_empleos','perm_badges','perm_talentos'];
@@ -293,7 +272,6 @@ if ($conn_ok) {
 
 }
 
-// ── Contar ok/fail ─────────────────────────────────────────
 $total_ok   = count(array_filter($tests, fn($t) => $t['ok']));
 $total_fail = count($tests) - $total_ok;
 ?>
@@ -423,7 +401,7 @@ function toggle(i) {
   const open  = body.classList.toggle('open');
   arrow.style.transform = open ? 'rotate(180deg)' : '';
 }
-// Abrir automáticamente los que fallaron
+
 document.querySelectorAll('.test.fail .test-body').forEach(el => el.classList.add('open'));
 document.querySelectorAll('.test.fail .test-arrow').forEach(el => el.style.transform = 'rotate(180deg)');
 </script>

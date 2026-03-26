@@ -21,7 +21,6 @@
             color: #111;
         }
 
-        /* ========================= NAVBAR ========================= */
         .navbar {
             position: fixed;
             top: 0;
@@ -149,7 +148,6 @@
             background: #166f3d;
         }
 
-        /* ========================= HERO ========================= */
         .hero-empresas {
             padding: 160px 48px 100px;
             background: linear-gradient(135deg, #0f172a 0%, #1a1a2e 50%, #0f172a 100%);
@@ -246,7 +244,6 @@
             color: #2ecc71;
         }
 
-        /* ========================= CONFIANZA STATS ========================= */
         .confianza {
             background: white;
             padding: 55px 48px;
@@ -270,7 +267,6 @@
             margin-top: 5px;
         }
 
-        /* ========================= BENEFICIOS ========================= */
         .beneficios {
             padding: 100px 48px;
             background: #f9fafb;
@@ -349,7 +345,6 @@
             line-height: 1.65;
         }
 
-        /* ========================= CÓMO REGISTRARSE ========================= */
         .como-registrarse {
             padding: 100px 48px;
             background: white;
@@ -477,7 +472,6 @@
             margin-top: 3px;
         }
 
-        /* ========================= EMPRESAS REGISTRADAS ========================= */
         .empresas-lista {
             padding: 100px 48px;
             background: #f9fafb;
@@ -601,7 +595,6 @@
             color: white;
         }
 
-        /* ========================= PLANES ========================= */
         .planes {
             padding: 100px 48px;
             background: white;
@@ -751,7 +744,6 @@
             opacity: 0.9;
         }
 
-        /* ========================= CTA FINAL ========================= */
         .final-cta {
             padding: 110px 48px;
             background: #0f172a;
@@ -828,7 +820,6 @@
             color: #2ecc71;
         }
 
-        /* ========================= FOOTER ========================= */
         footer {
             background: #0f172a;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -842,8 +833,6 @@
             color: #2ecc71;
         }
 
-
-        /* ── HAMBURGER ── */
         .hamburger {
             display: none;
             flex-direction: column;
@@ -952,7 +941,6 @@
             color: white;
         }
 
-        /* ── SCROLL REVEAL BIDIRECCIONAL ── */
         .reveal {
             opacity: 0;
             transform: translateY(36px);
@@ -964,7 +952,6 @@
             transform: translateY(0);
         }
 
-        /* ── PARTNERS CARRUSEL ── */
         .partners-band {
             padding: 70px 48px;
             background: #f9fafb;
@@ -1052,9 +1039,6 @@
             color: #1f9d55;
         }
 
-        /* ========================= RESPONSIVE ========================= */
-
-        /* ── RESPONSIVE HERO COMPLETO 2026 ── */
         @media (max-width: 1200px) {
             .hero-empresas h1 {
                 font-size: 46px;
@@ -1170,7 +1154,7 @@
                 text-align: center;
             }
         }
-        /* ── MODAL EMPRESA ── */
+        
         .modal-empresa-ov {
             display: none; position: fixed; inset: 0;
             background: rgba(0,0,0,.55); z-index: 9999;
@@ -1227,7 +1211,6 @@
 
 <body>
 
-    <!-- NAVBAR -->
     <header class="navbar">
         <div class="nav-left">
             <img src="Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
@@ -1247,7 +1230,6 @@
         <button class="hamburger" id="hamburger" aria-label="Menú"><span></span><span></span><span></span></button>
     </header>
 
-    <!-- MENÚ MÓVIL -->
     <div class="mobile-menu" id="mobileMenu">
         <a href="index.html">🏠 Inicio</a>
         <a href="Empleo.html">💼 Empleos</a>
@@ -1258,13 +1240,12 @@
                 class="m-reg">Registrarse</a></div>
     </div>
 
-    <!-- HERO -->
     <section class="hero-empresas">
         <div class="hero-empresas-content">
             <span class="hero-badge">🏢 Para empresas y emprendedores</span>
             <h1>Conecta tu empresa con el <span>mejor talento</span> del Chocó</h1>
             <p>Publica vacantes, encuentra profesionales locales y haz crecer tu negocio. Gratis para empezar.</p>
-            <!-- HERO SUBTITLE -->
+            
             <p style="font-size:17px;color:rgba(255,255,255,0.75);margin-bottom:30px;line-height:1.6;">Publica tus
                 vacantes, accede a talento verificado del Chocó y haz crecer tu equipo. Todo desde un solo lugar.</p>
             <div class="hero-btns">
@@ -1274,7 +1255,6 @@
         </div>
     </section>
 
-    <!-- STATS DE CONFIANZA -->
     <div class="confianza">
         <div class="confianza-item reveal">
             <h3>+120</h3>
@@ -1298,7 +1278,6 @@
         </div>
     </div>
 
-    <!-- BENEFICIOS -->
     <section class="beneficios">
         <span class="section-label">¿Por qué elegirnos?</span>
         <h2>Beneficios de publicar en QuibdóConecta</h2>
@@ -1338,7 +1317,6 @@
         </div>
     </section>
 
-    <!-- CÓMO REGISTRARSE -->
     <section class="como-registrarse">
         <div class="como-inner">
             <div class="como-texto">
@@ -1415,7 +1393,6 @@
         </div>
     </section>
 
-    <!-- EMPRESAS REGISTRADAS -->
     <section class="empresas-lista" id="empresas">
         <div class="empresas-header">
             <h2>Empresas activas</h2>
@@ -1481,7 +1458,6 @@
         </div>
     </section>
 
-    <!-- MODAL EMPRESA -->
     <div class="modal-empresa-ov" id="modalEmpresaOv">
         <div class="modal-empresa-box">
             <button class="modal-empresa-close" id="modalEmpresaClose">✕</button>
@@ -1496,7 +1472,6 @@
         </div>
     </div>
 
-    <!-- PLANES -->
     <section class="planes">
         <span class="section-label">Planes</span>
         <h2>Elige el plan ideal para tu empresa</h2>
@@ -1547,8 +1522,6 @@
         </div>
     </section>
 
-
-    <!-- PARTNERS CARRUSEL -->
     <section class="partners-band">
         <h2 class="reveal">Empresas que ya nos eligen</h2>
         <p class="sub reveal">La comunidad empresarial del Chocó crece con QuibdóConecta</p>
@@ -1578,7 +1551,6 @@
         </div>
     </section>
 
-    <!-- CTA FINAL -->
     <section class="final-cta">
         <h2>¿Listo para encontrar tu próximo empleado?</h2>
         <p>Únete a más de 120 empresas que ya confían en QuibdóConecta.</p>
@@ -1588,7 +1560,6 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer>
         <p>© 2026 <span>QuibdóConecta</span> — Conectando el talento del Chocó con el mundo.</p>
     </footer>
@@ -1596,14 +1567,13 @@
     <script>
         window.addEventListener("scroll", () => { document.querySelector(".navbar").classList.toggle("abajo", window.scrollY > 50); });
 
-        /* ── HAMBURGER ── */
         const ham = document.querySelector('#hamburger') || document.createElement('button');
         const mob = document.querySelector('#mobileMenu') || document.createElement('div');
         if (document.getElementById('hamburger')) {
             ham.addEventListener('click', () => { ham.classList.toggle('open'); mob.classList.toggle('open'); });
             document.addEventListener('click', e => { if (!ham.contains(e.target) && !mob.contains(e.target)) { ham.classList.remove('open'); mob.classList.remove('open'); } });
         }
-        /* ── SCROLL REVEAL BIDIRECCIONAL ── */
+        
         (function () {
             const reveals = document.querySelectorAll('.reveal');
             if (!reveals.length) return;
@@ -1616,7 +1586,6 @@
             reveals.forEach(el => obs.observe(el));
         })();
 
-        /* ── MODAL EMPRESA ── */
         const empOv    = document.getElementById('modalEmpresaOv');
         const empClose = document.getElementById('modalEmpresaClose');
         empClose.addEventListener('click', () => empOv.classList.remove('open'));
@@ -1629,13 +1598,11 @@
                 const card = btn.closest('.empresa-card');
                 const d = card.dataset;
 
-                // Logo: copiar texto y estilo del empresa-logo
                 const logoEl = card.querySelector('.empresa-logo');
                 const mebLogo = document.getElementById('mebLogo');
                 mebLogo.textContent = logoEl.textContent;
                 mebLogo.style.cssText = `width:72px;height:72px;border-radius:16px;color:white;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-family:'Cabinet Grotesk',sans-serif;background:${logoEl.style.background || 'linear-gradient(135deg,#1c5c32,#2d8a50)'}`;
 
-                // Badges
                 const badges = document.getElementById('mebBadges');
                 badges.innerHTML = '';
                 if (d.verificada === '1') badges.innerHTML += '<span class="meb-badge verif">✅ Empresa Verificada</span>';
@@ -1653,7 +1620,5 @@
 
     </script>
 
-
-<!-- Widget de sesión activa — QuibdóConecta -->
 <script src="js/sesion_widget.js"></script>
 </html> 

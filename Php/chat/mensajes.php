@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// Php/chat/mensajes.php — Cargar mensajes de una conversación (GET)
-// ============================================================
+
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../db.php';
@@ -22,11 +20,9 @@ if (!$con) {
 
 $db = getDB();
 
-// Marcar como leídos los mensajes que el otro me envió
 $db->prepare("UPDATE mensajes SET leido = 1 WHERE de_usuario = ? AND para_usuario = ? AND leido = 0")
    ->execute([$con, $yo]);
 
-// Cargar mensajes entre ambos usuarios (últimos 100)
 $stmt = $db->prepare("
     SELECT m.id, m.de_usuario, m.para_usuario, m.mensaje, m.leido, m.creado_en,
            u.nombre AS nombre_remitente
@@ -40,7 +36,6 @@ $stmt = $db->prepare("
 $stmt->execute([$yo, $con, $con, $yo]);
 $mensajes = $stmt->fetchAll();
 
-// Info del otro usuario
 $info = $db->prepare("SELECT id, nombre, apellido, foto, tipo FROM usuarios WHERE id = ? AND activo = 1");
 $info->execute([$con]);
 $otro = $info->fetch();

@@ -1,8 +1,5 @@
 <?php
-/**
- * galeria_publica.php — Devuelve la galería pública de un usuario
- * GET ?id=X
- */
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
@@ -14,12 +11,10 @@ if (!$uid) { echo json_encode([]); exit; }
 try {
     $pdo = getDB();
 
-    // Verificar que el usuario existe y está activo
     $chk = $pdo->prepare("SELECT id FROM usuarios WHERE id=? AND activo=1");
     $chk->execute([$uid]);
     if (!$chk->fetch()) { echo json_encode([]); exit; }
 
-    // Crear tabla si no existe
     $pdo->exec("CREATE TABLE IF NOT EXISTS talento_galeria (
         id INT AUTO_INCREMENT PRIMARY KEY,
         usuario_id INT NOT NULL,

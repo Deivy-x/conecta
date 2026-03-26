@@ -1,11 +1,10 @@
 <?php
-// Empleo.php — Vacantes reales de BD + Trabajos Culturales del Chocó
+
 session_start();
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// ── Manejar POST: solicitar vacante desde Empleo.php ──────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'solicitar_vacante_pub') {
   header('Content-Type: application/json');
   if (!isset($_SESSION['usuario_id'])) {
@@ -34,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'soli
       INDEX idx_candidato (candidato_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-    // ── Verificar límite de aplicaciones del plan ────────────────
     if (function_exists('verificarLimite')) {
       $lim = verificarLimite($db, $_SESSION['usuario_id'], 'aplicaciones');
       if (!$lim['puede']) {
@@ -60,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'soli
   exit;
 }
 
-// ── Detectar sesión para pasar al JS ──────────────────────────
 $usuarioLogueado   = isset($_SESSION['usuario_id']);
 $usuarioEsCandidato = $usuarioLogueado && ($_SESSION['usuario_tipo'] ?? '') === 'candidato';
 $usuarioNombre     = htmlspecialchars($_SESSION['usuario_nombre'] ?? '');
@@ -74,7 +71,6 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         require_once __DIR__ . '/Php/db.php';
         $db = getDB();
 
-        // Vacantes activas con info de empresa
         $stmt = $db->query("
             SELECT e.id, e.titulo, e.descripcion, e.categoria, e.ciudad,
                    e.salario_min, e.salario_max, e.modalidad, e.tipo,
@@ -95,10 +91,9 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         $vacantesDB = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $totalVacantes = count($vacantesDB);
 
-        // Total empresas
         $totalEmpresas = (int)$db->query("SELECT COUNT(*) FROM usuarios WHERE tipo='empresa' AND activo=1")->fetchColumn();
     } catch (Exception $e) {
-        // DEBUG: mostrar error real
+        
         die(json_encode(['ok' => false, 'msg' => $e->getMessage(), 'trace' => $e->getTraceAsString()]));
     }
 }
@@ -142,7 +137,6 @@ function catIcono($cat, $iconos) {
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'DM Sans',Arial,sans-serif;background:#f9fafb;color:#111}
 
-    /* ── NAVBAR ── */
     .navbar{position:fixed;top:0;left:0;width:100%;height:78px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;background:#fff;border-bottom:1px solid rgba(0,0,0,.08);box-shadow:0 2px 12px rgba(0,0,0,.05);z-index:1000;transition:box-shadow .3s}
     .navbar.abajo{box-shadow:0 4px 20px rgba(0,0,0,.12)}
     .nav-left{display:flex;align-items:center;gap:12px}
@@ -175,7 +169,6 @@ function catIcono($cat, $iconos) {
     .mobile-auth .m-login{border:2px solid #1f9d55;color:#1f9d55}
     .mobile-auth .m-reg{background:#1f9d55;color:white}
 
-    /* ── HERO ── */
     .hero{padding:160px 48px 100px;background:linear-gradient(135deg,#0b3a7e 0%,#0f172a 60%,#0b3a7e 100%);text-align:center;position:relative;overflow:hidden}
     .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(31,157,85,.12) 0%,transparent 60%),radial-gradient(ellipse at 70% 50%,rgba(11,58,126,.2) 0%,transparent 60%)}
     .hero-content{position:relative;z-index:2;max-width:720px;margin:0 auto}
@@ -194,7 +187,6 @@ function catIcono($cat, $iconos) {
     .stat-num{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:#2ecc71}
     .stat-label{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px}
 
-    /* ── CATEGORÍAS ── */
     .categorias{padding:70px 48px;background:#f9fafb;text-align:center}
     .categorias h2{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;margin-bottom:10px;background:linear-gradient(135deg,#1f9d55,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
     .subtitulo{color:#777;font-size:15px;margin-bottom:48px}
@@ -209,7 +201,6 @@ function catIcono($cat, $iconos) {
     @media(max-width:900px){.categorias-grid{grid-template-columns:repeat(3,1fr);gap:12px}}
     @media(max-width:480px){.categorias-grid{grid-template-columns:repeat(2,1fr);gap:10px}.categoria-card{padding:16px 12px}}
 
-    /* ── SECCIÓN EMPLEOS ── */
     .empleos{padding:60px 48px}
     .empleos-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
     .empleos-header h2{font-family:'Syne',sans-serif;font-size:32px;font-weight:800}
@@ -238,9 +229,6 @@ function catIcono($cat, $iconos) {
     .empty-bd{grid-column:1/-1;text-align:center;padding:60px 20px;color:#999}
     .empty-bd .ei{font-size:48px;display:block;margin-bottom:12px}
 
-    
-
-    /* ── MODAL ── */
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
     .modal-overlay.open{display:flex}
     .modal-box{background:white;border-radius:24px;max-width:580px;width:100%;padding:36px;box-shadow:0 30px 80px rgba(0,0,0,.22);animation:fadeUp .3s ease both;position:relative;max-height:90vh;overflow-y:auto}
@@ -253,7 +241,7 @@ function catIcono($cat, $iconos) {
     .modal-loc{color:#888;font-size:13px;margin-bottom:0}
     .modal-info-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:0}
     .modal-chip{background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;color:#444;display:inline-flex;align-items:center;gap:5px}
-    /* Secciones de descripción */
+    
     .md-seccion{margin-bottom:18px}
     .md-seccion-tit{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:8px}
     .md-seccion-body{font-size:14px;color:#444;line-height:1.75}
@@ -262,9 +250,6 @@ function catIcono($cat, $iconos) {
     .modal-btn{display:block;width:100%;padding:15px;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:white;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 6px 20px rgba(31,157,85,.35);transition:transform .2s,box-shadow .2s}
     .modal-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(31,157,85,.45)}
 
-    
-
-    /* ── CTA FINAL ── */
     .final-cta{padding:80px 48px;background:linear-gradient(135deg,#0f172a,#1a2e1a);text-align:center;color:white}
     .final-cta h2{font-family:'Syne',sans-serif;font-size:36px;margin-bottom:12px}
     .final-cta p{color:rgba(255,255,255,.6);font-size:16px;max-width:500px;margin:0 auto 36px;line-height:1.6}
@@ -273,15 +258,12 @@ function catIcono($cat, $iconos) {
     .cta-secondary{border:2px solid rgba(255,255,255,.3);color:white;padding:14px 30px;border-radius:30px;text-decoration:none;font-weight:600;font-size:15px;transition:all .3s}
     .cta-secondary:hover{border-color:#a3e635;color:#a3e635}
 
-    /* ── FOOTER ── */
     footer{background:#0f172a;border-top:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.45);text-align:center;padding:24px 48px;font-size:14px}
     footer span{color:#2ecc71}
 
-    /* ── REVEAL ── */
     .reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
     .reveal.visible{opacity:1;transform:translateY(0)}
 
-    /* ── RESPONSIVE ── */
     @media(max-width:900px){
       .navbar{padding:0 24px}.nav-center,.nav-right{display:none}.hamburger{display:flex}
       .hero{padding:120px 24px 80px}.hero h1{font-size:36px}
@@ -357,7 +339,6 @@ function catIcono($cat, $iconos) {
     </div>
   </div>
 </section>
-
 
   <!-- CATEGORÍAS -->
   <section class="categorias">
@@ -443,7 +424,6 @@ function catIcono($cat, $iconos) {
     </div>
   </section>
 
-
 <!-- CTA FINAL -->
 <section class="final-cta">
   <h2>¿Buscas talento o empleo?</h2>
@@ -523,14 +503,12 @@ function catIcono($cat, $iconos) {
 </footer>
 
 <script>
-// NAVBAR
+
 window.addEventListener('scroll', () => document.getElementById('navbar').classList.toggle('abajo', window.scrollY > 50));
 const ham = document.getElementById('hamburger'), mob = document.getElementById('mobileMenu');
 ham.addEventListener('click', () => { ham.classList.toggle('open'); mob.classList.toggle('open'); });
 document.addEventListener('click', e => { if (!ham.contains(e.target) && !mob.contains(e.target)) { ham.classList.remove('open'); mob.classList.remove('open'); } });
 
-
-// CATEGORÍAS
 const allCards = Array.from(document.querySelectorAll('.empleo-card'));
 const catMap = { 'administrativo':'cnt-adm','tecnologia':'cnt-tec','arte':'cnt-art','educacion':'cnt-edu','salud':'cnt-sal','gastronomia':'cnt-gas','tecnico':'cnt-tec2','transporte':'cnt-tra','construccion':'cnt-con' };
 Object.entries(catMap).forEach(([cat, id]) => {
@@ -588,7 +566,6 @@ async function buscar() {
 document.getElementById('searchBtn').addEventListener('click', buscar);
 ['searchCargo','searchLugar'].forEach(id => document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); }));
 
-// URL params
 (function() {
   const p = new URLSearchParams(window.location.search);
   if (p.get('cargo')) document.getElementById('searchCargo').value = p.get('cargo');
@@ -596,51 +573,41 @@ document.getElementById('searchBtn').addEventListener('click', buscar);
   if (p.get('cargo') || p.get('lugar')) { textoBusqueda = ((p.get('cargo')||'')+' '+(p.get('lugar')||'')).trim().toLowerCase(); aplicarFiltros(); }
 })();
 
-// MODAL VACANTE
 const overlay = document.getElementById('modalOverlay');
 document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
 overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
-
 
 function abrirModal(card) {
   const cat = (card.dataset.cat || '').toLowerCase();
   const iconosMap2 = { 'administrativo':'💼','tecnologia':'💻','tecnología':'💻','arte':'🎵','educacion':'📚','educación':'📚','salud':'🏥','gastronomia':'🍽️','gastronomía':'🍽️','tecnico':'🔧','técnico':'🔧','transporte':'🚗','comercio':'🛍️','construccion':'🏗️','finanzas':'📊','agro':'🌿','servicios':'⚙️' };
   const icono = iconosMap2[cat] || '💼';
 
-  // Icono
   document.getElementById('modalIconWrap').textContent = icono;
 
-  // Tipo badge
   document.getElementById('modalTipo').textContent = ucfirst(card.dataset.tipo || 'Vacante');
 
-  // Titulo
   document.getElementById('modalTitulo').textContent = card.dataset.titulo || '';
 
-  // Empresa y lugar
   document.getElementById('modalEmpresa').innerHTML = '🏢 ' + (card.dataset.empresa || '');
   document.getElementById('modalLoc').textContent = '📍 ' + (card.dataset.lugar || '');
 
-  // Chips info
   const salario = card.dataset.salario || 'A convenir';
   const modalidad = ucfirst(card.dataset.modalidad || 'Presencial');
   document.getElementById('modalSalario').innerHTML = '💰 ' + salario;
   document.getElementById('modalModalidad').innerHTML = '📋 ' + modalidad;
   document.getElementById('modalInfoRow').style.display = 'flex';
 
-  // Badge verificada
   const row = document.getElementById('modalBadgesRow');
   row.innerHTML = '';
   if (card.dataset.verificada === '1') {
     row.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:#e8f5e9;color:#1c5c32;border:1px solid #a5d6a7">✅ Empresa Verificada</span>`;
   }
 
-  // Parsear descripción en bloques
   const rawDesc = card.dataset.desc || '';
   const bloque = document.getElementById('modalDescBloque');
   bloque.innerHTML = '';
 
-  // Separar por los marcadores que metemos en el INSERT
   const partes = rawDesc.split(/\n\n/);
   let descripcion = '', requisitos = '', salarioTexto = '', tipoContrato = '';
 
@@ -650,7 +617,7 @@ function abrirModal(card) {
       requisitos = t.replace('Requisitos:', '').trim();
     } else if (t.startsWith('Salario:')) {
       salarioTexto = t.replace('Salario:', '').trim();
-      // también puede tener Modalidad de contrato en misma línea
+      
       const lines = salarioTexto.split('\n');
       salarioTexto = lines[0].trim();
       if (lines[1] && lines[1].startsWith('Modalidad de contrato:')) {
@@ -661,7 +628,6 @@ function abrirModal(card) {
     }
   });
 
-  // Bloque descripción
   if (descripcion) {
     const d = document.createElement('div');
     d.className = 'md-seccion';
@@ -669,7 +635,6 @@ function abrirModal(card) {
     bloque.appendChild(d);
   }
 
-  // Bloque requisitos — convertir en lista si tiene · o saltos
   if (requisitos) {
     const d = document.createElement('div');
     d.className = 'md-seccion';
@@ -684,13 +649,12 @@ function abrirModal(card) {
     bloque.appendChild(d);
   }
 
-  // Chips adicionales si vienen de descripcion
   if (salarioTexto || tipoContrato) {
     const chipRow = document.createElement('div');
     chipRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px';
     if (salarioTexto) chipRow.innerHTML += `<span class="modal-chip">💰 ${salarioTexto}</span>`;
     if (tipoContrato) chipRow.innerHTML += `<span class="modal-chip">📋 ${tipoContrato}</span>`;
-    // Solo mostrar si difieren de lo que ya mostramos arriba
+    
     if (salarioTexto !== salario || tipoContrato) {
       const d = document.createElement('div');
       d.className = 'md-seccion';
@@ -700,7 +664,6 @@ function abrirModal(card) {
     }
   }
 
-  // Si no había nada estructurado, mostrar el texto tal cual mejorado
   if (!descripcion && !requisitos) {
     const d = document.createElement('div');
     d.className = 'md-seccion';
@@ -708,10 +671,8 @@ function abrirModal(card) {
     bloque.appendChild(d);
   }
 
-  // Guardar empleo id actual para solicitud
   window._modalEmpId = parseInt(card.dataset.empid || '0');
 
-  // Reset estado solicitud
   const solMsg = document.getElementById('modalSolMsg');
   if (solMsg) { solMsg.style.display = 'none'; solMsg.textContent = ''; }
   const btnSol = document.getElementById('modalBtnSolicitar');
@@ -727,7 +688,6 @@ function abrirModal(card) {
 
 function ucfirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
-// ── SOLICITAR VACANTE DESDE MODAL ─────────────────────────────
 <?php if ($usuarioEsCandidato): ?>
 async function solicitarDesdeModal() {
   const empId = window._modalEmpId || 0;
@@ -736,7 +696,6 @@ async function solicitarDesdeModal() {
   const msg = document.getElementById('modalSolMsg');
   const mensajeWrap = document.getElementById('modalMensajeWrap');
 
-  // Primera pulsación: mostrar área de mensaje
   if (mensajeWrap && mensajeWrap.style.display === 'none') {
     mensajeWrap.style.display = 'block';
     btn.textContent = '✅ Confirmar y enviar solicitud';
@@ -785,8 +744,6 @@ function solicitarDesdeModal() { window.location.href = 'registro.php'; }
 
 document.querySelectorAll('.btn-ver').forEach(btn => btn.addEventListener('click', () => abrirModal(btn.closest('.empleo-card'))));
 
-
-// SCROLL REVEAL
 const obs = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('visible'); }

@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// Php/chat/conversaciones.php — Listar conversaciones del usuario (GET)
-// ============================================================
+
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../db.php';
@@ -15,8 +13,6 @@ if (!isset($_SESSION['usuario_id'])) {
 $yo = (int) $_SESSION['usuario_id'];
 $db = getDB();
 
-// Obtener todos los usuarios con los que he tenido conversación
-// Para cada uno: último mensaje, fecha, y cuántos no leídos
 $stmt = $db->prepare("
     SELECT 
         u.id,
@@ -53,7 +49,6 @@ $stmt = $db->prepare("
 $stmt->execute([$yo, $yo, $yo, $yo, $yo, $yo]);
 $conversaciones = $stmt->fetchAll();
 
-// Obtener el último mensaje para cada conversación
 foreach ($conversaciones as &$conv) {
     $msg = $db->prepare("
         SELECT mensaje, de_usuario, creado_en 
@@ -70,7 +65,6 @@ foreach ($conversaciones as &$conv) {
     $conv['yo_envie_ultimo'] = $ultimo && (int)$ultimo['de_usuario'] === $yo;
 }
 
-// Contar total no leídos
 $totalStmt = $db->prepare("SELECT COUNT(*) FROM mensajes WHERE para_usuario = ? AND leido = 0");
 $totalStmt->execute([$yo]);
 $totalNoLeidos = (int) $totalStmt->fetchColumn();

@@ -1,17 +1,5 @@
 <?php
-/**
- * empleos_preview.php — Hasta 4 empleos para la sección "Empleos destacados" del index
- *
- * LÓGICA:
- *  1. Prioridad: empleos con destacado=1 (marcados en el admin)
- *  2. Si hay menos de 4, rellena con los más recientes activos
- *  3. Máximo 4 tarjetas
- *
- * ADMIN: gestion-qbc-2025.php → sección Empleos → botón "⭐ Destacar en index"
- *
- * BD: empleos JOIN perfiles_empresa (para nombre empresa)
- *     empleos.empresa_id → perfiles_empresa.usuario_id
- */
+
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 

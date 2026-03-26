@@ -1,8 +1,5 @@
 <?php
-// ============================================================
-// perfil.php — Perfil público QuibdóConecta
-// ?id=X&tipo=talento|empresa|negocio|candidato
-// ============================================================
+
 session_start();
 header("Cache-Control: no-cache, no-store, must-revalidate");
 
@@ -77,7 +74,6 @@ try { $vt = $db->prepare("SELECT COUNT(*) FROM perfil_vistas WHERE usuario_id=?"
 
 function ytId($url) { preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/',$url,$m); return $m[1]??''; }
 
-// ── FIX FOTO URL: Cloudinary returns full https:// URL, local returns just filename ──
 function resolveUrl($val, $prefix) {
     if (empty($val)) return '';
     if (str_starts_with($val, 'http://') || str_starts_with($val, 'https://')) return htmlspecialchars($val);
@@ -87,7 +83,7 @@ function resolveUrl($val, $prefix) {
 $nombre  = htmlspecialchars(trim($u['nombre'].' '.($u['apellido']??'')));
 $ciudad  = htmlspecialchars($u['ciudad'] ?? 'Quibdó, Chocó');
 $fotoUrl = resolveUrl($u['foto'] ?? '', 'uploads/fotos/');
-// Leer banner (con auto-migración silenciosa)
+
 try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
 $bannerUrl = resolveUrl($u['banner'] ?? '', 'uploads/banners/');
 $inicial = strtoupper(mb_substr($u['nombre'],0,1).mb_substr($u['apellido']??'',0,1));
@@ -152,7 +148,6 @@ else { $tipoLabel = '👤 Talento profesional'; }
     html { scroll-behavior:smooth; }
     body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; overflow-x:hidden; }
 
-    /* ── ANIMACIONES ── */
     @keyframes fadeUp   { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
     @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
     @keyframes scaleIn  { from { opacity:0; transform:scale(.92); } to { opacity:1; transform:scale(1); } }
@@ -166,7 +161,6 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .anim-scale-in  { animation:scaleIn .5s cubic-bezier(.34,1.56,.64,1) both; }
     .anim-slide-r   { animation:slideRight .5s cubic-bezier(.22,1,.36,1) both; }
 
-    /* ── NAVBAR ── */
     .flag { position:fixed; top:0; left:0; right:0; height:3px; display:flex; z-index:1000; }
     .flag span:nth-child(1){ flex:1; background:#1f9d55; }
     .flag span:nth-child(2){ flex:1; background:#d4a017; }
@@ -187,7 +181,6 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .btn-panel { padding:8px 18px; background:var(--accent); color:#fff; border-radius:20px; font-size:13px; font-weight:700; text-decoration:none; box-shadow:0 3px 12px rgba(31,157,85,.3); transition:all .2s; }
     .btn-panel:hover { transform:translateY(-1px); box-shadow:0 5px 18px rgba(31,157,85,.4); }
 
-    /* ── COVER ── */
     .cover {
       height:220px; margin-top:61px; position:relative; overflow:hidden;
       animation:coverIn .7s cubic-bezier(.22,1,.36,1) both;
@@ -209,7 +202,6 @@ else { $tipoLabel = '👤 Talento profesional'; }
     }
     .cover-overlay { position:absolute; inset:0; background:linear-gradient(to bottom, transparent 40%, rgba(245,247,245,.6) 100%); }
 
-    /* ── HERO CARD ── */
     .hero-wrap { max-width:980px; margin:0 auto; padding:0 24px; }
     .hero-card {
       background:var(--surface); border:1px solid var(--border); border-radius:28px;
@@ -259,7 +251,6 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .btn-outline { padding:11px 20px; border:1.5px solid var(--border); color:var(--ink2); border-radius:24px; font-size:13px; font-weight:600; text-decoration:none; transition:all .25s; background:transparent; }
     .btn-outline:hover { border-color:var(--accent); color:var(--accent); background:color-mix(in srgb, var(--accent) 5%, transparent); }
 
-    /* ── STATS BAR ── */
     .stats-bar { max-width:980px; margin:18px auto 0; padding:0 24px; animation:fadeUp .5s .55s both; }
     .stats-inner { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:0; display:flex; overflow:hidden; box-shadow:var(--shadow); }
     .sbar-item { flex:1; text-align:center; padding:16px 12px; position:relative; }
@@ -267,11 +258,9 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .sbar-val { font-family:'DM Sans',sans-serif; font-size:22px; font-weight:900; color:var(--accent); }
     .sbar-lab { font-size:11px; color:var(--ink3); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-top:2px; }
 
-    /* ── MAIN LAYOUT ── */
     .perfil-wrap { max-width:980px; margin:22px auto 80px; padding:0 24px; display:grid; grid-template-columns:1fr 300px; gap:20px; }
     @media(max-width:720px) { .perfil-wrap { grid-template-columns:1fr; } }
 
-    /* ── CARDS ── */
     .pcard {
       background:var(--surface); border:1px solid var(--border); border-radius:22px;
       overflow:hidden; margin-bottom:16px; box-shadow:var(--shadow);
@@ -285,7 +274,6 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .pcard-count { font-size:11px; color:var(--ink3); font-weight:700; background:var(--surface2); padding:3px 10px; border-radius:12px; }
     .pcard-body { padding:16px 24px 22px; }
 
-    /* ── BANNER MI PERFIL ── */
     .miperfil-banner {
       background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), color-mix(in srgb, var(--accent) 3%, transparent));
       border:1.5px solid color-mix(in srgb, var(--accent) 20%, transparent);
@@ -297,10 +285,8 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .btn-editar { padding:8px 20px; background:var(--accent); color:#fff; border-radius:20px; font-size:13px; font-weight:700; text-decoration:none; transition:all .2s; }
     .btn-editar:hover { transform:translateY(-1px); }
 
-    /* ── DESCRIPCIÓN ── */
     .desc-txt { font-size:15px; color:var(--ink2); line-height:1.75; }
 
-    /* ── GALERÍA ── */
     .gal-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; }
     .gal-item {
       position:relative; border-radius:14px; overflow:hidden;
@@ -312,7 +298,6 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .gal-play { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.3); font-size:24px; }
     .gal-label { position:absolute; bottom:0; left:0; right:0; padding:5px 8px; background:rgba(0,0,0,.55); color:#fff; font-size:10px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-    /* ── TAGS / HABILIDADES ── */
     .tags { display:flex; flex-wrap:wrap; gap:8px; }
     .tag { padding:7px 14px; border-radius:20px; font-size:13px; font-weight:600; transition:all .2s; cursor:default; }
     .tag-skill { background:color-mix(in srgb, var(--accent) 10%, transparent); color:var(--accent); border:1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
@@ -320,19 +305,16 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .tag-gen { background:#fefce8; color:#92400e; border:1px solid #fde68a; }
     .tag-gen:hover { background:#fef08a; transform:translateY(-1px); }
 
-    /* ── INFO TABLE ── */
     .info-table { width:100%; font-size:14px; border-collapse:collapse; }
     .info-table td { padding:11px 0; color:var(--ink2); }
     .info-table td:first-child { color:var(--ink3); width:40%; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
     .info-table tr:not(:last-child) td { border-bottom:1px solid var(--border); }
     .info-table td:last-child { font-weight:600; color:var(--ink); }
 
-    /* ── SIDEBAR ── */
     .side-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:22px; margin-bottom:14px; box-shadow:var(--shadow); animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both; transition:box-shadow .25s; }
     .side-card:hover { box-shadow:var(--shadow-lg); }
     .side-tit { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.7px; color:var(--ink3); margin-bottom:16px; }
 
-    /* ── PRECIO ── */
     .precio-card {
       border-radius:20px; padding:24px; margin-bottom:14px; text-align:center;
       background:linear-gradient(135deg, <?= $colorAccent ?>, <?= $colorAccent2 ?>);
@@ -348,7 +330,6 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .side-lab { color:var(--ink3); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.3px; }
     .side-val { font-weight:700; color:var(--ink); }
 
-    /* ── CTA ── */
     .cta-card {
       background:linear-gradient(135deg, #f0fdf4, #dcfce7);
       border:1.5px solid #bbf7d0; border-radius:20px; padding:22px; text-align:center; margin-bottom:14px;
@@ -360,23 +341,19 @@ else { $tipoLabel = '👤 Talento profesional'; }
     .btn-reg { display:inline-block; padding:10px 24px; background:#1f9d55; color:#fff; border-radius:20px; font-weight:700; font-size:13px; text-decoration:none; transition:all .2s; }
     .btn-reg:hover { background:#178a49; transform:translateY(-1px); }
 
-    /* ── EXPLORAR ── */
     .explore-links { display:flex; flex-direction:column; gap:8px; }
     .explore-link { display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:14px; font-size:13px; font-weight:700; text-decoration:none; transition:all .25s; border:1px solid var(--border); color:var(--ink2); background:var(--surface2); }
     .explore-link:hover { transform:translateX(4px); border-color:var(--accent); color:var(--accent); background:color-mix(in srgb, var(--accent) 6%, transparent); }
 
-    /* ── LIGHTBOX ── */
     #lbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:9999; align-items:center; justify-content:center; flex-direction:column; padding:20px; backdrop-filter:blur(8px); }
     #lbox img { max-width:90vw; max-height:82vh; border-radius:16px; object-fit:contain; box-shadow:0 20px 60px rgba(0,0,0,.5); }
     #lbox-tit { color:rgba(255,255,255,.6); margin-top:12px; font-size:13px; }
     .lbox-close { position:absolute; top:20px; right:24px; font-size:28px; color:rgba(255,255,255,.8); background:rgba(255,255,255,.1); border:none; cursor:pointer; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background .2s; }
     .lbox-close:hover { background:rgba(255,255,255,.2); }
 
-    /* ── FOOTER ── */
     footer { background:var(--surface); border-top:1px solid var(--border); color:var(--ink3); text-align:center; padding:28px; font-size:13px; }
     footer strong { color:var(--accent); }
 
-    /* ── RESPONSIVE ── */
     @media(max-width:540px) {
       .navbar { padding:0 16px; }
       .hero-wrap, .stats-bar, .perfil-wrap { padding:0 14px; }
@@ -670,7 +647,6 @@ else { $tipoLabel = '👤 Talento profesional'; }
   }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarLbox(); });
 
-  // Scroll-triggered fade-up para cards
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {

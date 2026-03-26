@@ -1,4 +1,3 @@
-// NAVBAR EFECTO SCROLL
 
 window.addEventListener("scroll", () => {
 
@@ -12,10 +11,6 @@ navbar.style.boxShadow = "none";
 
 });
 
-
-
-// BOTONES DE EMPLEO
-
 const botones = document.querySelectorAll(".empleo-card button");
 
 botones.forEach(boton => {
@@ -27,10 +22,6 @@ alert("Próximamente podrás ver los detalles del empleo.");
 });
 
 });
-
-
-
-// BUSCADOR SIMPLE
 
 const searchBtn = document.querySelector(".search-btn");
 

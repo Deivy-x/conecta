@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// Php/chat/buscar_usuarios.php — Buscar usuarios para nuevo chat (GET)
-// ============================================================
+
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../db.php';
