@@ -490,23 +490,45 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     .hero-links {
       display: flex;
       justify-content: center;
-      gap: 24px;
+      gap: 14px;
       flex-wrap: wrap;
+      animation: fadeUp .8s .8s ease both;
     }
 
     .hero-link {
-      color: rgba(255, 255, 255, 0.7);
-      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 22px;
+      border-radius: 30px;
       font-size: 14px;
-      font-weight: 500;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-      padding-bottom: 2px;
-      transition: color 0.2s;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all .25s;
+      white-space: nowrap;
     }
 
-    .hero-link:hover {
-      color: #4ade80;
-      border-color: #4ade80;
+    .hero-link-verde {
+      background: #1f9d55;
+      color: white;
+      box-shadow: 0 4px 16px rgba(31,157,85,.45);
+    }
+
+    .hero-link-verde:hover {
+      background: #166f3d;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(31,157,85,.55);
+    }
+
+    .hero-link-outline {
+      border: 2px solid rgba(255,255,255,.6);
+      color: white;
+    }
+
+    .hero-link-outline:hover {
+      background: white;
+      color: #111;
+      transform: translateY(-2px);
     }
 
     /* STATS */
@@ -1502,8 +1524,8 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         <button id="searchBtn">Buscar talento</button>
       </div>
       <div class="hero-links">
-        <a href="registro.php" class="hero-link">✨ Publicar mi talento gratis</a>
-        <a href="#talentos" class="hero-link">👇 Ver todos los talentos</a>
+        <a href="registro.php" class="hero-link hero-link-verde">✨ Publicar mi talento gratis</a>
+        <a href="#talentos" class="hero-link hero-link-outline">👇 Ver todos los talentos</a>
       </div>
     </div>
   </section>
