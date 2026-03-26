@@ -616,6 +616,62 @@
     </div>
 </section>
 
+<!-- ══════════════════════════════════════════
+     SERVICIOS & EVENTOS
+══════════════════════════════════════════ -->
+<section class="servicios-eventos reveal" id="servicios-eventos">
+    <div class="eventos-overlay"></div>
+    <div class="eventos-inner">
+        <div class="section-header">
+            <span class="section-label" style="color:var(--dorado2)">🎧 Servicios para eventos</span>
+            <h2>DJs, artistas y creativos <span style="color:var(--dorado2)">del Chocó</span></h2>
+            <p style="color:rgba(255,255,255,.65);margin-top:10px">Talento local para animar tus celebraciones</p>
+            <a href="servicios.php" class="ver-todos">Ver todos los servicios →</a>
+        </div>
+        <div class="eventos-grid" id="servicios-grid">
+            <div class="evento-card" style="opacity:.4;pointer-events:none">
+                <div class="ev-top"><span class="ev-icon">🎧</span><span class="ev-badge">Cargando…</span></div>
+                <h3>—</h3>
+            </div>
+        </div>
+        <div class="ev-cta">
+            <a href="servicios.php" class="btn-dorado">🎵 Explorar todos los servicios</a>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     LOCALES & NEGOCIOS
+══════════════════════════════════════════ -->
+<section class="locales reveal" id="locales">
+    <div class="locales-overlay"></div>
+    <div class="locales-franja"></div>
+    <div class="locales-inner">
+        <div class="section-header">
+            <span class="section-label">🏪 Negocios locales</span>
+            <h2>Apoya el comercio <span>chocoano</span></h2>
+            <p style="color:#666;margin-top:10px">Restaurantes, tiendas y emprendimientos de Quibdó</p>
+            <a href="negocios.php" class="ver-todos">Ver todos los negocios →</a>
+        </div>
+        <div class="locales-grid" id="negocios-grid">
+            <div class="local-card" style="opacity:.4;pointer-events:none">
+                <div class="local-body"><div class="local-top"><div class="local-logo">🏪</div><div class="local-info"><h3>Cargando…</h3></div></div></div>
+            </div>
+        </div>
+        <div class="locales-cta">
+            <div class="lc-icono">🏪</div>
+            <div>
+                <h4>¿Tienes un negocio en Quibdó?</h4>
+                <p>Regístralo gratis y llega a más clientes en la plataforma</p>
+            </div>
+            <div class="lc-btns">
+                <a href="registro.php" class="lc-btn-verde">✨ Registrar mi negocio</a>
+                <a href="negocios.php" class="lc-btn-dorado">🔍 Explorar negocios</a>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- CTA FINAL — imagen: --img-cta en :root -->
 <section class="final-cta">
     <div class="cta-overlay"></div>
@@ -1054,6 +1110,78 @@ detectarSesionIndex().then(cargarEmpleos);
 /* TALENTOS */
 async function cargarTalentos(){const grid=document.getElementById('talentos-grid');const colores=['linear-gradient(135deg,#1f9d55,#2ecc71)','linear-gradient(135deg,#7c3aed,#a855f7)','linear-gradient(135deg,#d4a017,#f0c040)','linear-gradient(135deg,#2563eb,#60a5fa)','linear-gradient(135deg,#e74c3c,#e67e22)'];try{const res=await fetch('talentos_preview.php');const talentos=await res.json();if(!talentos.length)throw new Error('vacío');grid.innerHTML=talentos.map((t,i)=>{const iniciales=(t.nombre||'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();const foto=t.foto?`<img src="${t.foto}" style="width:62px;height:62px;border-radius:50%;object-fit:cover;margin-bottom:14px;">`:`<div class="tp-avatar" style="background:${colores[i%colores.length]}">${iniciales}</div>`;const tags=(t.habilidades||'').split(',').slice(0,3).map(h=>`<span>${h.trim()}</span>`).join('');let badgeHtml='';if(t.tiene_destacado){badgeHtml=`<span class="tp-badge" style="background:#fef9c3;color:#b45309;border:1px solid #fde68a;">⭐ Destacado</span>`}else if(t.badge_principal){const bp=t.badge_principal;badgeHtml=`<span class="tp-badge" style="background:${bp.color}22;color:${bp.color};border:1px solid ${bp.color}55;">${bp.emoji} ${bp.nombre}</span>`}else if(t.tipo==='artista'){badgeHtml=`<span class="tp-badge" style="background:#f3e8ff;color:#7c3aed;">🎵 Artista</span>`}else if(t.tipo==='chef'){badgeHtml=`<span class="tp-badge" style="background:#fef9e7;color:#d4a017;">🍽️ Chef</span>`}else{badgeHtml=`<span class="tp-badge">🌟 Talento</span>`}const verificadoTick=t.tiene_verificado?`<span title="Verificado" style="font-size:13px;color:#1f9d55;margin-left:4px;">✔</span>`:'';const premiumExtra=(t.tiene_premium&&!t.tiene_destacado&&!(t.badge_principal&&t.badge_principal.nombre==='Premium'))?`<span style="font-size:11px;font-weight:700;padding:2px 8px;background:#fef3c7;color:#d97706;border-radius:20px;border:1px solid #fde68a;">💎 Premium</span>`:'';return`<div class="tp-card reveal">${badgeHtml}${foto}<h3>${t.nombre||'Sin nombre'}${verificadoTick}</h3><p class="tp-profesion">${t.profesion||''}</p><p class="tp-loc">📍 ${t.ciudad||'Quibdó'}, Chocó</p>${premiumExtra?`<div style="margin:4px 0 8px;">${premiumExtra}</div>`:''}<div class="tp-tags">${tags}</div><a href="perfil.php?id=${t.id}&tipo=${t.tipo||'candidato'}" class="tp-btn">Ver perfil</a></div>`}).join('');grid.querySelectorAll('.reveal').forEach(el=>ro.observe(el))}catch(e){grid.innerHTML=`<div style="text-align:center;padding:48px 20px;color:var(--gris3,#94a3b8)"><div style="font-size:40px;margin-bottom:12px">🌟</div><p style="font-size:15px;font-weight:600">Pronto habrá talentos destacados aquí.</p><a href="registro.php" style="display:inline-block;margin-top:16px;padding:10px 24px;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px">Regístrate gratis →</a></div>`;grid.querySelectorAll('.reveal').forEach(el=>ro.observe(el))}}
 cargarTalentos();
+
+/* SERVICIOS */
+async function cargarServicios(){
+  const grid=document.getElementById('servicios-grid');
+  if(!grid)return;
+  try{
+    const res=await fetch('servicios_preview.php');
+    const items=await res.json();
+    if(!items.length)throw new Error('vacío');
+    const colores=['linear-gradient(135deg,#1f9d55,#2ecc71)','linear-gradient(135deg,#7c3aed,#a855f7)','linear-gradient(135deg,#d4a017,#f0c040)','linear-gradient(135deg,#2563eb,#60a5fa)'];
+    grid.innerHTML=items.map((s,i)=>{
+      const iniciales=(s.nombre||'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const avatar=s.foto?`<img src="${s.foto}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid rgba(212,160,23,.4);">`:`<div style="width:48px;height:48px;border-radius:50%;background:${colores[i%colores.length]};display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:white;">${iniciales}</div>`;
+      const precio=s.precio_desde?`<div class="ev-precio">Desde $${Number(s.precio_desde).toLocaleString('es-CO')}</div>`:'';
+      const generos=s.generos?`<div class="ev-generos">${s.generos}</div>`:'';
+      const verificado=s.verificado==1?'<span title="Verificado" style="font-size:12px;color:var(--dorado2);margin-left:4px;">✔</span>':'';
+      return`<div class="evento-card reveal">
+        <div class="ev-top">${avatar}<span class="ev-badge">${s.tipo_servicio||'Servicio'}</span></div>
+        <h3>${s.nombre||'Artista'}${verificado}</h3>
+        <div class="ev-nombre">${s.tipo_servicio||''}</div>
+        <div class="ev-lugar">📍 ${s.ciudad||'Quibdó'}</div>
+        ${precio}${generos}
+        <a href="perfil.php?id=${s.id}&tipo=candidato" class="ev-btn">Ver perfil →</a>
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+  }catch(e){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:48px 20px;color:rgba(255,255,255,.5)"><div style="font-size:40px;margin-bottom:12px">🎧</div><p style="font-size:15px;font-weight:600">Pronto habrá artistas y servicios aquí.</p><a href="registro.php" style="display:inline-block;margin-top:16px;padding:10px 24px;background:linear-gradient(135deg,var(--dorado),var(--dorado2));color:#111;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px">Registrarse gratis →</a></div>`;
+  }
+}
+cargarServicios();
+
+/* NEGOCIOS / LOCALES */
+async function cargarNegocios(){
+  const grid=document.getElementById('negocios-grid');
+  if(!grid)return;
+  try{
+    const res=await fetch('negocios_preview.php');
+    const items=await res.json();
+    if(!items.length)throw new Error('vacío');
+    grid.innerHTML=items.map(n=>{
+      const color=n.avatar_color||'#2563eb';
+      const logoHtml=n.logo?`<img src="${n.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">`:`<span style="font-size:26px">🏪</span>`;
+      const catBadge=n.categoria?`<span class="local-badge azul">${n.categoria}</span>`:'';
+      const tipoBadge=n.tipo_negocio?`<span class="local-badge dorado">${n.tipo_negocio}</span>`:'';
+      const destacado=n.destacado==1?`<span class="local-badge" style="background:#fef9c3;color:#b45309;">⭐ Destacado</span>`:'';
+      return`<div class="local-card reveal">
+        <div class="local-cc-header">
+          <div class="cc-logo" style="border:1.5px solid ${color}33;">${logoHtml}</div>
+          <span class="cc-nombre">${n.nombre_negocio||n.nombre||'Negocio'}</span>
+        </div>
+        <div class="local-body">
+          <div class="local-top">
+            <div class="local-logo" style="border-color:${color}33;">${logoHtml}</div>
+            <div class="local-info">
+              <h3>${n.nombre_negocio||n.nombre}</h3>
+              <div class="local-cat">${n.categoria||'Negocio local'}</div>
+              <div class="local-piso">📍 ${n.ubicacion||n.ciudad||'Quibdó'}</div>
+            </div>
+          </div>
+          <p class="local-desc">${(n.descripcion||'').slice(0,90)}${n.descripcion&&n.descripcion.length>90?'…':''}</p>
+          <div class="local-badge-row">${catBadge}${tipoBadge}${destacado}</div>
+          <a href="negocios.php?id=${n.id}" class="local-btn">Ver negocio →</a>
+        </div>
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+  }catch(e){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:48px 20px;color:#94a3b8"><div style="font-size:40px;margin-bottom:12px">🏪</div><p style="font-size:15px;font-weight:600">Pronto habrá negocios destacados aquí.</p><a href="registro.php" style="display:inline-block;margin-top:16px;padding:10px 24px;background:var(--verde);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px">Registrar negocio →</a></div>`;
+  }
+}
+cargarNegocios();
 
 /* BÚSQUEDA */
 function verificarSesion() {
