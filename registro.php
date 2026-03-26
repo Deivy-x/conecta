@@ -837,7 +837,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <option value="Fotografía & Video combo">📸🎥 Fotografía & Video combo</option>
             <option value="Drone / Fotografía aérea">🚁 Drone / Fotografía aérea</option>
           </optgroup>
-          <optgroup label="🍽️ Gastrono">
+          <optgroup label="🍽️ Gastronomía">
             <option value="Catering – Comida chocoana">🍖 Catering – Comida chocoana</option>
             <option value="Catering – Mariscos / Pescados">🐟 Catering – Mariscos / Pescados</option>
             <option value="Catering – Internacional">🌮 Catering – Internacional</option>
