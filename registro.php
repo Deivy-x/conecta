@@ -236,8 +236,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .grupo.full{flex:0 0 100%;width:100%}
     label{display:block;margin-bottom:6px;font-size:11px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.7px}
     .req{color:#f87171}
-    input,select,textarea{width:100%;padding:12px 15px;border:1.5px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.06);color:white;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .25s,background .25s,box-shadow .25s;resize:none;-webkit-appearance:none;appearance:none}
-    input:focus,select:focus,textarea:focus{border-color:var(--verde2);background:rgba(30,140,69,.1);box-shadow:0 0 0 3px rgba(30,140,69,.1)}
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]),select,textarea{width:100%;padding:12px 15px;border:1.5px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.06);color:white;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .25s,background .25s,box-shadow .25s;resize:none;-webkit-appearance:none;appearance:none}
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):focus,select:focus,textarea:focus{border-color:var(--verde2);background:rgba(30,140,69,.1);box-shadow:0 0 0 3px rgba(30,140,69,.1)}
     select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
     input::placeholder,textarea::placeholder{color:rgba(255,255,255,.2)}
     select option,select optgroup{background:#0a1f0d!important;color:white!important}
