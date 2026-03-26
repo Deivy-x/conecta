@@ -3092,30 +3092,45 @@ if ($subTipo === 'servicio') {
 
       <!-- ── QUIÉN ME VIO + PLAN (span3) ── -->
       <?php if (!empty($visitantesRecientes) || $maxVisitantes === 0): ?>
-      <div class="card span3">
-        <div class="ca-tit">👁️ Quién visitó tu perfil</div>
+      <div class="card span3" style="border:1.5px solid #e0e0e0">
+        <!-- Encabezado -->
+        <div style="padding:18px 22px 14px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">👁️</span>
+          <span style="font-size:13px;font-weight:700;color:#37474f;text-transform:uppercase;letter-spacing:1px">Quién visitó tu perfil</span>
+        </div>
+
         <?php if ($maxVisitantes === 0): ?>
-          <div style="text-align:center;padding:20px 10px;color:rgba(255,255,255,.45)">
-            <div style="font-size:36px;margin-bottom:8px">🔒</div>
-            <div style="font-size:13px">Esta función está disponible desde el plan <strong style="color:var(--a2)">Amarillo Oro</strong>.</div>
-            <a href="empresas.php#planes" style="display:inline-block;margin-top:10px;padding:6px 18px;background:var(--a2);color:#000;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none">Ver planes →</a>
+          <!-- Sin acceso — plan bajo -->
+          <div style="padding:30px 22px;text-align:center">
+            <div style="font-size:42px;margin-bottom:10px">🔒</div>
+            <div style="font-size:14px;color:#546e7a;margin-bottom:14px">
+              Esta función está disponible desde el plan <strong style="color:#f9a825">Amarillo Oro</strong>.
+            </div>
+            <a href="empresas.php#planes" style="display:inline-block;padding:9px 22px;background:#f9a825;color:#fff;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(249,168,37,.3)">
+              Ver planes →
+            </a>
           </div>
         <?php else: ?>
-          <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <!-- Con acceso — mostrar visitantes -->
+          <div style="padding:16px 22px;display:flex;flex-wrap:wrap;gap:12px">
             <?php foreach ($visitantesRecientes as $vis): ?>
-              <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 12px;min-width:160px">
-                <?php
-                  $inicial = strtoupper(substr($vis['nombre'] ?? '?', 0, 1));
-                  $colores = ['#00e676','#ff9800','#2196f3','#e91e63','#9c27b0'];
-                  $col = $colores[crc32($vis['visitante_id'] ?? 0) % 5];
-                ?>
-                <div style="width:32px;height:32px;border-radius:50%;background:<?= $col ?>22;border:1.5px solid <?= $col ?>;display:flex;align-items:center;justify-content:center;font-weight:700;color:<?= $col ?>;font-size:13px;flex-shrink:0"><?= $inicial ?></div>
+              <?php
+                $inicial = strtoupper(substr($vis['nombre'] ?? '?', 0, 1));
+                $colores = ['#43a047','#fb8c00','#1e88e5','#e91e63','#8e24aa'];
+                $col = $colores[abs(crc32($vis['visitante_id'] ?? 0)) % 5];
+                $bgCol = $col . '18';
+              ?>
+              <div style="display:flex;align-items:center;gap:10px;background:#f8f9fa;border:1px solid #e8eaf0;border-radius:12px;padding:10px 14px;min-width:170px;max-width:240px">
+                <div style="width:36px;height:36px;border-radius:50%;background:<?= $bgCol ?>;border:2px solid <?= $col ?>;display:flex;align-items:center;justify-content:center;font-weight:800;color:<?= $col ?>;font-size:15px;flex-shrink:0"><?= $inicial ?></div>
                 <div>
-                  <div style="font-size:12px;font-weight:600;color:#fff"><?= htmlspecialchars(($vis['nombre'] ?? '') . ' ' . ($vis['apellido'] ?? '')) ?></div>
-                  <div style="font-size:10px;color:rgba(255,255,255,.4)"><?= ucfirst($vis['tipo'] ?? '') ?> · <?= date('d/m', strtotime($vis['creado_en'])) ?></div>
+                  <div style="font-size:13px;font-weight:700;color:#212121;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px"><?= htmlspecialchars(trim(($vis['nombre'] ?? '') . ' ' . ($vis['apellido'] ?? ''))) ?></div>
+                  <div style="font-size:11px;color:#78909c;margin-top:2px"><?= ucfirst($vis['tipo'] ?? '') ?> · <?= date('d M', strtotime($vis['creado_en'])) ?></div>
                 </div>
               </div>
             <?php endforeach; ?>
+            <?php if (empty($visitantesRecientes)): ?>
+              <div style="color:#90a4ae;font-size:13px;padding:10px 0">Aún nadie ha visitado tu perfil.</div>
+            <?php endif; ?>
           </div>
         <?php endif; ?>
       </div>
