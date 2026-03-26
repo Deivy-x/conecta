@@ -751,7 +751,7 @@ if ($action && $logueado) {
   if ($action === 'buscar_usuario_correo' && $nivel === 'superadmin') {
     $q = trim($_GET['q'] ?? '');
     if (strlen($q) < 3) {
-      echo json_encode(['ok' => true, 'usuarios', []]);
+      echo json_encode(['ok' => true, 'usuarios' => []]);
       exit;
     }
     $stmt = $db->prepare("SELECT u.id, u.nombre, u.apellido, u.correo, u.tipo,
@@ -5321,22 +5321,21 @@ if ($action) {
           🗑️ <strong>${d.stats.papelera}</strong> en papelera
         </div>` : ''}`;
           }
-        }
 
-            if (!d.docs || !d.docs.length) {
-          empty.style.display = 'block'; return;
-        }
+          if (!d.docs || !d.docs.length) {
+            empty.style.display = 'block'; return;
+          }
 
-        grid.style.display = 'grid';
-        grid.innerHTML = d.docs.map(doc => {
-          const docUrl = doc.doc_url ? (doc.doc_url.startsWith('uploads/') ? doc.doc_url : 'uploads/verificaciones/' + doc.doc_url) : null;
-          const selfUrl = doc.foto_doc_url ? (doc.foto_doc_url.startsWith('uploads/') ? doc.foto_doc_url : 'uploads/verificaciones/' + doc.foto_doc_url) : null;
-          const ext = docUrl ? docUrl.split('.').pop().toLowerCase() : '';
-          const esImg = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
-          const esPdf = ext === 'pdf';
-          const estadoColor = doc.estado === 'aprobado' ? 'green' : doc.estado === 'pendiente' ? 'amber' : 'red';
+          grid.style.display = 'grid';
+          grid.innerHTML = d.docs.map(doc => {
+            const docUrl = doc.doc_url ? (doc.doc_url.startsWith('uploads/') ? doc.doc_url : 'uploads/verificaciones/' + doc.doc_url) : null;
+            const selfUrl = doc.foto_doc_url ? (doc.foto_doc_url.startsWith('uploads/') ? doc.foto_doc_url : 'uploads/verificaciones/' + doc.foto_doc_url) : null;
+            const ext = docUrl ? docUrl.split('.').pop().toLowerCase() : '';
+            const esImg = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
+            const esPdf = ext === 'pdf';
+            const estadoColor = doc.estado === 'aprobado' ? 'green' : doc.estado === 'pendiente' ? 'amber' : 'red';
 
-          return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+            return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden">
         <!-- Header -->
         <div style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
           <div style="width:38px;height:38px;border-radius:50%;background:${doc.user_tipo === 'empresa' ? '#2255cc' : '#1f9d55'};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0">
@@ -5396,26 +5395,26 @@ if ($action) {
           </div>
         </div>
       </div>`;
-        }).join('');
+          }).join('');
 
-        // Paginación
-        const totalPages = Math.ceil(d.total / d.limit);
-        if (totalPages > 1) {
-          let html = '';
-          for (let i = 1; i <= totalPages; i++) {
-            html += `<button onclick="cargarDocumentos(${i})"
+          // Paginación
+          const totalPages = Math.ceil(d.total / d.limit);
+          if (totalPages > 1) {
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+              html += `<button onclick="cargarDocumentos(${i})"
           style="padding:6px 12px;border-radius:8px;border:1px solid ${i === docsPage ? 'var(--green)' : 'var(--border)'};background:${i === docsPage ? 'var(--green-bg)' : 'var(--bg3)'};color:${i === docsPage ? 'var(--green)' : 'var(--text)'};cursor:pointer;font-size:13px">${i}</button>`;
+            }
+            pag.innerHTML = `<div style="font-size:13px;color:var(--text2);margin-right:8px">${d.total} documentos</div>` + html;
           }
-          pag.innerHTML = `<div style="font-size:13px;color:var(--text2);margin-right:8px">${d.total} documentos</div>` + html;
-        }
 
-      } catch (e) {
-        loading.style.display = 'none';
-        grid.style.display = 'none';
-        empty.style.display = 'block';
-        document.getElementById('docs-empty').innerHTML = `<span class="ei">⚠️</span><p>${e.message}</p>`;
-      }
+        } catch (e) {
+          loading.style.display = 'none';
+          grid.style.display = 'none';
+          empty.style.display = 'block';
+          document.getElementById('docs-empty').innerHTML = `<span class="ei">⚠️</span><p>${e.message}</p>`;
         }
+      }
 
       // ── ELIMINAR DOCUMENTO (mover a papelera) ──────────────────
       async function eliminarDocumento(id) {
@@ -6187,10 +6186,10 @@ if ($action) {
         const p = d.permisos || {};
         document.getElementById('permisos-nombre').textContent = (p.nombre || '') + ' ' + (p.apellido || '') + ' · ' + (p.correo || '') + ' · ' + (p.nivel || '');
         document.getElementById('permisos-grid').innerHTML = Object.entries(PERMISOS_LABELS).map(([key, label]) => `
-        <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
-          <input type="checkbox" id="perm-${key}" name="${key}" ${parseInt(p[key] || 0) ? 'checked' : ''} onchange="actualizarContadorPermisos()" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer">
-          <span style="font-size:13px">${label}</span>
-        </label>`).join('');
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+            <input type="checkbox" id="perm-${key}" name="${key}" ${parseInt(p[key] || 0) ? 'checked' : ''} onchange="actualizarContadorPermisos()" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer">
+            <span style="font-size:13px">${label}</span>
+          </label>`).join('');
         actualizarContadorPermisos();
       } catch (e) { document.getElementById('permisos-grid').innerHTML = '<p style="color:var(--red)">Error al cargar</p>'; }
     }
@@ -6240,19 +6239,19 @@ if ($action) {
         const d = await r.json();
         if (!d.roles.length) { document.getElementById('roles-list').innerHTML = '<div class="empty-state"><span class="ei">👑</span><p>Sin roles asignados</p></div>'; return; }
         document.getElementById('roles-list').innerHTML = d.roles.map(r2 => `
-        <div class="rol-card">
-          <div class="rol-info">
-            <div class="name">${esc(r2.nombre + ' ' + (r2.apellido || ''))} ${r2.nivel === 'superadmin' ? '<span class="superadmin-crown">👑</span>' : ''}</div>
-            <div class="email">${esc(r2.correo)} · <span style="color:var(--amber)">${r2.nivel}</span> · ID: ${r2.usuario_id}</div>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            ${r2.nivel !== 'superadmin' ? `
+          <div class="rol-card">
+            <div class="rol-info">
+              <div class="name">${esc(r2.nombre + ' ' + (r2.apellido || ''))} ${r2.nivel === 'superadmin' ? '<span class="superadmin-crown">👑</span>' : ''}</div>
+              <div class="email">${esc(r2.correo)} · <span style="color:var(--amber)">${r2.nivel}</span> · ID: ${r2.usuario_id}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              ${r2.nivel !== 'superadmin' ? `
             <button class="btn-sm" onclick="abrirPermisos(${r2.usuario_id})" style="border-color:rgba(68,136,255,.3);color:var(--blue);background:var(--blue-bg)">🔐 Permisos</button>
             <button class="btn-sm" onclick="abrirPassUser(${r2.usuario_id},'${esc(r2.nombre)}')" style="border-color:rgba(170,68,255,.3);color:var(--purple);background:var(--purple-bg)">🔑 Pass</button>
             <button class="btn-sm red" onclick="quitarRol(${r2.usuario_id})">Quitar rol</button>
           ` : '<span class="badge amber">Inamovible</span>'}
-          </div>
-        </div>`).join('');
+            </div>
+          </div>`).join('');
       } catch (e) { console.error(e); }
     }
 
@@ -6285,11 +6284,11 @@ if ($action) {
           sug.innerHTML = d.usuarios.map(u => {
             const tieneRol = u.rol_actual ? `<span style="font-size:10px;color:var(--amber);background:var(--amber-bg);padding:2px 7px;border-radius:8px;margin-left:6px">${u.rol_actual}</span>` : '';
             return `<div onclick="seleccionarUsuarioRol(${u.id},'${esc(u.nombre + ' ' + (u.apellido || ''))}','${esc(u.correo)}','${esc(u.tipo || '')}','${esc(u.rol_actual || '')}')"
-                  style="padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:2px;transition:background .15s"
-                  onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
-                  <div style="font-size:13px;font-weight:600">${esc(u.nombre + ' ' + (u.apellido || ''))}${tieneRol}</div>
-                  <div style="font-size:11px;color:var(--text2)">${esc(u.correo)} · ${esc(u.tipo || '')}</div>
-                </div>`;
+                    style="padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:2px;transition:background .15s"
+                    onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+                    <div style="font-size:13px;font-weight:600">${esc(u.nombre + ' ' + (u.apellido || ''))}${tieneRol}</div>
+                    <div style="font-size:11px;color:var(--text2)">${esc(u.correo)} · ${esc(u.tipo || '')}</div>
+                  </div>`;
           }).join('');
           sug.style.display = 'block';
         } catch (e) { sug.style.display = 'none'; }
@@ -6439,47 +6438,47 @@ if ($action) {
         // Barras ciudades
         const maxCiudad = Math.max(...(s.por_ciudad.map(c => parseInt(c.total))), 1);
         const ciudadBars = s.por_ciudad.map(c => `
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-          <div style="width:100px;font-size:12px;color:var(--text2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.ciudad || 'Sin ciudad')}</div>
-          <div style="flex:1;height:28px;background:var(--bg3);border-radius:6px;overflow:hidden">
-            <div style="height:100%;width:${Math.max(4, (parseInt(c.total) / maxCiudad) * 100)}%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:6px;transition:width .5s"></div>
-          </div>
-          <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--green);width:30px">${c.total}</div>
-        </div>`).join('');
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+            <div style="width:100px;font-size:12px;color:var(--text2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.ciudad || 'Sin ciudad')}</div>
+            <div style="flex:1;height:28px;background:var(--bg3);border-radius:6px;overflow:hidden">
+              <div style="height:100%;width:${Math.max(4, (parseInt(c.total) / maxCiudad) * 100)}%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:6px;transition:width .5s"></div>
+            </div>
+            <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--green);width:30px">${c.total}</div>
+          </div>`).join('');
 
         // Barras meses
         const maxMes = Math.max(...(s.por_mes.map(m => parseInt(m.total))), 1);
         const mesBars = s.por_mes.map(m => {
           const h = Math.max(4, (parseInt(m.total) / maxMes) * 80);
           return `<div class="chart-bar-col">
-          <div class="chart-bar-val">${m.total}</div>
-          <div class="chart-bar" style="height:${h}px;background:linear-gradient(180deg,var(--blue),var(--green))"></div>
-          <div class="chart-bar-label">${m.mes.slice(5)}</div>
-        </div>`;
+            <div class="chart-bar-val">${m.total}</div>
+            <div class="chart-bar" style="height:${h}px;background:linear-gradient(180deg,var(--blue),var(--green))"></div>
+            <div class="chart-bar-label">${m.mes.slice(5)}</div>
+          </div>`;
         }).join('');
 
         // Verificaciones donut text
         const verifTexto = s.verif_estado.map(v => `
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
-          <span style="color:var(--text2)">${v.estado}</span>
-          <span class="badge ${v.estado === 'aprobado' ? 'green' : v.estado === 'pendiente' ? 'amber' : 'red'}">${v.total}</span>
-        </div>`).join('') || '<p style="color:var(--text3);font-size:13px">Sin datos</p>';
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+            <span style="color:var(--text2)">${v.estado}</span>
+            <span class="badge ${v.estado === 'aprobado' ? 'green' : v.estado === 'pendiente' ? 'amber' : 'red'}">${v.total}</span>
+          </div>`).join('') || '<p style="color:var(--text3);font-size:13px">Sin datos</p>';
 
         document.getElementById('stats-content').innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-          <div class="chart-wrap">
-            <h3>🗓️ Registros por mes</h3>
-            <div class="chart-bars" style="height:100px">${mesBars || '<p style="color:var(--text3);font-size:12px">Sin datos</p>'}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <div class="chart-wrap">
+              <h3>🗓️ Registros por mes</h3>
+              <div class="chart-bars" style="height:100px">${mesBars || '<p style="color:var(--text3);font-size:12px">Sin datos</p>'}</div>
+            </div>
+            <div class="chart-wrap">
+              <h3>✅ Estado verificaciones</h3>
+              ${verifTexto}
+            </div>
           </div>
           <div class="chart-wrap">
-            <h3>✅ Estado verificaciones</h3>
-            ${verifTexto}
-          </div>
-        </div>
-        <div class="chart-wrap">
-          <h3>🌍 Usuarios por ciudad</h3>
-          ${ciudadBars || '<p style="color:var(--text3);font-size:13px">Sin datos de ciudad</p>'}
-        </div>`;
+            <h3>🌍 Usuarios por ciudad</h3>
+            ${ciudadBars || '<p style="color:var(--text3);font-size:13px">Sin datos de ciudad</p>'}
+          </div>`;
       } catch (e) { console.error(e); }
     }
 
@@ -6496,13 +6495,13 @@ if ($action) {
           return;
         }
         tbody.innerHTML = d.logs.map(l => `
-        <tr>
-          <td style="font-family:'JetBrains Mono',monospace;color:var(--text3);font-size:11px">#${l.id}</td>
-          <td style="font-weight:600;font-size:12px">${esc(l.admin_nombre || 'Sistema')}</td>
-          <td><span class="badge blue">${esc(l.accion)}</span></td>
-          <td style="font-size:12px;color:var(--text2)">${esc(l.detalle || '—')}</td>
-          <td style="font-size:11px;color:var(--text3)">${fFecha(l.creado_en)}</td>
-        </tr>`).join('');
+          <tr>
+            <td style="font-family:'JetBrains Mono',monospace;color:var(--text3);font-size:11px">#${l.id}</td>
+            <td style="font-weight:600;font-size:12px">${esc(l.admin_nombre || 'Sistema')}</td>
+            <td><span class="badge blue">${esc(l.accion)}</span></td>
+            <td style="font-size:12px;color:var(--text2)">${esc(l.detalle || '—')}</td>
+            <td style="font-size:11px;color:var(--text3)">${fFecha(l.creado_en)}</td>
+          </tr>`).join('');
         const pages = Math.ceil(d.total / 30);
         let pags = '';
         if (pages > 1) {
@@ -6538,19 +6537,19 @@ if ($action) {
           html += `<h3 style="font-size:13px;font-weight:700;color:var(--text2);margin:0 0 12px;text-transform:uppercase;letter-spacing:.8px">${label}</h3>`;
           html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:24px">`;
           html += del_tipo.map(b => `
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:38px;height:38px;border-radius:10px;background:${b.color}22;border:1px solid ${b.color}44;display:flex;align-items:center;justify-content:center;font-size:20px">${b.emoji}</div>
-              <div>
-                <div style="font-size:13px;font-weight:700;color:${b.color}">${esc(b.nombre)}</div>
-                <div style="font-size:11px;color:var(--text3)">${esc(b.descripcion || '—')}</div>
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:38px;height:38px;border-radius:10px;background:${b.color}22;border:1px solid ${b.color}44;display:flex;align-items:center;justify-content:center;font-size:20px">${b.emoji}</div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:${b.color}">${esc(b.nombre)}</div>
+                  <div style="font-size:11px;color:var(--text3)">${esc(b.descripcion || '—')}</div>
+                </div>
               </div>
-            </div>
-            <div style="display:flex;gap:6px">
-              <button onclick="editarBadge(${b.id})" class="btn-sm amber" style="font-size:11px">✏️</button>
-              ${ADMIN_NIVEL === 'superadmin' ? `<button onclick="eliminarBadge(${b.id},'${esc(b.nombre)}')" class="btn-sm red" style="font-size:11px">🗑️</button>` : ''}
-            </div>
-          </div>`).join('');
+              <div style="display:flex;gap:6px">
+                <button onclick="editarBadge(${b.id})" class="btn-sm amber" style="font-size:11px">✏️</button>
+                ${ADMIN_NIVEL === 'superadmin' ? `<button onclick="eliminarBadge(${b.id},'${esc(b.nombre)}')" class="btn-sm red" style="font-size:11px">🗑️</button>` : ''}
+              </div>
+            </div>`).join('');
           html += '</div>';
         }
         document.getElementById('badges-catalogo-wrap').innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:0">${html}</div>`;
@@ -6574,30 +6573,30 @@ if ($action) {
         document.getElementById('badges-usuario-grid').innerHTML = badgesCatalogo.map(b => {
           const tiene = d.asignados.includes(b.id);
           return `
-          <div id="badge-card-${b.id}" style="background:var(--bg3);border:2px solid ${tiene ? b.color : 'var(--border)'};border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border .2s">
-            <div style="font-size:28px">${b.emoji}</div>
-            <div style="font-size:12px;font-weight:700;color:${b.color};text-align:center">${esc(b.nombre)}</div>
-            <div style="font-size:10px;color:var(--text3);text-align:center">${esc(b.descripcion || '')}</div>
-            <button onclick="toggleBadge(${uid},${b.id},${tiene ? 0 : 1})" 
-              id="badge-btn-${b.id}"
-              style="width:100%;padding:6px;border-radius:8px;border:1px solid ${tiene ? 'rgba(255,68,68,.3)' : 'rgba(0,230,118,.3)'};background:${tiene ? 'var(--red-bg)' : 'var(--green-bg)'};color:${tiene ? 'var(--red)' : 'var(--green)'};font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">
-              ${tiene ? '❌ Quitar' : '✅ Asignar'}
-            </button>
-          </div>`;
+            <div id="badge-card-${b.id}" style="background:var(--bg3);border:2px solid ${tiene ? b.color : 'var(--border)'};border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border .2s">
+              <div style="font-size:28px">${b.emoji}</div>
+              <div style="font-size:12px;font-weight:700;color:${b.color};text-align:center">${esc(b.nombre)}</div>
+              <div style="font-size:10px;color:var(--text3);text-align:center">${esc(b.descripcion || '')}</div>
+              <button onclick="toggleBadge(${uid},${b.id},${tiene ? 0 : 1})" 
+                id="badge-btn-${b.id}"
+                style="width:100%;padding:6px;border-radius:8px;border:1px solid ${tiene ? 'rgba(255,68,68,.3)' : 'rgba(0,230,118,.3)'};background:${tiene ? 'var(--red-bg)' : 'var(--green-bg)'};color:${tiene ? 'var(--red)' : 'var(--green)'};font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">
+                ${tiene ? '❌ Quitar' : '✅ Asignar'}
+              </button>
+            </div>`;
         }).join('');
 
         document.getElementById('badges-usuario-extra').innerHTML = `          <div style="margin-top:12px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);border-radius:10px;padding:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-              <span style="font-size:12px;color:rgba(255,255,255,.6);font-weight:600">⚡ Asignar plan de pago:</span>
-              <select id="plan-selector" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:12px">
-                <option value="semilla">🌱 Semilla (gratis)</option>
-                <option value="verde_selva">🌿 Verde Selva</option>
-                <option value="amarillo_oro">⭐ Amarillo Oro</option>
-                <option value="azul_profundo">💎 Azul Profundo</option>
-                <option value="microempresa">🏪 Microempresa</option>
-              </select>
-              <button onclick="asignarPlan(badgesUsuarioActual?.uid, document.getElementById('plan-selector').value)" 
-                class="btn-sm green" style="font-size:12px">Aplicar plan</button>
-            </div>`;
+                <span style="font-size:12px;color:rgba(255,255,255,.6);font-weight:600">⚡ Asignar plan de pago:</span>
+                <select id="plan-selector" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:12px">
+                  <option value="semilla">🌱 Semilla (gratis)</option>
+                  <option value="verde_selva">🌿 Verde Selva</option>
+                  <option value="amarillo_oro">⭐ Amarillo Oro</option>
+                  <option value="azul_profundo">💎 Azul Profundo</option>
+                  <option value="microempresa">🏪 Microempresa</option>
+                </select>
+                <button onclick="asignarPlan(badgesUsuarioActual?.uid, document.getElementById('plan-selector').value)" 
+                  class="btn-sm green" style="font-size:12px">Aplicar plan</button>
+              </div>`;
         document.getElementById('badges-usuario-panel').style.display = 'block';
       } catch (e) { console.error(e); }
     }
@@ -6770,14 +6769,14 @@ if ($action) {
         document.getElementById('act-feed').innerHTML = '<div class="act-feed">' + d.logs.map(l => {
           const meta = ACT_ICONS[l.accion] || { ic: '⚙️', color: 'var(--bg3)' };
           return `
-        <div class="act-item">
-          <div class="act-icon" style="background:${meta.color}">${meta.ic}</div>
-          <div class="act-body">
-            <div class="act-admin">${esc(l.admin_nombre || 'Sistema')}</div>
-            <div class="act-desc">${esc(l.detalle || l.accion)}</div>
-            <div class="act-time">${fFechaHora(l.creado_en)}</div>
-          </div>
-        </div>`;
+          <div class="act-item">
+            <div class="act-icon" style="background:${meta.color}">${meta.ic}</div>
+            <div class="act-body">
+              <div class="act-admin">${esc(l.admin_nombre || 'Sistema')}</div>
+              <div class="act-desc">${esc(l.detalle || l.accion)}</div>
+              <div class="act-time">${fFechaHora(l.creado_en)}</div>
+            </div>
+          </div>`;
         }).join('') + '</div>';
         const pages = Math.ceil(d.total / 30);
         let pags = '';
@@ -6968,104 +6967,104 @@ if ($action) {
         modal.id = 'modal-talento';
         modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
         modal.innerHTML = `
-              <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:32px;width:100%;max-width:600px;position:relative;margin:auto;max-height:90vh;overflow-y:auto">
-                <button onclick="cerrarModalTalento()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer">✕</button>
-                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px">🌟 Editar perfil de talento</h3>
-                <p id="talento-nombre-label" style="color:var(--text3);font-size:13px;font-family:'JetBrains Mono',monospace;margin-bottom:20px"></p>
-                <input type="hidden" id="talento-uid">
+                <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:32px;width:100%;max-width:600px;position:relative;margin:auto;max-height:90vh;overflow-y:auto">
+                  <button onclick="cerrarModalTalento()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer">✕</button>
+                  <h3 style="font-size:18px;font-weight:700;margin-bottom:4px">🌟 Editar perfil de talento</h3>
+                  <p id="talento-nombre-label" style="color:var(--text3);font-size:13px;font-family:'JetBrains Mono',monospace;margin-bottom:20px"></p>
+                  <input type="hidden" id="talento-uid">
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-                  <div>
-                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Profesión / Título</label>
-                    <input type="text" id="talento-profesion" placeholder="ej: Músico, Desarrollador..."
-                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
-                  </div>
-                  <div>
-                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Ciudad</label>
-                    <input type="text" id="talento-ciudad" placeholder="Quibdó, Chocó..."
-                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
-                  </div>
-                </div>
-
-                <div style="margin-bottom:12px">
-                  <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Biografía / Descripción</label>
-                  <textarea id="talento-bio" rows="3" placeholder="Descripción del talento..."
-                    style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none;resize:vertical"></textarea>
-                </div>
-
-                <div style="margin-bottom:12px">
-                  <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Habilidades / Skills <span style="color:var(--text3);font-weight:400">(separadas por coma)</span></label>
-                  <input type="text" id="talento-skills" placeholder="PHP, Diseño, Música, Fotografía..."
-                    style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
-                </div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-                  <div>
-                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Géneros / Especialidad</label>
-                    <input type="text" id="talento-generos" placeholder="Salsa, Chirimía, Vallenato..."
-                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
-                  </div>
-                  <div>
-                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Precio desde (COP)</label>
-                    <input type="number" id="talento-precio" placeholder="50000"
-                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none">
-                  </div>
-                </div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-                  <div>
-                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Tipo de servicio</label>
-                    <select id="talento-tipo-servicio"
-                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
-                      <option value="">Sin especificar</option>
-                      <option value="presencial">Presencial</option>
-                      <option value="remoto">Remoto</option>
-                      <option value="ambos">Presencial y remoto</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Color de avatar (hex)</label>
-                    <div style="display:flex;gap:8px;align-items:center">
-                      <input type="color" id="talento-color-picker" value="#10b981"
-                        style="width:40px;height:38px;border:none;background:none;cursor:pointer;border-radius:6px"
-                        oninput="document.getElementById('talento-avatar-color').value=this.value">
-                      <input type="text" id="talento-avatar-color" placeholder="#10b981"
-                        style="flex:1;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none"
-                        oninput="document.getElementById('talento-color-picker').value=this.value||'#10b981'">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Toggles visibilidad y destacado -->
-                <div style="display:flex;gap:10px;margin-bottom:20px">
-                  <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none" onclick="toggleSwitch('sw-talento-visible')">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
                     <div>
-                      <div style="font-size:12px;font-weight:700;color:var(--text)">👁 Visible en talentos.php</div>
-                      <div style="font-size:11px;color:var(--text2);margin-top:2px">Aparece en la sección pública</div>
+                      <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Profesión / Título</label>
+                      <input type="text" id="talento-profesion" placeholder="ej: Músico, Desarrollador..."
+                        style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
                     </div>
-                    <div id="sw-talento-visible" data-on="1" style="width:44px;height:24px;border-radius:24px;background:#1f9d55;position:relative;transition:background .25s;flex-shrink:0">
-                      <div id="sw-talento-visible-dot" style="position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transform:translateX(20px);transition:transform .25s;pointer-events:none"></div>
-                    </div>
-                  </div>
-                  <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none" onclick="toggleSwitch('sw-talento-destacado')">
                     <div>
-                      <div style="font-size:12px;font-weight:700;color:var(--text)">⭐ Destacado en el inicio</div>
-                      <div style="font-size:11px;color:var(--text2);margin-top:2px">Aparece en "Conoce nuestros talentos" (index)</div>
-                    </div>
-                    <div id="sw-talento-destacado" data-on="0" style="width:44px;height:24px;border-radius:24px;background:rgba(255,255,255,0.15);position:relative;transition:background .25s;flex-shrink:0">
-                      <div id="sw-talento-destacado-dot" style="position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .25s;pointer-events:none"></div>
+                      <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Ciudad</label>
+                      <input type="text" id="talento-ciudad" placeholder="Quibdó, Chocó..."
+                        style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
                     </div>
                   </div>
-                </div>
 
-                <div style="display:flex;gap:10px">
-                  <button onclick="guardarTalento()"
-                    style="flex:1;padding:12px;background:linear-gradient(135deg,#1f9d55,var(--green));border:none;border-radius:10px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">💾 Guardar perfil de talento</button>
-                  <button onclick="cerrarModalTalento()"
-                    style="padding:12px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;font-family:'Space Grotesk',sans-serif">Cancelar</button>
-                </div>
-                <p id="talento-msg" style="font-size:12px;margin-top:10px;text-align:center;display:none"></p>
-              </div>`;
+                  <div style="margin-bottom:12px">
+                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Biografía / Descripción</label>
+                    <textarea id="talento-bio" rows="3" placeholder="Descripción del talento..."
+                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none;resize:vertical"></textarea>
+                  </div>
+
+                  <div style="margin-bottom:12px">
+                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Habilidades / Skills <span style="color:var(--text3);font-weight:400">(separadas por coma)</span></label>
+                    <input type="text" id="talento-skills" placeholder="PHP, Diseño, Música, Fotografía..."
+                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
+                  </div>
+
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                    <div>
+                      <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Géneros / Especialidad</label>
+                      <input type="text" id="talento-generos" placeholder="Salsa, Chirimía, Vallenato..."
+                        style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
+                    </div>
+                    <div>
+                      <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Precio desde (COP)</label>
+                      <input type="number" id="talento-precio" placeholder="50000"
+                        style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none">
+                    </div>
+                  </div>
+
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                    <div>
+                      <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Tipo de servicio</label>
+                      <select id="talento-tipo-servicio"
+                        style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
+                        <option value="">Sin especificar</option>
+                        <option value="presencial">Presencial</option>
+                        <option value="remoto">Remoto</option>
+                        <option value="ambos">Presencial y remoto</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Color de avatar (hex)</label>
+                      <div style="display:flex;gap:8px;align-items:center">
+                        <input type="color" id="talento-color-picker" value="#10b981"
+                          style="width:40px;height:38px;border:none;background:none;cursor:pointer;border-radius:6px"
+                          oninput="document.getElementById('talento-avatar-color').value=this.value">
+                        <input type="text" id="talento-avatar-color" placeholder="#10b981"
+                          style="flex:1;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none"
+                          oninput="document.getElementById('talento-color-picker').value=this.value||'#10b981'">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Toggles visibilidad y destacado -->
+                  <div style="display:flex;gap:10px;margin-bottom:20px">
+                    <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none" onclick="toggleSwitch('sw-talento-visible')">
+                      <div>
+                        <div style="font-size:12px;font-weight:700;color:var(--text)">👁 Visible en talentos.php</div>
+                        <div style="font-size:11px;color:var(--text2);margin-top:2px">Aparece en la sección pública</div>
+                      </div>
+                      <div id="sw-talento-visible" data-on="1" style="width:44px;height:24px;border-radius:24px;background:#1f9d55;position:relative;transition:background .25s;flex-shrink:0">
+                        <div id="sw-talento-visible-dot" style="position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transform:translateX(20px);transition:transform .25s;pointer-events:none"></div>
+                      </div>
+                    </div>
+                    <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none" onclick="toggleSwitch('sw-talento-destacado')">
+                      <div>
+                        <div style="font-size:12px;font-weight:700;color:var(--text)">⭐ Destacado en el inicio</div>
+                        <div style="font-size:11px;color:var(--text2);margin-top:2px">Aparece en "Conoce nuestros talentos" (index)</div>
+                      </div>
+                      <div id="sw-talento-destacado" data-on="0" style="width:44px;height:24px;border-radius:24px;background:rgba(255,255,255,0.15);position:relative;transition:background .25s;flex-shrink:0">
+                        <div id="sw-talento-destacado-dot" style="position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .25s;pointer-events:none"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="display:flex;gap:10px">
+                    <button onclick="guardarTalento()"
+                      style="flex:1;padding:12px;background:linear-gradient(135deg,#1f9d55,var(--green));border:none;border-radius:10px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">💾 Guardar perfil de talento</button>
+                    <button onclick="cerrarModalTalento()"
+                      style="padding:12px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;font-family:'Space Grotesk',sans-serif">Cancelar</button>
+                  </div>
+                  <p id="talento-msg" style="font-size:12px;margin-top:10px;text-align:center;display:none"></p>
+                </div>`;
         document.body.appendChild(modal);
 
         // Cerrar al click fuera
@@ -7174,22 +7173,22 @@ if ($action) {
     function toggleChip(val, label1, label0) {
       const on = parseInt(val) === 1;
       return `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${on ? 'rgba(16,185,129,.18)' : 'rgba(255,68,68,.15)'};color:${on ? 'var(--green)' : 'var(--red)'}">
-            ${on ? '✅ ' + (label1 || 'Visible') : '🚫 ' + (label0 || 'Oculto')}
-          </span>`;
+              ${on ? '✅ ' + (label1 || 'Visible') : '🚫 ' + (label0 || 'Oculto')}
+            </span>`;
     }
 
     function btnToggle(uid, tabla, campo, valorActual, label) {
       const nuevoValor = parseInt(valorActual) === 1 ? 0 : 1;
       return `<button onclick="toggleDirCampo(${uid},'${tabla}','${campo}',${nuevoValor},this)"
-            style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:11px;font-family:'Space Grotesk',sans-serif;cursor:pointer;white-space:nowrap"
-            title="Cambiar ${label}">${parseInt(valorActual) ? '🔒 Ocultar' : '👁 Mostrar'}</button>`;
+              style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:11px;font-family:'Space Grotesk',sans-serif;cursor:pointer;white-space:nowrap"
+              title="Cambiar ${label}">${parseInt(valorActual) ? '🔒 Ocultar' : '👁 Mostrar'}</button>`;
     }
 
     function btnDestacado(uid, tabla, valorActual) {
       const nuevoValor = parseInt(valorActual) === 1 ? 0 : 1;
       return `<button onclick="toggleDirCampo(${uid},'${tabla}','destacado',${nuevoValor},this)"
-            style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:${parseInt(valorActual) ? 'var(--amber)' : 'var(--text2)'};font-size:11px;font-family:'Space Grotesk',sans-serif;cursor:pointer"
-            title="${parseInt(valorActual) ? 'Quitar del inicio (index)' : 'Mostrar en inicio (index)'}">${parseInt(valorActual) ? '⭐ Quitar index' : '☆ Poner en index'}</button>`;
+              style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:${parseInt(valorActual) ? 'var(--amber)' : 'var(--text2)'};font-size:11px;font-family:'Space Grotesk',sans-serif;cursor:pointer"
+              title="${parseInt(valorActual) ? 'Quitar del inicio (index)' : 'Mostrar en inicio (index)'}">${parseInt(valorActual) ? '⭐ Quitar index' : '☆ Poner en index'}</button>`;
     }
 
     async function toggleDirCampo(uid, tabla, campo, valor, btn) {
@@ -7228,9 +7227,9 @@ if ($action) {
 
     function tableWrap(inner) {
       return `<div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
-            <table style="width:100%;border-collapse:collapse;font-size:13px;font-family:'Space Grotesk',sans-serif">
-              ${inner}
-            </table></div>`;
+              <table style="width:100%;border-collapse:collapse;font-size:13px;font-family:'Space Grotesk',sans-serif">
+                ${inner}
+              </table></div>`;
     }
 
     function th(label) {
@@ -7264,13 +7263,13 @@ if ($action) {
         for (const c of d.candidatos) {
           const nombre = (c.nombre || '') + ' ' + (c.apellido || '');
           rows += `<tr>
-                ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(c.foto, nombre, c.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
-                ${td(c.ciudad || '—')}
-                ${td(c.profesion || '—')}
-                ${td(c.skills ? `<span style="font-size:11px;color:var(--text2)">${c.skills.substring(0, 60)}${c.skills.length > 60 ? '…' : ''}</span>` : '—')}
-                ${td(toggleChip(c.visible_admin ?? 1))}
-                ${td(toggleChip(c.destacado ?? 0, 'Destacado', 'Normal'))}
-                ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
+                  ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(c.foto, nombre, c.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
+                  ${td(c.ciudad || '—')}
+                  ${td(c.profesion || '—')}
+                  ${td(c.skills ? `<span style="font-size:11px;color:var(--text2)">${c.skills.substring(0, 60)}${c.skills.length > 60 ? '…' : ''}</span>` : '—')}
+                  ${td(toggleChip(c.visible_admin ?? 1))}
+                  ${td(toggleChip(c.destacado ?? 0, 'Destacado', 'Normal'))}
+                  ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
                 ${btnToggle(c.id, 'talento_perfil', 'visible_admin', c.visible_admin ?? 1, 'visibilidad')}
                 ${btnDestacado(c.id, 'talento_perfil', c.destacado ?? 0)}
                 <button onclick="abrirModalTalento(${c.id},'${(nombre).replace(/'/g, "\\'")}',false)"
@@ -7319,9 +7318,9 @@ if ($action) {
                 ${btnToggle(e.id, 'perfiles_empresa', 'visible_admin', e.visible_admin ?? 1, 'visibilidad')}
                 ${btnDestacado(e.id, 'perfiles_empresa', e.destacado ?? 0)}
                 <button onclick="abrirModalEmpresa(${e.id},'${nombre.replace(/'/g, "\\'")}') "
-                    style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:11px;cursor:pointer">✏️ Editar</button>
-                </div>`)}
-              </tr>`;
+                      style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:11px;cursor:pointer">✏️ Editar</button>
+                  </div>`)}
+                </tr>`;
           }
           tableEl.innerHTML = tableWrap(`<thead><tr>${th('Empresa')}${th('Sector')}${th('NIT')}${th('Ciudad')}${th('Visible')}${th('Destacado')}${th('Acciones')}</tr></thead><tbody>${rows}</tbody>`);
           pagEl.innerHTML = paginacionHtml(d.total, empdirPage, 20, 'cargarEmpresasDir');
@@ -7354,19 +7353,19 @@ if ($action) {
           for (const s of d.servicios) {
             const nombre = (s.nombre || '') + ' ' + (s.apellido || '');
             rows += `<tr>
-                ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(s.foto, nombre, s.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
-                ${td(s.tipo_servicio || '—')}
-                ${td(s.generos || '—')}
-                ${td(s.precio_desde ? `<span style="color:var(--green);font-weight:700">$${s.precio_desde}</span>` : '—')}
-                ${td(toggleChip(s.visible_admin ?? 1))}
-                ${td(toggleChip(s.destacado ?? 0, 'Destacado', 'Normal'))}
-                ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
-                  ${btnToggle(s.id, 'talento_perfil', 'visible_admin', s.visible_admin ?? 1, 'visibilidad')}
-                  ${btnDestacado(s.id, 'talento_perfil', s.destacado ?? 0)}
-                  <button onclick="abrirModalTalento(${s.id},'${nombre.replace(/'/g, "\\'")}',false)"
+                  ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(s.foto, nombre, s.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
+                  ${td(s.tipo_servicio || '—')}
+                  ${td(s.generos || '—')}
+                  ${td(s.precio_desde ? `<span style="color:var(--green);font-weight:700">$${s.precio_desde}</span>` : '—')}
+                  ${td(toggleChip(s.visible_admin ?? 1))}
+                  ${td(toggleChip(s.destacado ?? 0, 'Destacado', 'Normal'))}
+                  ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
+                    ${btnToggle(s.id, 'talento_perfil', 'visible_admin', s.visible_admin ?? 1, 'visibilidad')}
+                    ${btnDestacado(s.id, 'talento_perfil', s.destacado ?? 0)}
+                    <button onclick="abrirModalTalento(${s.id},'${nombre.replace(/'/g, "\\'")}',false)"
                   style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:11px;cursor:pointer">✏️ Editar</button>
               </div>`)}
-              </tr>`;
+                </tr>`;
         }
         tableEl.innerHTML = tableWrap(`<thead><tr>${th('Prestador')}${th('Tipo servicio')}${th('Géneros')}${th('Precio desde')}${th('Visible')}${th('Destacado')}${th('Acciones')}</tr></thead><tbody>${rows}</tbody>`);
         pagEl.innerHTML = paginacionHtml(d.total, srvdirPage, 20, 'cargarServiciosDir');
@@ -7403,13 +7402,13 @@ if ($action) {
             ? `<span style="padding:2px 8px;border-radius:10px;background:rgba(59,130,246,.18);color:#60a5fa;font-size:10px;font-weight:700">CC</span>`
             : `<span style="padding:2px 8px;border-radius:10px;background:rgba(16,185,129,.18);color:var(--green);font-size:10px;font-weight:700">EMP</span>`;
           rows += `<tr>
-                ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(n.logo, nombre, n.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
-                ${td(n.categoria || '—')}
-                ${td(n.whatsapp ? `<a href="https://wa.me/${n.whatsapp.replace(/\D/g, '')}" target="_blank" style="color:var(--green);text-decoration:none">📱 ${n.whatsapp}</a>` : '—')}
-                ${td(tipoBadge)}
-                ${td(toggleChip(n.visible_admin ?? 1))}
-                ${td(toggleChip(n.destacado ?? 0, 'Destacado', 'Normal'))}
-                ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
+                  ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(n.logo, nombre, n.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
+                  ${td(n.categoria || '—')}
+                  ${td(n.whatsapp ? `<a href="https://wa.me/${n.whatsapp.replace(/\D/g, '')}" target="_blank" style="color:var(--green);text-decoration:none">📱 ${n.whatsapp}</a>` : '—')}
+                  ${td(tipoBadge)}
+                  ${td(toggleChip(n.visible_admin ?? 1))}
+                  ${td(toggleChip(n.destacado ?? 0, 'Destacado', 'Normal'))}
+                  ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
                 ${btnToggle(n.id, 'negocios_locales', 'visible_admin', n.visible_admin ?? 1, 'visibilidad')}
                 ${btnDestacado(n.id, 'negocios_locales', n.destacado ?? 0)}
                 <button onclick="abrirModalNegocio(${n.id},'${nombre.replace(/'/g, "\\'")}') "
