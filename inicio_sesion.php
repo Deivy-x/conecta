@@ -754,15 +754,15 @@
                     laboral de Quibd&oacute; y el Pac&iacute;fico colombiano en un solo lugar.</p>
                 <div class="izq-stats">
                     <div class="istat">
-                        <div class="istat-n c-v" id="stat-talentos">+500</div>
+                        <div class="istat-n c-v" id="stat-talentos">+1</div>
                         <div class="istat-l">Talentos</div>
                     </div>
                     <div class="istat">
-                        <div class="istat-n c-a" id="stat-empresas">+120</div>
+                        <div class="istat-n c-a" id="stat-empresas">+1</div>
                         <div class="istat-l">Empresas</div>
                     </div>
                     <div class="istat">
-                        <div class="istat-n c-r" id="stat-vacantes">+300</div>
+                        <div class="istat-n c-r" id="stat-vacantes">+1</div>
                         <div class="istat-l">Vacantes</div>
                     </div>
                 </div>
