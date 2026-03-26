@@ -73,6 +73,10 @@ try {
         $redirect = 'gestion-qbc-2025.php';
     } elseif ($tipo === 'empresa') {
         $redirect = 'dashboard_empresa.php';
+    } elseif ($tipo === 'negocio') {
+        $redirect = 'dashboard_negocios.php';
+    } elseif ($tipo === 'servicio') {
+        $redirect = 'dashboard_servicios.php';
     } else {
         $redirect = 'dashboard.php';
     }
