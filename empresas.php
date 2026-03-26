@@ -51,6 +51,18 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     require_once __DIR__ . '/Php/badges_helper.php';
     $db = getDB();
 
+    // Contar TODAS las empresas activas registradas (sin LIMIT) para el badge del hero
+    $stmtTotal = $db->query("
+            SELECT COUNT(DISTINCT u.id) AS total
+            FROM usuarios u
+            INNER JOIN perfiles_empresa ep ON ep.usuario_id = u.id
+            WHERE u.activo = 1
+              AND u.tipo = 'empresa'
+              AND ep.visible = 1
+              AND ep.visible_admin = 1
+        ");
+    $totalEmpresas = (int) ($stmtTotal->fetchColumn() ?: 0);
+
     // Traer todas las empresas activas con perfil visible
     // Subquery con MAX(id) garantiza UN solo registro por usuario,
     // sin depender de GROUP BY ni UNIQUE en la BD
@@ -98,8 +110,11 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
   } catch (Exception $e) {
     $dbEmpresas = [];
+    $totalEmpresas = 0;
   }
 }
+$totalEmpresas = $totalEmpresas ?? 0;
+$heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -1543,7 +1558,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
   <!-- HERO -->
   <section class="hero-empresa">
     <div class="hero-empresa-content reveal">
-      <span class="hero-badge">🏢 +120 empresas registradas</span>
+      <span class="hero-badge">🏢 <?= htmlspecialchars($heroCount) ?> empresas registradas</span>
       <h1>Las <span>empresas</span> del Chocó que generan oportunidades</h1>
       <p>Conoce las empresas activas de la región, sus vacantes abiertas y cómo conectar con ellas para hacer crecer tu
         carrera.</p>
@@ -1569,7 +1584,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
   <!-- STATS (datos reales desde BD) -->
   <div class="stats-band" id="statsBand">
     <div class="s reveal">
-      <h3 id="stat-empresas">+120</h3>
+      <h3 id="stat-empresas"><?= htmlspecialchars($heroCount) ?></h3>
       <p>Empresas registradas</p>
     </div>
     <div class="s reveal">
