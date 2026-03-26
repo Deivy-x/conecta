@@ -698,6 +698,11 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
               <button onclick="abrirModal()" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:#1a56db;color:#fff;border:none;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer">
                 🖼 Cambiar logo
               </button>
+              <?php if ($logoUrl): ?>
+              <button onclick="eliminarLogoBanner()" id="btnEliminarLogoBanner" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:transparent;color:#e53935;border:1.5px solid #e53935;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer">
+                🗑 Eliminar logo
+              </button>
+              <?php endif; ?>
             </div>
           </div>
           <div id="bannerMsg" style="font-size:12px;color:#e53935;margin-top:8px;display:none"></div>
@@ -726,13 +731,13 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
       </div>
     </div>
 
-    <!-- MINI: VISTAS -->
-    <div class="card mini">
-      <div class="m-ico im">👁️</div>
+    <!-- MINI: CHAT -->
+    <div class="card mini" onclick="location.href='chat.php'" style="cursor:pointer">
+      <div class="m-ico io">💬</div>
       <div>
-        <div class="m-val">—</div>
-        <div class="m-lab">Vistas al perfil</div>
-        <div class="m-sub" onclick="abrirModal()">Completar perfil →</div>
+        <div class="m-val"><?= $chatNoLeidos ?: '0' ?></div>
+        <div class="m-lab">Mensajes</div>
+        <div class="m-sub">Ir al chat →</div>
       </div>
     </div>
 
@@ -1148,6 +1153,23 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
         msg.textContent = '❌ Error al eliminar'; msg.style.color = '#e74c3c';
       }
     } catch(e) { msg.textContent = '❌ Error de conexión'; msg.style.color = '#e74c3c'; }
+  }
+
+  async function eliminarLogoBanner() {
+    if (!confirm('¿Eliminar el logo de la empresa?')) return;
+    const fd = new FormData();
+    fd.append('_action', 'eliminar_logo');
+    try {
+      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.ok) {
+        const btn = document.getElementById('btnEliminarLogoBanner');
+        if (btn) btn.style.display = 'none';
+        location.reload();
+      } else {
+        alert('❌ Error al eliminar el logo');
+      }
+    } catch(e) { alert('Error de conexión'); }
   }
 
   async function subirLogo(input) {

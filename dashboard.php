@@ -2190,20 +2190,20 @@ if ($subTipo === 'servicio') {
     }
 
     .psec-btn {
-      background: none;
-      border: none;
-      color: var(--ink3);
-      font-size: 18px;
+      background: rgba(39, 168, 85, .08);
+      border: 1.5px solid rgba(39, 168, 85, .25);
+      color: var(--v2);
+      font-size: 16px;
       cursor: pointer;
-      padding: 4px;
+      padding: 5px 10px;
       border-radius: 8px;
       line-height: 1;
       transition: all .2s
     }
 
     .psec-btn:hover {
-      background: rgba(39, 168, 85, .08);
-      color: var(--ink)
+      background: rgba(39, 168, 85, .18);
+      color: var(--v1)
     }
 
     .psec-list {
@@ -2835,12 +2835,12 @@ if ($subTipo === 'servicio') {
             <div class="m-sub" onclick="location.href='talentos.php'">Ver talentos →</div>
           </div>
         </div>
-        <div class="card mini">
-          <div class="m-ico im">👁️</div>
+        <div class="card mini" onclick="location.href='chat.php'" style="cursor:pointer">
+          <div class="m-ico io">💬</div>
           <div>
-            <div class="m-val"><?= $vistasTotal ?></div>
-            <div class="m-lab">Vistas al perfil</div>
-            <div class="m-sub"><?= $vistas7dias > 0 ? '+' . $vistas7dias . ' esta semana' : 'Ver en directorio →' ?></div>
+            <div class="m-val"><?= $chatNoLeidos ?></div>
+            <div class="m-lab">Mensajes</div>
+            <div class="m-sub">Ir al chat →</div>
           </div>
         </div>
 
@@ -2893,12 +2893,12 @@ if ($subTipo === 'servicio') {
             <div class="m-sub">Reseñas →</div>
           </div>
         </div>
-        <div class="card mini">
-          <div class="m-ico im">👁️</div>
+        <div class="card mini" onclick="location.href='chat.php'" style="cursor:pointer">
+          <div class="m-ico io">💬</div>
           <div>
-            <div class="m-val"><?= $vistasTotal ?></div>
-            <div class="m-lab">Vistas al perfil</div>
-            <div class="m-sub"><?= $vistas7dias > 0 ? '+' . $vistas7dias . ' esta semana' : 'Hazte visible →' ?></div>
+            <div class="m-val"><?= $chatNoLeidos ?></div>
+            <div class="m-lab">Mensajes</div>
+            <div class="m-sub">Ir al chat →</div>
           </div>
         </div>
 
@@ -2911,12 +2911,12 @@ if ($subTipo === 'servicio') {
             <div class="m-sub">Empieza hoy →</div>
           </div>
         </div>
-        <div class="card mini">
-          <div class="m-ico im">👁️</div>
+        <div class="card mini" onclick="location.href='chat.php'" style="cursor:pointer">
+          <div class="m-ico io">💬</div>
           <div>
-            <div class="m-val" id="statVistas"><?= $vistasTotal ?></div>
-            <div class="m-lab">Vistas al perfil</div>
-            <div class="m-sub"><?= $vistas7dias > 0 ? "+" . $vistas7dias . " esta semana" : "Hazte visible →" ?></div>
+            <div class="m-val"><?= $chatNoLeidos ?></div>
+            <div class="m-lab">Mensajes</div>
+            <div class="m-sub">Ir al chat →</div>
           </div>
         </div>
         <div class="card mini">
@@ -3095,6 +3095,11 @@ if ($subTipo === 'servicio') {
                 <button onclick="abrirModal()" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:#2e7d32;color:#fff;border:none;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer">
                   📷 Cambiar foto
                 </button>
+                <?php if ($fotoUrl): ?>
+                <button onclick="eliminarFotoBanner()" id="btnEliminarFotoBanner" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:transparent;color:#e53935;border:1.5px solid #e53935;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer">
+                  🗑 Eliminar foto
+                </button>
+                <?php endif; ?>
               </div>
             </div>
             <div id="bannerMsg" style="font-size:12px;color:#e53935;margin-top:8px;display:none"></div>
@@ -4215,6 +4220,25 @@ if ($subTipo === 'servicio') {
           msg.textContent = '❌ Error al eliminar'; msg.style.color = '#e74c3c';
         }
       } catch (e) { msg.textContent = '❌ Error de conexión'; msg.style.color = '#e74c3c'; }
+    }
+
+    async function eliminarFotoBanner() {
+      if (!confirm('¿Eliminar tu foto de perfil?')) return;
+      const fd = new FormData();
+      fd.append('_action', 'eliminar_foto');
+      try {
+        const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (j.ok) {
+          const btnBanner = document.getElementById('btnEliminarFotoBanner');
+          if (btnBanner) btnBanner.style.display = 'none';
+          const av = document.getElementById('fotoCardAvatar');
+          if (av) {
+            av.innerHTML = `<?= $inicial ?>`;
+          }
+          location.reload();
+        }
+      } catch (e) { alert('Error de conexión'); }
     }
 
     let cropperInstance = null;
