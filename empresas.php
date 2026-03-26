@@ -2205,7 +2205,14 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     });
 
     // BÚSQUEDA
-    function buscar() {
+    async function buscar() {
+      let logueado = false;
+      try {
+        const r = await fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' });
+        const d = await r.json();
+        if (d.ok && d.usuario) logueado = true;
+      } catch(e) {}
+      if (!logueado) { abrirModalLogin(); return; }
       const nombre = document.getElementById('searchNombre').value.trim().toLowerCase();
       const ubicacion = document.getElementById('searchUbicacion').value.trim().toLowerCase();
       textoBusqueda = (nombre + ' ' + ubicacion).trim();
@@ -2381,6 +2388,28 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 
   <!-- Widget de sesión activa — QuibdóConecta -->
   <script src="js/sesion_widget.js"></script>
+<!-- Modal: Iniciar sesión para buscar -->
+<div id="qc-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)" onclick="if(event.target===this)cerrarModalLogin()">
+  <div style="background:#fff;border-radius:24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;animation:qcLoginIn .35s cubic-bezier(.34,1.56,.64,1)">
+    <div style="background:linear-gradient(135deg,#1f9d55,#2ecc71);padding:28px 28px 22px;text-align:center;position:relative">
+      <button onclick="cerrarModalLogin()" style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      <div style="font-size:40px;margin-bottom:8px">🏢</div>
+      <h2 style="margin:0;color:#fff;font-size:22px;font-weight:800;font-family:'DM Sans',sans-serif">Inicia sesión para buscar</h2>
+      <p style="margin:8px 0 0;color:rgba(255,255,255,.88);font-size:14px;font-family:'DM Sans',sans-serif">Descubre empresas y negocios de Quibdó y el Chocó</p>
+    </div>
+    <div style="padding:28px 28px 24px;text-align:center">
+      <p style="margin:0 0 22px;color:#555;font-size:14.5px;line-height:1.6;font-family:'DM Sans',sans-serif">Para usar el buscador necesitas tener una cuenta. ¡Es gratis y solo toma un minuto!</p>
+      <a href="inicio_sesion.php" style="display:block;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:#fff;padding:15px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(31,157,85,.35);margin-bottom:12px">🔑 Iniciar sesión</a>
+      <a href="registro.php" style="display:block;background:#f0faf5;color:#1f9d55;padding:14px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;border:1.5px solid #c6ebd7">✨ Crear cuenta gratis</a>
+      <button onclick="cerrarModalLogin()" style="margin-top:16px;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Cancelar</button>
+    </div>
+  </div>
+</div>
+<style>@keyframes qcLoginIn{from{opacity:0;transform:scale(.88) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}</style>
+<script>
+function abrirModalLogin(){document.getElementById("qc-login-modal").style.display="flex";document.body.style.overflow="hidden";}
+function cerrarModalLogin(){document.getElementById("qc-login-modal").style.display="none";document.body.style.overflow="";}
+</script>
 </body>
 
 </html>

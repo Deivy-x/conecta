@@ -1056,7 +1056,44 @@ async function cargarTalentos(){const grid=document.getElementById('talentos-gri
 cargarTalentos();
 
 /* BÚSQUEDA */
-function buscar(){const ca=document.getElementById("searchCargo").value.trim(),lu=document.getElementById("searchLugar").value.trim(),p=new URLSearchParams();if(ca)p.set("cargo",ca);if(lu)p.set("lugar",lu);window.location.href="Empleo.html"+(p.toString()?"?"+p.toString():"")}
+async function buscar(){
+  // Verificar sesión antes de buscar
+  let logueado = false;
+  try {
+    const r = await fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' });
+    const d = await r.json();
+    if (d.ok && d.usuario) logueado = true;
+  } catch(e) {}
+
+  if (!logueado) {
+    // Guardar parámetros de búsqueda para continuar después del login
+    const ca = document.getElementById("searchCargo").value.trim();
+    const lu = document.getElementById("searchLugar").value.trim();
+    const p = new URLSearchParams();
+    if (ca) p.set("cargo", ca);
+    if (lu) p.set("lugar", lu);
+    const redirect = "Empleo.html" + (p.toString() ? "?" + p.toString() : "");
+    sessionStorage.setItem("qc_search_redirect", redirect);
+    // Mostrar modal de login
+    abrirModalLogin();
+    return;
+  }
+
+  const ca=document.getElementById("searchCargo").value.trim(),lu=document.getElementById("searchLugar").value.trim(),p=new URLSearchParams();
+  if(ca)p.set("cargo",ca);
+  if(lu)p.set("lugar",lu);
+  window.location.href="Empleo.html"+(p.toString()?"?"+p.toString():"");
+}
+
+function abrirModalLogin(){
+  document.getElementById("qc-login-modal").style.display="flex";
+  document.body.style.overflow="hidden";
+}
+function cerrarModalLogin(){
+  document.getElementById("qc-login-modal").style.display="none";
+  document.body.style.overflow="";
+}
+
 document.getElementById("searchBtn").addEventListener("click",buscar);
 ["searchCargo","searchLugar"].forEach(id=>document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")buscar()}));
 
@@ -1099,5 +1136,53 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarModal()});
     </div>
   </div>
 </div>
+<!-- Modal: Iniciar sesión para buscar -->
+<div id="qc-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)" onclick="if(event.target===this)cerrarModalLogin()">
+  <div style="background:#fff;border-radius:24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;animation:qcLoginIn .35s cubic-bezier(.34,1.56,.64,1)">
+    <!-- Header verde -->
+    <div style="background:linear-gradient(135deg,#1f9d55,#2ecc71);padding:28px 28px 22px;text-align:center;position:relative">
+      <button onclick="cerrarModalLogin()" style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+      <div style="font-size:40px;margin-bottom:8px">🔍</div>
+      <h2 style="margin:0;color:#fff;font-size:22px;font-weight:800;font-family:'DM Sans',sans-serif">Inicia sesión para buscar</h2>
+      <p style="margin:8px 0 0;color:rgba(255,255,255,.88);font-size:14px;font-family:'DM Sans',sans-serif">Encuentra empleos y oportunidades en Quibdó</p>
+    </div>
+    <!-- Body -->
+    <div style="padding:28px 28px 24px;text-align:center">
+      <p style="margin:0 0 22px;color:#555;font-size:14.5px;line-height:1.6;font-family:'DM Sans',sans-serif">Para usar el buscador necesitas tener una cuenta. ¡Es gratis y solo toma un minuto!</p>
+      <a id="qc-login-btn-redirect" href="inicio_sesion.php" style="display:block;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:#fff;padding:15px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(31,157,85,.35);transition:opacity .2s;margin-bottom:12px">
+        🔑 Iniciar sesión
+      </a>
+      <a href="registro.php" style="display:block;background:#f0faf5;color:#1f9d55;padding:14px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;border:1.5px solid #c6ebd7;transition:background .2s">
+        ✨ Crear cuenta gratis
+      </a>
+      <button onclick="cerrarModalLogin()" style="margin-top:16px;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Cancelar</button>
+    </div>
+  </div>
+</div>
+<style>
+@keyframes qcLoginIn {
+  from { opacity:0; transform:scale(.88) translateY(20px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+</style>
+<script>
+// Si viene de un redirect post-login con búsqueda guardada, ejecutarla
+(function(){
+  const rd = sessionStorage.getItem("qc_search_redirect");
+  if (rd) {
+    sessionStorage.removeItem("qc_search_redirect");
+    // Solo redirigir si ya está logueado (widget lo confirma vía cookie de sesión)
+    fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' })
+      .then(r => r.json())
+      .then(d => { if (d.ok && d.usuario) window.location.href = rd; })
+      .catch(() => {});
+  }
+  // Actualizar href del botón login para incluir redirect si aplica
+  const btn = document.getElementById("qc-login-btn-redirect");
+  if (btn) {
+    // El redirect lo manejamos via sessionStorage, no query param, por simplicidad
+  }
+})();
+</script>
 </body>
 </html>
