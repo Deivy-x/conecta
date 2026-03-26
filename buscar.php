@@ -3,9 +3,36 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// Verificar si el usuario está logueado (para el modal de login)
 session_start();
 $logueado = isset($_SESSION['usuario_id']);
+
+// Si no está logueado, mostrar pantalla de acceso y salir
+if (!$logueado):
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscar — Quibdó Conecta</title>
+  <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135deg,#040810 0%,#0b1428 60%,#060f22 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
+  <img src="Imagenes/quibdo_desco_new.png" alt="QuibdóConecta" style="height:52px;margin-bottom:36px;opacity:.92">
+  <div style="background:#fff;border-radius:24px;max-width:440px;width:100%;padding:40px 36px;box-shadow:0 32px 80px rgba(0,0,0,.4)">
+    <div style="font-size:54px;margin-bottom:16px">🔒</div>
+    <h1 style="font-size:22px;font-weight:800;color:#0a0e1a;margin-bottom:10px;line-height:1.3">Inicia sesión para usar el buscador</h1>
+    <p style="color:#6b7a99;font-size:14px;line-height:1.6;margin-bottom:28px">Encuentra candidatos, empresas, empleos y convocatorias de Quibdó y el Chocó. ¡Tu cuenta es gratis!</p>
+    <a href="inicio_sesion.php?redirect=<?= urlencode('buscar.php') ?>" style="display:block;background:linear-gradient(135deg,#1648e8,#4f80ff);color:#fff;padding:15px 24px;border-radius:40px;font-weight:700;font-size:15px;text-decoration:none;box-shadow:0 4px 20px rgba(22,72,232,.4);margin-bottom:12px">🔑 Iniciar sesión</a>
+    <a href="registro.php" style="display:block;background:#f2f5fb;color:#1648e8;padding:14px 24px;border-radius:40px;font-weight:700;font-size:15px;text-decoration:none;border:1.5px solid #dbe4ff;margin-bottom:20px">✨ Crear cuenta gratis</a>
+    <a href="index.html" style="color:#aab4c8;font-size:13px;text-decoration:none">← Volver al inicio</a>
+  </div>
+</body>
+</html>
+<?php
+exit;
+endif;
 ?>
 <!DOCTYPE html>
 <html lang="es">

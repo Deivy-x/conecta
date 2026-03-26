@@ -1421,6 +1421,20 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 </head>
 
 <body>
+<?php if (!isset($_SESSION['usuario_id'])): ?>
+<!-- PANTALLA: SIN SESIÓN -->
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0faf5 0%,#e8f5e9 100%);padding:24px;text-align:center">
+  <img src="Imagenes/Quibdo.png" alt="QuibdóConecta" style="height:56px;margin-bottom:32px;opacity:.9">
+  <div style="background:#fff;border-radius:24px;max-width:440px;width:100%;padding:40px 36px;box-shadow:0 20px 60px rgba(31,157,85,.12);border:1px solid #e2f5ea">
+    <div style="font-size:52px;margin-bottom:16px">🔒</div>
+    <h1 style="font-size:24px;font-weight:800;color:#111;font-family:'DM Sans',sans-serif;margin-bottom:10px">Inicia sesión para ver los talentos</h1>
+    <p style="color:#666;font-size:15px;line-height:1.6;font-family:'DM Sans',sans-serif;margin-bottom:28px">Descubre talentos, artistas y profesionales de Quibdó y el Chocó. Crea tu cuenta gratis y conecta con ellos.</p>
+    <a href="inicio_sesion.php" style="display:block;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:#fff;padding:15px 24px;border-radius:14px;font-weight:700;font-size:16px;text-decoration:none;font-family:'DM Sans',sans-serif;box-shadow:0 4px 20px rgba(31,157,85,.35);margin-bottom:12px">🔑 Iniciar sesión</a>
+    <a href="registro.php" style="display:block;background:#f0faf5;color:#1f9d55;padding:14px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;border:1.5px solid #c6ebd7;margin-bottom:16px">✨ Crear cuenta gratis</a>
+    <a href="index.html" style="color:#aaa;font-size:13px;text-decoration:none;font-family:'DM Sans',sans-serif">← Volver al inicio</a>
+  </div>
+</div>
+<?php exit; endif; ?>
 
   <!-- NAVBAR -->
   <header class="navbar" id="navbar">
