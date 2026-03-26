@@ -671,12 +671,20 @@ if ($action && $logueado) {
         $db->prepare("INSERT INTO usuarios (nombre,apellido,correo,contrasena,telefono,ciudad,tipo,fecha_nacimiento,activo,creado_en) VALUES (?,?,?,?,?,?,?,?,1,NOW())")
           ->execute([$sol['nombre'], $sol['apellido'], $sol['correo'], $sol['contrasena_hash'], $sol['telefono'], $sol['ciudad'], $sol['tipo'], $sol['fecha_nacimiento']]);
         $newId = $db->lastInsertId();
-        // Crear perfil según tipo
-        if ($sol['tipo'] === 'candidato') {
+        if ($sol['tipo'] === 'candidato' || $sol['tipo'] === 'servicio') {
           $db->prepare("INSERT INTO perfiles_candidato (usuario_id) VALUES (?)")->execute([$newId]);
-        } else {
+          if ($sol['tipo'] === 'servicio') {
+            $extras = json_decode($sol['nota_admin'] ?? '{}', true);
+            $db->prepare("INSERT INTO talento_perfil (usuario_id, profesion, precio_desde, descripcion, visible, visible_admin) VALUES (?,?,?,?,1,1)")
+              ->execute([$newId, $extras['profesion_tipo'] ?? '', $extras['precio_desde_neg'] ?? null, $extras['descripcion_neg'] ?? '']);
+          }
+        } elseif ($sol['tipo'] === 'empresa') {
           $db->prepare("INSERT INTO perfiles_empresa (usuario_id,nombre_empresa,sector,nit) VALUES (?,?,?,?)")
             ->execute([$newId, $sol['nombre_empresa'], $sol['sector'], $sol['nit']]);
+        } elseif ($sol['tipo'] === 'negocio') {
+          $extras = json_decode($sol['nota_admin'] ?? '{}', true);
+          $db->prepare("INSERT INTO negocios_locales (usuario_id,nombre_negocio,categoria,whatsapp,descripcion,tipo_negocio,visible,visible_admin) VALUES (?,?,?,?,?,?,1,1)")
+            ->execute([$newId, $sol['nombre_empresa'], $extras['categoria_neg'] ?? '', $extras['whatsapp_neg'] ?? '', $extras['descripcion_neg'] ?? '', $extras['tipo_negocio_reg'] ?? 'emp']);
         }
       }
     }
@@ -1017,7 +1025,7 @@ if ($action && $logueado) {
     $fnac = trim($_POST['fecha_nacimiento'] ?? '');
     $enTalentos = (int) ($_POST['en_talentos'] ?? 0);
     $destacado = (int) ($_POST['destacado'] ?? 0);
-    if ($uid && $nombre && in_array($tipo, ['candidato', 'empresa'])) {
+    if ($uid && $nombre && in_array($tipo, ['candidato', 'empresa', 'negocio', 'servicio'])) {
       if ($tipo === 'empresa') {
         $db->prepare("UPDATE usuarios SET nombre=?, apellido=?, correo=?, tipo=?, ciudad=?, telefono=?, cedula=?, fecha_empresa=?, fecha_nacimiento=NULL WHERE id=?")
           ->execute([$nombre, $apellido, $correo, $tipo, $ciudad, $telefono, $cedula, $fnac ?: null, $uid]);

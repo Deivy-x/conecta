@@ -57,14 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($pass !== $pass2) {
         echo json_encode(['ok'=>false,'msg'=>'Las contraseñas no coinciden.']); exit;
     }
-    if (!in_array($tipo, ['candidato','empresa','negocio'])) {
+    if (!in_array($tipo, ['candidato','empresa','negocio','servicio'])) {
         echo json_encode(['ok'=>false,'msg'=>'Tipo no válido.']); exit;
     }
-    if ($tipo === 'candidato' && !$fecha_nac_val) {
+    if (in_array($tipo, ['candidato','servicio']) && !$fecha_nac_val) {
         echo json_encode(['ok'=>false,'msg'=>'La fecha de nacimiento es obligatoria.']); exit;
     }
     
-    if ($tipo === 'candidato' && $fecha_nac_val) {
+    if (in_array($tipo, ['candidato','servicio']) && $fecha_nac_val) {
         $nacimiento = new DateTime($fecha_nac_val);
         $hoy = new DateTime();
         $edad = $hoy->diff($nacimiento)->y;
@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cedula = trim($_POST['cedula'] ?? '');
         $tipo_doc = trim($_POST['tipo_documento_hidden'] ?? 'cedula') ?: 'cedula';
 
-        if ($tipo === 'candidato') {
+        if (in_array($tipo, ['candidato','servicio'])) {
             if (!$cedula) { echo json_encode(['ok'=>false,'msg'=>'El número de documento es obligatorio.']); exit; }
             if (empty($_FILES['doc_cedula']['name'])) { echo json_encode(['ok'=>false,'msg'=>'Debes subir la foto o PDF de tu documento.']); exit; }
         }
@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $fecha_nac_final = null;
-        if ($tipo === 'candidato') $fecha_nac_final = $fecha_nac_val ?: null;
+        if (in_array($tipo, ['candidato','servicio'])) $fecha_nac_final = $fecha_nac_val ?: null;
 
         $nombreResp = $tipo === 'empresa' ? $nombre_empresa : ($tipo === 'negocio' ? $nombre_negocio : $nombre);
 
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'link_neg_virtual' => $link_neg_virtual,
         ]);
 
-        $tipoBD = $tipo === 'negocio' ? 'empresa' : $tipo;
+        $tipoBD = $tipo;
         $nombreEmpresaBD = $tipo === 'empresa' ? $nombre_empresa : ($tipo === 'negocio' ? $nombre_negocio : '');
 
         $db->prepare("
@@ -967,7 +967,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   function setTipo(tipo, btn, cls) {
     document.querySelectorAll('.tipo-btn').forEach(b=>b.className='tipo-btn');
     btn.classList.add(cls);
-    document.getElementById('tipo').value = tipo === 'servicio' ? 'candidato' : tipo; 
+    document.getElementById('tipo').value = tipo;
     
     document.getElementById('camposCandidato').classList.toggle('show', tipo==='candidato');
     document.getElementById('camposEmpresa').classList.toggle('show',   tipo==='empresa');
@@ -1125,15 +1125,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   async function registrar() {
     if(!document.getElementById('terminos').checked){showMsg('Debes aceptar los términos.','error');return;}
     const tipoReal = document.getElementById('tipo').value;
-    const tipoUI = document.querySelector('.tipo-btn[class*="active"]')?.textContent?.includes('servicio')?'servicio':tipoReal;
+    const tipoUI = tipoReal;
 
-    if(tipoUI==='servicio'){
+    if(tipoReal==='servicio'){
       if(!document.getElementById('tipo_doc_serv').value){showMsg('Selecciona el tipo de documento.','error');return;}
       if(!document.getElementById('cedula_serv').value.trim()){showMsg('El número de documento es obligatorio.','error');return;}
       if(!document.getElementById('fecha_nac_serv').value){showMsg('La fecha de nacimiento es obligatoria.','error');return;}
       if(!document.getElementById('doc_cedula_serv').files[0]){showMsg('Debes subir la foto o PDF de tu documento.','error');return;}
     }
-    if(tipoReal==='candidato' && tipoUI!=='servicio'){
+    if(tipoReal==='candidato'){
       if(!document.getElementById('tipo_documento').value){showMsg('Selecciona el tipo de documento.','error');return;}
       if(!document.getElementById('cedula').value.trim()){showMsg('El número de documento es obligatorio.','error');return;}
       if(!document.getElementById('doc_cedula').files[0]){showMsg('Debes subir la foto o PDF de tu documento.','error');return;}
@@ -1214,7 +1214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       const fNeg=document.getElementById('doc_cedula_neg'); if(fNeg&&fNeg.files[0]) data.append('doc_cedula',fNeg.files[0]);
     }
     
-    if(document.getElementById('camposServicio').classList.contains('show')){
+    if(tipoReal==='servicio'){
       const profServ=document.getElementById('profesion_tipo_servicio').value;
       const precioServ=document.getElementById('precio_desde_serv').value;
       const unidad=document.getElementById('unidad_precio').value;
