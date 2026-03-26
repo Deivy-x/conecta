@@ -3123,11 +3123,12 @@ if ($subTipo === 'servicio') {
 
       <!-- ── INDICADOR DE PLAN ACTIVO (span3) ── -->
       <?php if (!empty($datosPlan)): ?>
-      <div class="card span3" style="background:linear-gradient(135deg,rgba(0,230,118,.06),rgba(33,150,243,.06));border-color:rgba(0,230,118,.2)">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div class="card span3" style="background:linear-gradient(135deg,rgba(0,180,90,.08),rgba(33,150,243,.08));border:1.5px solid rgba(0,180,90,.25)">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+          <!-- Nombre del plan -->
           <div>
-            <div style="font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Plan activo</div>
-            <div style="font-size:18px;font-weight:800;color:var(--v2)"><?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
+            <div style="font-size:10px;font-weight:700;color:#5a7a6a;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3px">Plan activo</div>
+            <div style="font-size:20px;font-weight:800;color:#1a5c3a"><?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
           </div>
           <?php
             $usados   = $datosPlan['usados'] ?? [];
@@ -3138,27 +3139,30 @@ if ($subTipo === 'servicio') {
               'vacantes'     => ['💼', 'Vacantes'],
             ];
           ?>
-          <div style="display:flex;gap:20px;flex-wrap:wrap">
+          <!-- Barras de uso -->
+          <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end">
             <?php foreach ($showBars as $key => [$ico, $label]): ?>
               <?php
                 $limite = $cfg[$key] ?? 0;
                 if ($limite === 0) continue;
                 $usado  = $usados[$key] ?? 0;
-                $pctBar = ($limite === -1) ? 100 : min(100, ($usado / max(1, $limite)) * 100);
-                $color  = $pctBar >= 90 ? 'var(--ro)' : ($pctBar >= 70 ? '#ff9800' : 'var(--v2)');
+                $pctBar = ($limite === -1) ? 15 : min(100, ($usado / max(1, $limite)) * 100);
+                $color  = $pctBar >= 90 ? '#e53935' : ($pctBar >= 70 ? '#fb8c00' : '#2e7d32');
+                $bgBar  = $pctBar >= 90 ? 'rgba(229,57,53,.15)' : ($pctBar >= 70 ? 'rgba(251,140,0,.15)' : 'rgba(46,125,50,.12)');
+                $numColor = $pctBar >= 90 ? '#c62828' : ($pctBar >= 70 ? '#e65100' : '#1b5e20');
               ?>
-              <div style="min-width:90px">
-                <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px"><?= $ico ?> <?= $label ?></div>
-                <div style="font-size:15px;font-weight:700;color:#fff">
-                  <?= $usado ?> / <?= $limite === -1 ? '∞' : $limite ?>
+              <div style="min-width:88px">
+                <div style="font-size:11px;font-weight:600;color:#4a6b58;margin-bottom:5px"><?= $ico ?> <?= $label ?></div>
+                <div style="font-size:17px;font-weight:800;color:<?= $numColor ?>;line-height:1">
+                  <?= $usado ?> <span style="font-size:13px;font-weight:500;color:#6a8a74">/ <?= $limite === -1 ? '∞' : $limite ?></span>
                 </div>
-                <div style="height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:4px">
-                  <div style="height:3px;width:<?= $pctBar ?>%;background:<?= $color ?>;border-radius:2px;transition:.3s"></div>
+                <div style="height:5px;background:<?= $bgBar ?>;border-radius:4px;margin-top:6px">
+                  <div style="height:5px;width:<?= $pctBar ?>%;background:<?= $color ?>;border-radius:4px;transition:.3s"></div>
                 </div>
               </div>
             <?php endforeach; ?>
           </div>
-          <a href="empresas.php#planes" style="padding:8px 20px;background:var(--v2);color:#000;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">Mejorar plan →</a>
+          <a href="empresas.php#planes" style="padding:9px 22px;background:#2e7d32;color:#fff;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;box-shadow:0 2px 8px rgba(46,125,50,.25)">Mejorar plan →</a>
         </div>
       </div>
       <?php endif; ?>
