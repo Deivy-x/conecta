@@ -3,6 +3,7 @@
 // talentos.php — Carga usuarios de BD + talentos demo
 // ============================================================
 // BUILD: v20260320001155
+session_start();
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
@@ -1814,12 +1815,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 
     // BÚSQUEDA
     async function buscar() {
-      let logueado = false;
-      try {
-        const r = await fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' });
-        const d = await r.json();
-        if (d.ok && d.usuario) logueado = true;
-      } catch(e) {}
+      const logueado = <?php echo isset($_SESSION['usuario_id']) ? 'true' : 'false'; ?>;
       if (!logueado) { abrirModalLogin(); return; }
       const nombre = document.getElementById('searchNombre').value.trim().toLowerCase();
       const ubicacion = document.getElementById('searchUbicacion').value.trim().toLowerCase();

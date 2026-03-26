@@ -567,12 +567,7 @@ document.querySelectorAll('.filtro-btn').forEach(btn => {
 });
 
 async function buscar() {
-  let logueado = false;
-  try {
-    const r = await fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' });
-    const d = await r.json();
-    if (d.ok && d.usuario) logueado = true;
-  } catch(e) {}
+  const logueado = <?php echo isset($_SESSION['usuario_id']) ? 'true' : 'false'; ?>;
   if (!logueado) { abrirModalLogin(); return; }
   textoBusqueda = (document.getElementById('searchCargo').value.trim() + ' ' + document.getElementById('searchLugar').value.trim()).trim().toLowerCase();
   aplicarFiltros();

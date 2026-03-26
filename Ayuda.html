@@ -1983,15 +1983,16 @@
 <script>
 function abrirModalLogin(){document.getElementById("qc-login-modal").style.display="flex";document.body.style.overflow="hidden";}
 function cerrarModalLogin(){document.getElementById("qc-login-modal").style.display="none";document.body.style.overflow="";}
-async function verificarSesionAyuda(){
-  let logueado = false;
+function verificarSesionAyuda(){
   try {
-    const r = await fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' });
-    const d = await r.json();
-    if (d.ok && d.usuario) logueado = true;
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'api_usuario.php?action=perfil', false);
+    xhr.withCredentials = true;
+    xhr.send();
+    const d = JSON.parse(xhr.responseText);
+    if (d.ok && d.usuario) { filtrarFAQ(); return; }
   } catch(e) {}
-  if (!logueado) { abrirModalLogin(); return; }
-  filtrarFAQ();
+  abrirModalLogin();
 }
 </script>
 </body>

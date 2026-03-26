@@ -1056,33 +1056,23 @@ async function cargarTalentos(){const grid=document.getElementById('talentos-gri
 cargarTalentos();
 
 /* BÚSQUEDA */
-async function buscar(){
-  // Verificar sesión antes de buscar
-  let logueado = false;
+function verificarSesion() {
   try {
-    const r = await fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' });
-    const d = await r.json();
-    if (d.ok && d.usuario) logueado = true;
-  } catch(e) {}
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'api_usuario.php?action=perfil', false); // síncrono
+    xhr.withCredentials = true;
+    xhr.send();
+    const d = JSON.parse(xhr.responseText);
+    return d.ok && d.usuario;
+  } catch(e) { return false; }
+}
 
-  if (!logueado) {
-    // Guardar parámetros de búsqueda para continuar después del login
-    const ca = document.getElementById("searchCargo").value.trim();
-    const lu = document.getElementById("searchLugar").value.trim();
-    const p = new URLSearchParams();
-    if (ca) p.set("cargo", ca);
-    if (lu) p.set("lugar", lu);
-    const redirect = "Empleo.html" + (p.toString() ? "?" + p.toString() : "");
-    sessionStorage.setItem("qc_search_redirect", redirect);
-    // Mostrar modal de login
-    abrirModalLogin();
-    return;
-  }
-
+function buscar(){
+  if (!verificarSesion()) { abrirModalLogin(); return; }
   const ca=document.getElementById("searchCargo").value.trim(),lu=document.getElementById("searchLugar").value.trim(),p=new URLSearchParams();
   if(ca)p.set("cargo",ca);
   if(lu)p.set("lugar",lu);
-  window.location.href="Empleo.html"+(p.toString()?"?"+p.toString():"");
+  window.location.href="Empleo.php"+(p.toString()?"?"+p.toString():"");
 }
 
 function abrirModalLogin(){
