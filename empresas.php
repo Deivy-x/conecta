@@ -176,7 +176,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .brand span {
-      color: #1f9d55;
+      color: #1a56db;
     }
 
     .nav-center {
@@ -203,7 +203,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       bottom: -6px;
       width: 0%;
       height: 2px;
-      background: #1f9d55;
+      background: #1a56db;
       transition: width 0.3s;
     }
 
@@ -213,7 +213,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .nav-center .highlight {
-      background: linear-gradient(135deg, #1f9d55, #2ecc71);
+      background: linear-gradient(135deg, #1a56db, #3b82f6);
       color: white !important;
       padding: 9px 20px;
       border-radius: 25px;
@@ -232,23 +232,23 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .login {
-      color: #1f9d55;
+      color: #1a56db;
       text-decoration: none;
       font-size: 14.5px;
       font-weight: 600;
       padding: 8px 18px;
-      border: 2px solid #1f9d55;
+      border: 2px solid #1a56db;
       border-radius: 30px;
       transition: all 0.3s;
     }
 
     .login:hover {
-      background: #1f9d55;
+      background: #1a56db;
       color: white;
     }
 
     .register {
-      background: #1f9d55;
+      background: #1a56db;
       color: white;
       padding: 9px 20px;
       border-radius: 25px;
@@ -341,7 +341,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .mobile-menu a.highlight-m {
-      color: #1f9d55;
+      color: #1a56db;
       font-weight: 700;
     }
 
@@ -362,12 +362,12 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .mobile-auth .m-login {
-      border: 2px solid #1f9d55;
-      color: #1f9d55;
+      border: 2px solid #1a56db;
+      color: #1a56db;
     }
 
     .mobile-auth .m-reg {
-      background: #1f9d55;
+      background: #1a56db;
       color: white;
     }
 
@@ -491,23 +491,45 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     .hero-links {
       display: flex;
       justify-content: center;
-      gap: 24px;
+      gap: 14px;
       flex-wrap: wrap;
+      animation: fadeUp .8s .8s ease both;
     }
 
     .hero-link {
-      color: rgba(255, 255, 255, 0.7);
-      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 22px;
+      border-radius: 30px;
       font-size: 14px;
-      font-weight: 500;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-      padding-bottom: 2px;
-      transition: color 0.2s;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all .25s;
+      white-space: nowrap;
     }
 
-    .hero-link:hover {
-      color: #93c5fd;
-      border-color: #93c5fd;
+    .hero-link-verde {
+      background: #1a56db;
+      color: white;
+      box-shadow: 0 4px 16px rgba(31,157,85,.45);
+    }
+
+    .hero-link-verde:hover {
+      background: #166f3d;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(31,157,85,.55);
+    }
+
+    .hero-link-outline {
+      border: 2px solid rgba(255,255,255,.6);
+      color: white;
+    }
+
+    .hero-link-outline:hover {
+      background: white;
+      color: #111;
+      transform: translateY(-2px);
     }
 
     /* STATS */
@@ -586,6 +608,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       border-color: #1a56db;
       color: #1a56db;
       box-shadow: 0 6px 20px rgba(26, 86, 219, 0.15);
+      transform: translateY(-2px);
     }
 
     .cat-btn .count {
@@ -629,6 +652,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       background: #1a56db;
       border-color: #1a56db;
       color: white;
+      box-shadow: 0 6px 16px rgba(26,86,219,.2);
     }
 
     /* EMPRESAS SECTION */
@@ -1536,8 +1560,8 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         <button id="searchBtn">Buscar empresa</button>
       </div>
       <div class="hero-links">
-        <a href="registro.php" class="hero-link">✨ Registrar mi empresa gratis</a>
-        <a href="#empresas" class="hero-link">👇 Ver todas las empresas</a>
+        <a href="registro.php" class="hero-link hero-link-verde">✨ Registrar mi empresa gratis</a>
+        <a href="#empresas" class="hero-link hero-link-outline">👇 Ver todas las empresas</a>
       </div>
     </div>
   </section>
@@ -1620,6 +1644,14 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
             $badgePrincipalLabel = '<span class="badge-e badge-verificado-principal">✓ Verificada</span>';
           else
             $badgePrincipalLabel = '';
+
+          // Resolver URL del logo: puede ser URL completa (Cloudinary) o solo nombre de archivo local
+          $logoSrc = '';
+          if (!empty($empresa['logo'])) {
+            $logoSrc = str_starts_with($empresa['logo'], 'http')
+              ? htmlspecialchars($empresa['logo'])
+              : 'uploads/logos/' . htmlspecialchars($empresa['logo']);
+          }
           ?>
 
           <div class="empresa-card" id="u<?= $empresa['id'] ?>" data-uid="<?= $empresa['id'] ?>"
@@ -1628,13 +1660,13 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
             data-nombre="<?= $nombreEmpresa ?>" data-sector="<?= $sec ?>" data-ubicacion="<?= $ciu ?>"
             data-desc="<?= $desc ?>" data-grad="<?= $grd ?>" data-initials="<?= $ini ?>"
             data-web="<?= htmlspecialchars($empresa['sitio_web'] ?? '') ?>"
-            data-logo="<?= !empty($empresa['logo']) ? 'uploads/logos/' . htmlspecialchars($empresa['logo']) : '' ?>">
+            data-logo="<?= $logoSrc ?>">
 
             <?= $badgePrincipalLabel ?>
 
             <div class="empresa-avatar" style="background:<?= $grd ?>;overflow:hidden">
-              <?php if (!empty($empresa['logo'])): ?>
-                <img src="uploads/logos/<?= htmlspecialchars($empresa['logo']) ?>" alt="<?= $ini ?>"
+              <?php if ($logoSrc): ?>
+                <img src="<?= $logoSrc ?>" alt="<?= $ini ?>"
                   style="width:100%;height:100%;object-fit:cover;display:block">
               <?php else: ?>
                 <?= $ini ?>
@@ -2387,7 +2419,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 <!-- Modal: Iniciar sesión para buscar -->
 <div id="qc-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)" onclick="if(event.target===this)cerrarModalLogin()">
   <div style="background:#fff;border-radius:24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;animation:qcLoginIn .35s cubic-bezier(.34,1.56,.64,1)">
-    <div style="background:linear-gradient(135deg,#1f9d55,#2ecc71);padding:28px 28px 22px;text-align:center;position:relative">
+    <div style="background:linear-gradient(135deg,#1a56db,#3b82f6);padding:28px 28px 22px;text-align:center;position:relative">
       <button onclick="cerrarModalLogin()" style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
       <div style="font-size:40px;margin-bottom:8px">🏢</div>
       <h2 style="margin:0;color:#fff;font-size:22px;font-weight:800;font-family:'DM Sans',sans-serif">Inicia sesión para buscar</h2>
@@ -2395,8 +2427,8 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     </div>
     <div style="padding:28px 28px 24px;text-align:center">
       <p style="margin:0 0 22px;color:#555;font-size:14.5px;line-height:1.6;font-family:'DM Sans',sans-serif">Para usar el buscador necesitas tener una cuenta. ¡Es gratis y solo toma un minuto!</p>
-      <a href="inicio_sesion.php" style="display:block;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:#fff;padding:15px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(31,157,85,.35);margin-bottom:12px">🔑 Iniciar sesión</a>
-      <a href="registro.php" style="display:block;background:#f0faf5;color:#1f9d55;padding:14px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;border:1.5px solid #c6ebd7">✨ Crear cuenta gratis</a>
+      <a href="inicio_sesion.php" style="display:block;background:linear-gradient(135deg,#1a56db,#3b82f6);color:#fff;padding:15px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(31,157,85,.35);margin-bottom:12px">🔑 Iniciar sesión</a>
+      <a href="registro.php" style="display:block;background:#f0faf5;color:#1a56db;padding:14px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;font-family:'DM Sans',sans-serif;border:1.5px solid #c6ebd7">✨ Crear cuenta gratis</a>
       <button onclick="cerrarModalLogin()" style="margin-top:16px;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Cancelar</button>
     </div>
   </div>
