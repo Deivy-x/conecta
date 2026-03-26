@@ -25,23 +25,23 @@
             --texto: #111;
 
             --img-hero: url('Imagenes/quibdo4.jpg');
-
+            
             --img-stats: url('Imagenes/quibdo2.jpg');
-
+            
             --img-cats: none;
-
+            
             --img-como: none;
-
+            
             --img-empleos: none;
-
+            
             --img-talentos: none;
-
+            
             --img-testimonios: none;
-
+            
             --img-cta: url('Imagenes/quibdo2.jpg');
-
+            
             --img-videos: none;
-
+            
         }
 
         *,
@@ -2795,80 +2795,6 @@
                 font-weight: 600
             }
         }
-
-        .mini-precios {
-            padding: 80px 48px;
-            background: #ffffff;
-            text-align: center;
-        }
-
-        .mini-precios-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 18px;
-            max-width: 900px;
-            margin: auto;
-        }
-
-        .mini-plan {
-            background: white;
-            border: 1px solid rgba(0, 0, 0, .08);
-            border-radius: 18px;
-            padding: 22px;
-            position: relative;
-            transition: .3s;
-        }
-
-        .mini-plan:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, .08);
-        }
-
-        .mini-plan h3 {
-            font-size: 16px;
-            font-weight: 800;
-            margin-bottom: 6px;
-        }
-
-        .mini-precio {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--verde);
-            margin-bottom: 6px;
-        }
-
-        .mini-plan p {
-            font-size: 13px;
-            color: #777;
-            margin-bottom: 12px;
-        }
-
-        .mini-plan a {
-            display: inline-block;
-            padding: 8px 18px;
-            background: var(--verde);
-            color: white;
-            border-radius: 25px;
-            font-size: 12px;
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        .mini-plan.destacado {
-            border: 2px solid var(--verde);
-        }
-
-        .mini-badge {
-            position: absolute;
-            top: -10px;
-            right: 12px;
-            background: var(--verde);
-            color: white;
-            font-size: 10px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 700;
-        }
     </style>
 </head>
 
@@ -3176,6 +3102,195 @@
         </div>
     </section>
 
+  <!-- ══ PLANES Y PRECIOS (index compacto) ══════════════════════════ -->
+  <section id="precios-home" style="background:#f8fafc;padding:60px 24px 64px;border-top:1px solid #e5e7eb">
+    <div style="max-width:1100px;margin:0 auto">
+
+      <!-- Encabezado -->
+      <div style="text-align:center;margin-bottom:36px">
+        <span style="display:inline-block;background:#e8f5ee;color:#1f6b3a;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;padding:4px 14px;border-radius:20px;margin-bottom:12px">💳 Planes</span>
+        <h2 style="font-family:'Syne',sans-serif;font-size:clamp(22px,3.5vw,32px);font-weight:800;color:#111;margin-bottom:8px">Elige tu plan en QuibdóConecta</h2>
+        <p style="font-size:14px;color:#6b7280;max-width:460px;margin:0 auto">Empieza gratis. Escala cuando necesites más visibilidad, conexiones y datos.</p>
+      </div>
+
+      <!-- Toggle Empresa / Candidato -->
+      <div style="display:flex;justify-content:center;margin-bottom:20px">
+        <div style="display:inline-flex;background:#f1f5f9;border-radius:30px;padding:4px;gap:4px">
+          <button class="ph-tipo-btn" onclick="phSetTipo('empresa',this)"
+            style="padding:7px 20px;border-radius:26px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#1a56db,#3b82f6);color:white;transition:all .25s">
+            🏢 Empresa
+          </button>
+          <button class="ph-tipo-btn" onclick="phSetTipo('candidato',this)"
+            style="padding:7px 20px;border-radius:26px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;background:transparent;color:#666;transition:all .25s">
+            👤 Candidato / Artista
+          </button>
+        </div>
+      </div>
+
+      <!-- Toggle Semanal / Mensual / Anual -->
+      <div style="display:flex;justify-content:center;margin-bottom:32px">
+        <div style="display:inline-flex;background:#f1f5f9;border-radius:30px;padding:4px;gap:4px">
+          <button class="ph-periodo-btn activo-ph-periodo" onclick="phSetPeriodo('semana',this)"
+            style="padding:6px 16px;border-radius:26px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;background:white;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:all .2s">
+            Semanal
+          </button>
+          <button class="ph-periodo-btn" onclick="phSetPeriodo('mes',this)"
+            style="padding:6px 16px;border-radius:26px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;background:transparent;color:#666;transition:all .2s">
+            Mensual
+          </button>
+          <button class="ph-periodo-btn" onclick="phSetPeriodo('anio',this)"
+            style="padding:6px 16px;border-radius:26px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;background:transparent;color:#666;transition:all .2s">
+            Anual <span style="background:#dcfce7;color:#166534;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;margin-left:3px">-30%</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid de planes -->
+      <div id="ph-precios-grid"
+        style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;align-items:start"></div>
+
+      <!-- Link a más info -->
+      <div style="text-align:center;margin-top:28px">
+        <a href="empresas.php#precios" style="display:inline-flex;align-items:center;gap:6px;color:#1a56db;font-size:13px;font-weight:700;text-decoration:none;font-family:'DM Sans',sans-serif">
+          Ver todos los detalles de planes →
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      let phTipo = 'empresa';
+      let phPeriodo = 'semana';
+
+      const phPlanes = [
+        {
+          id: 'semilla', nombre: 'Semilla', icon: '🌱',
+          color: '#4a7c59', bg: '#eef6f1', borderColor: 'rgba(74,124,89,0.2)',
+          desc: 'Para comenzar sin costo.',
+          precioSemana: 0, precioMes: 0, precioAnio: 0,
+          candidato: ['3 aplicaciones/mes', 'Hoja de vida completa', 'Ver 5 empresas/mes'],
+          empresa: ['1 vacante por mes', 'Ver 5 candidatos/mes', '10 mensajes de chat/mes']
+        },
+        {
+          id: 'selva', nombre: 'Verde Selva', icon: '🌿',
+          color: '#1f6b3a', bg: '#e8f5ee', borderColor: 'rgba(31,107,58,0.35)',
+          desc: 'Más visibilidad y conexiones.',
+          precioSemana: 4900, precioMes: 9900, precioAnio: 99000, popular: true,
+          candidato: ['8 aplicaciones/mes', 'Ver 20 empresas/mes', 'Portafolio de trabajos'],
+          empresa: ['5 vacantes por mes', 'Ver 30 candidatos/mes', 'Logo en perfil']
+        },
+        {
+          id: 'oro', nombre: 'Amarillo Oro', icon: '✦',
+          color: '#b8860b', bg: '#fdf8e8', borderColor: 'rgba(184,134,11,0.35)',
+          desc: 'Datos exactos y conexiones directas.',
+          precioSemana: 9900, precioMes: 24900, precioAnio: 249000,
+          candidato: ['Aplicaciones ilimitadas ★', 'Ver perfiles ilimitados ★', 'Posición destacada ★'],
+          empresa: ['Vacantes ilimitadas ★', 'Ver perfiles ilimitados ★', 'Estadísticas avanzadas ★']
+        },
+        {
+          id: 'azul', nombre: 'Azul Profundo', icon: '◆',
+          color: '#1a3f6f', bg: '#e8f0fa', borderColor: 'rgba(26,63,111,0.35)',
+          desc: 'El máximo poder sin límites.',
+          precioSemana: 14900, precioMes: 39900, precioAnio: 399000,
+          candidato: ['Todo ilimitado ◆', 'Primero en búsquedas ◆', 'Soporte dedicado ◆'],
+          empresa: ['Todo ilimitado ◆', 'Banner en inicio ◆', 'Gestor de cuenta ◆']
+        }
+      ];
+
+      function phFmt(n) { return '$' + n.toLocaleString('es-CO'); }
+
+      function phRender() {
+        const grid = document.getElementById('ph-precios-grid');
+        if (!grid) return;
+        grid.innerHTML = phPlanes.map(p => {
+          const gratis = p.precioMes === 0;
+          const features = phTipo === 'candidato' ? p.candidato : p.empresa;
+          const pop = p.popular === true;
+
+          let precioHTML = '';
+          if (gratis) {
+            precioHTML = `<div style="font-size:28px;font-weight:800;color:${pop?'white':p.color};font-family:'Syne',sans-serif">Gratis</div><div style="font-size:11px;color:${pop?'rgba(255,255,255,0.7)':'#999'};margin-top:2px">para siempre</div>`;
+          } else if (phPeriodo === 'anio') {
+            const pm = Math.round(p.precioAnio / 12);
+            precioHTML = `<div style="font-size:28px;font-weight:800;color:${pop?'white':p.color};font-family:'Syne',sans-serif">${phFmt(p.precioAnio)}</div><div style="font-size:11px;color:${pop?'rgba(255,255,255,0.7)':'#999'};margin-top:2px">por año · ${phFmt(pm)}/mes</div><span style="display:inline-block;background:${pop?'rgba(255,255,255,0.2)':p.bg};color:${pop?'white':p.color};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:6px">2 meses gratis</span>`;
+          } else if (phPeriodo === 'mes') {
+            precioHTML = `<div style="font-size:28px;font-weight:800;color:${pop?'white':p.color};font-family:'Syne',sans-serif">${phFmt(p.precioMes)}</div><div style="font-size:11px;color:${pop?'rgba(255,255,255,0.7)':'#999'};margin-top:2px">por mes</div>`;
+          } else {
+            precioHTML = `<div style="font-size:28px;font-weight:800;color:${pop?'white':p.color};font-family:'Syne',sans-serif">${phFmt(p.precioSemana)}</div><div style="font-size:11px;color:${pop?'rgba(255,255,255,0.7)':'#999'};margin-top:2px">por semana</div><span style="display:inline-block;background:${pop?'rgba(255,255,255,0.2)':p.bg};color:${pop?'white':p.color};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:6px">o ${phFmt(p.precioMes)}/mes</span>`;
+          }
+
+          const featHTML = features.map(f =>
+            `<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid ${pop?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.04)'}">
+              <span style="color:${pop?'rgba(255,255,255,0.8)':'#1f6b3a'};font-size:12px;flex-shrink:0">✓</span>
+              <span style="font-size:12px;color:${pop?'rgba(255,255,255,0.9)':'#444'};line-height:1.4">${f}</span>
+            </div>`
+          ).join('');
+
+          return `<div style="
+            background:${pop?p.color:'white'};
+            border:2px solid ${pop?p.color:p.borderColor};
+            border-radius:18px;padding:22px;position:relative;
+            transition:transform .3s,box-shadow .3s;
+            ${pop?'transform:scale(1.02);box-shadow:0 16px 40px '+p.color+'44;':''}
+          "
+          onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(0,0,0,0.12)'"
+          onmouseout="this.style.transform='${pop?'scale(1.02)':'none'}';this.style.boxShadow='${pop?'0 16px 40px '+p.color+'44':'none'}'">
+
+            ${pop?`<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:${p.color};color:white;font-size:10px;font-weight:800;padding:3px 14px;border-radius:20px;white-space:nowrap;border:2px solid white">⭐ Más popular</div>`:''}
+
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+              <div style="width:34px;height:34px;border-radius:9px;background:${pop?'rgba(255,255,255,0.2)':p.bg};display:flex;align-items:center;justify-content:center;font-size:17px">${p.icon}</div>
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:${pop?'white':'#111'}">${p.nombre}</div>
+                <div style="font-size:11px;color:${pop?'rgba(255,255,255,0.65)':'#999'}">${p.desc}</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid ${pop?'rgba(255,255,255,0.2)':'rgba(0,0,0,0.07)'}">
+              ${precioHTML}
+            </div>
+
+            <div style="margin-bottom:16px">${featHTML}</div>
+
+            <a href="registro.php" style="
+              display:block;text-align:center;padding:10px;
+              background:${pop?'white':'transparent'};
+              border:2px solid ${pop?'white':p.color};
+              color:${pop?p.color:p.color};
+              border-radius:22px;font-weight:700;font-size:13px;text-decoration:none;
+              font-family:'DM Sans',sans-serif;transition:all .3s"
+            onmouseover="this.style.background='${pop?'rgba(255,255,255,0.9)':p.color}';this.style.color='${pop?p.color:'white'}'"
+            onmouseout="this.style.background='${pop?'white':'transparent'}';this.style.color='${p.color}'">
+              ${gratis ? '✨ Comenzar gratis' : '→ Elegir ' + p.nombre}
+            </a>
+          </div>`;
+        }).join('');
+      }
+
+      window.phSetTipo = function(tipo, btn) {
+        phTipo = tipo;
+        document.querySelectorAll('.ph-tipo-btn').forEach(b => { b.style.background='transparent'; b.style.color='#666'; });
+        btn.style.background = 'linear-gradient(135deg,#1a56db,#3b82f6)';
+        btn.style.color = 'white';
+        phRender();
+      };
+
+      window.phSetPeriodo = function(periodo, btn) {
+        phPeriodo = periodo;
+        document.querySelectorAll('.ph-periodo-btn').forEach(b => { b.style.background='transparent'; b.style.color='#666'; b.style.boxShadow='none'; });
+        btn.style.background = 'white';
+        btn.style.color = '#111';
+        btn.style.boxShadow = '0 1px 4px rgba(0,0,0,.08)';
+        phRender();
+      };
+
+      phRender();
+    })();
+  </script>
+  <!-- ══ FIN PLANES HOME ══════════════════════════════════════════════ -->
+
     <section class="final-cta">
         <div class="cta-overlay"></div>
         <div class="final-cta-franja"></div>
@@ -3188,33 +3303,7 @@
             </div>
         </div>
     </section>
-    <section class="mini-precios">
-        <div class="mini-precios-grid">
 
-            <div class="mini-plan">
-                <h3>Gratis</h3>
-                <div class="mini-precio">$0</div>
-                <p>Perfil básico</p>
-                <a href="empresas.php">Empezar</a>
-            </div>
-
-            <div class="mini-plan destacado">
-                <span class="mini-badge">Popular</span>
-                <h3>Pro</h3>
-                <div class="mini-precio">$9.900</div>
-                <p>Más visibilidad</p>
-                <a href="empresas.php">Elegir</a>
-            </div>
-
-            <div class="mini-plan">
-                <h3>Premium</h3>
-                <div class="mini-precio">$19.900</div>
-                <p>Todo desbloqueado</p>
-                <a href="empresas.php">Elegir</a>
-            </div>
-
-        </div>
-    </section>
     <section class="video-showcase reveal">
         <div class="vs-bg"></div>
         <div class="vs-bg-overlay" id="vsBgOverlay"></div>
@@ -3363,7 +3452,7 @@
     </footer>
 
     <script>
-
+        
         window.addEventListener("scroll", () => { document.getElementById("navbar").classList.toggle("abajo", window.scrollY > 50) });
         const ham = document.getElementById("hamburger"), mob = document.getElementById("mobileMenu");
         ham.addEventListener("click", () => { ham.classList.toggle("open"); mob.classList.toggle("open") });
@@ -3381,19 +3470,19 @@
         (function () {
             const root = document.documentElement;
             const cs = getComputedStyle(root);
-
+            
             const vs = cs.getPropertyValue('--img-videos').trim();
             if (vs && vs !== 'none') {
                 const el = document.getElementById('vsBgOverlay');
                 if (el) el.style.display = 'block';
             }
-
+            
             const qc = cs.getPropertyValue('--img-cats').trim();
             if (qc && qc !== 'none') {
                 const el = document.getElementById('qcOverlay');
                 if (el) el.style.display = 'block';
             }
-
+            
             const secciones = [
                 { varName: '--img-como', selector: '.how-overlay' },
                 { varName: '--img-empleos', selector: '.jobs-overlay' },
@@ -3405,7 +3494,7 @@
                 if (val && val !== 'none') {
                     const el = document.querySelector(s.selector);
                     if (el) {
-
+                        
                         if (s.selector === '.how-overlay')
                             el.style.background = 'rgba(255,255,255,0.82)';
                         else if (s.selector === '.jobs-overlay')
@@ -3735,13 +3824,13 @@
             </div>
         </div>
     </div>
-
+    
     <div id="qc-login-modal"
         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)"
         onclick="if(event.target===this)cerrarModalLogin()">
         <div
             style="background:#fff;border-radius:24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;animation:qcLoginIn .35s cubic-bezier(.34,1.56,.64,1)">
-
+            
             <div
                 style="background:linear-gradient(135deg,#1f9d55,#2ecc71);padding:28px 28px 22px;text-align:center;position:relative">
                 <button onclick="cerrarModalLogin()"
@@ -3752,7 +3841,7 @@
                 <p style="margin:8px 0 0;color:rgba(255,255,255,.88);font-size:14px;font-family:'DM Sans',sans-serif">
                     Encuentra empleos y oportunidades en Quibdó</p>
             </div>
-
+            
             <div style="padding:28px 28px 24px;text-align:center">
                 <p style="margin:0 0 22px;color:#555;font-size:14.5px;line-height:1.6;font-family:'DM Sans',sans-serif">
                     Para usar el buscador necesitas tener una cuenta. ¡Es gratis y solo toma un minuto!</p>
@@ -3783,21 +3872,21 @@
         }
     </style>
     <script>
-
+        
         (function () {
             const rd = sessionStorage.getItem("qc_search_redirect");
             if (rd) {
                 sessionStorage.removeItem("qc_search_redirect");
-
+                
                 fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' })
                     .then(r => r.json())
                     .then(d => { if (d.ok && d.usuario) window.location.href = rd; })
                     .catch(() => { });
             }
-
+            
             const btn = document.getElementById("qc-login-btn-redirect");
             if (btn) {
-
+                
             }
         })();
     </script>
