@@ -108,19 +108,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($_FILES['logo']['size'] > 2 * 1024 * 1024) {
             echo json_encode(['ok' => false, 'msg' => 'Imagen demasiado grande (máx 2 MB).']); exit;
         }
+        // Crear carpeta si no existe con manejo robusto de permisos
         $dir = __DIR__ . '/uploads/logos/';
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        if (!is_dir(__DIR__ . '/uploads/')) @mkdir(__DIR__ . '/uploads/', 0755, true);
+        if (!is_dir($dir)) @mkdir($dir, 0755, true);
+        if (!is_dir($dir) || !is_writable($dir)) {
+            echo json_encode(['ok' => false, 'msg' => 'Error: no se puede escribir en uploads/logos/. Crea la carpeta manualmente en el servidor con permisos 755.']);
+            exit;
+        }
         $epOld = $db->prepare("SELECT logo FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
         $epOld->execute([$usuario['id']]);
         $oldLogo = $epOld->fetchColumn();
-        if ($oldLogo && file_exists($dir . $oldLogo)) @unlink($dir . $oldLogo);
+        if ($oldLogo && !str_starts_with($oldLogo, 'http') && file_exists($dir . $oldLogo)) {
+            @unlink($dir . $oldLogo);
+        }
         $nombre = 'emp' . $usuario['id'] . '_' . time() . '.' . $ext;
         if (move_uploaded_file($_FILES['logo']['tmp_name'], $dir . $nombre)) {
             $db->prepare("UPDATE perfiles_empresa SET logo = ? WHERE usuario_id = ? ORDER BY id DESC LIMIT 1")
                ->execute([$nombre, $usuario['id']]);
             echo json_encode(['ok' => true, 'logo' => 'uploads/logos/' . $nombre]);
         } else {
-            echo json_encode(['ok' => false, 'msg' => 'Error al guardar el logo.']);
+            echo json_encode(['ok' => false, 'msg' => 'Error al mover el archivo. Verifica permisos en uploads/logos/']);
         }
         exit;
     }
