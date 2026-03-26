@@ -25,23 +25,23 @@
             --texto: #111;
 
             --img-hero: url('Imagenes/quibdo4.jpg');
-            
+
             --img-stats: url('Imagenes/quibdo2.jpg');
-            
+
             --img-cats: none;
-            
+
             --img-como: none;
-            
+
             --img-empleos: none;
-            
+
             --img-talentos: none;
-            
+
             --img-testimonios: none;
-            
+
             --img-cta: url('Imagenes/quibdo2.jpg');
-            
+
             --img-videos: none;
-            
+
         }
 
         *,
@@ -2795,6 +2795,80 @@
                 font-weight: 600
             }
         }
+
+        .mini-precios {
+            padding: 80px 48px;
+            background: #ffffff;
+            text-align: center;
+        }
+
+        .mini-precios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .mini-plan {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 18px;
+            padding: 22px;
+            position: relative;
+            transition: .3s;
+        }
+
+        .mini-plan:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, .08);
+        }
+
+        .mini-plan h3 {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .mini-precio {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--verde);
+            margin-bottom: 6px;
+        }
+
+        .mini-plan p {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 12px;
+        }
+
+        .mini-plan a {
+            display: inline-block;
+            padding: 8px 18px;
+            background: var(--verde);
+            color: white;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .mini-plan.destacado {
+            border: 2px solid var(--verde);
+        }
+
+        .mini-badge {
+            position: absolute;
+            top: -10px;
+            right: 12px;
+            background: var(--verde);
+            color: white;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
     </style>
 </head>
 
@@ -3114,7 +3188,33 @@
             </div>
         </div>
     </section>
+    <section class="mini-precios">
+        <div class="mini-precios-grid">
 
+            <div class="mini-plan">
+                <h3>Gratis</h3>
+                <div class="mini-precio">$0</div>
+                <p>Perfil básico</p>
+                <a href="empresas.php">Empezar</a>
+            </div>
+
+            <div class="mini-plan destacado">
+                <span class="mini-badge">Popular</span>
+                <h3>Pro</h3>
+                <div class="mini-precio">$9.900</div>
+                <p>Más visibilidad</p>
+                <a href="empresas.php">Elegir</a>
+            </div>
+
+            <div class="mini-plan">
+                <h3>Premium</h3>
+                <div class="mini-precio">$19.900</div>
+                <p>Todo desbloqueado</p>
+                <a href="empresas.php">Elegir</a>
+            </div>
+
+        </div>
+    </section>
     <section class="video-showcase reveal">
         <div class="vs-bg"></div>
         <div class="vs-bg-overlay" id="vsBgOverlay"></div>
@@ -3263,7 +3363,7 @@
     </footer>
 
     <script>
-        
+
         window.addEventListener("scroll", () => { document.getElementById("navbar").classList.toggle("abajo", window.scrollY > 50) });
         const ham = document.getElementById("hamburger"), mob = document.getElementById("mobileMenu");
         ham.addEventListener("click", () => { ham.classList.toggle("open"); mob.classList.toggle("open") });
@@ -3281,19 +3381,19 @@
         (function () {
             const root = document.documentElement;
             const cs = getComputedStyle(root);
-            
+
             const vs = cs.getPropertyValue('--img-videos').trim();
             if (vs && vs !== 'none') {
                 const el = document.getElementById('vsBgOverlay');
                 if (el) el.style.display = 'block';
             }
-            
+
             const qc = cs.getPropertyValue('--img-cats').trim();
             if (qc && qc !== 'none') {
                 const el = document.getElementById('qcOverlay');
                 if (el) el.style.display = 'block';
             }
-            
+
             const secciones = [
                 { varName: '--img-como', selector: '.how-overlay' },
                 { varName: '--img-empleos', selector: '.jobs-overlay' },
@@ -3305,7 +3405,7 @@
                 if (val && val !== 'none') {
                     const el = document.querySelector(s.selector);
                     if (el) {
-                        
+
                         if (s.selector === '.how-overlay')
                             el.style.background = 'rgba(255,255,255,0.82)';
                         else if (s.selector === '.jobs-overlay')
@@ -3635,13 +3735,13 @@
             </div>
         </div>
     </div>
-    
+
     <div id="qc-login-modal"
         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)"
         onclick="if(event.target===this)cerrarModalLogin()">
         <div
             style="background:#fff;border-radius:24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;animation:qcLoginIn .35s cubic-bezier(.34,1.56,.64,1)">
-            
+
             <div
                 style="background:linear-gradient(135deg,#1f9d55,#2ecc71);padding:28px 28px 22px;text-align:center;position:relative">
                 <button onclick="cerrarModalLogin()"
@@ -3652,7 +3752,7 @@
                 <p style="margin:8px 0 0;color:rgba(255,255,255,.88);font-size:14px;font-family:'DM Sans',sans-serif">
                     Encuentra empleos y oportunidades en Quibdó</p>
             </div>
-            
+
             <div style="padding:28px 28px 24px;text-align:center">
                 <p style="margin:0 0 22px;color:#555;font-size:14.5px;line-height:1.6;font-family:'DM Sans',sans-serif">
                     Para usar el buscador necesitas tener una cuenta. ¡Es gratis y solo toma un minuto!</p>
@@ -3683,21 +3783,21 @@
         }
     </style>
     <script>
-        
+
         (function () {
             const rd = sessionStorage.getItem("qc_search_redirect");
             if (rd) {
                 sessionStorage.removeItem("qc_search_redirect");
-                
+
                 fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' })
                     .then(r => r.json())
                     .then(d => { if (d.ok && d.usuario) window.location.href = rd; })
                     .catch(() => { });
             }
-            
+
             const btn = document.getElementById("qc-login-btn-redirect");
             if (btn) {
-                
+
             }
         })();
     </script>
