@@ -650,15 +650,16 @@ if ($action && $logueado) {
       echo json_encode(['ok' => false, 'msg' => 'Datos inválidos']);
       exit;
     }
+    // Leer datos ANTES de sobrescribir nota_admin con la nota del admin
+    $s = $db->prepare("SELECT * FROM solicitudes_ingreso WHERE id=?");
+    $s->execute([$sid]);
+    $sol = $s->fetch();
+
     // Marcar solicitud
     $db->prepare("UPDATE solicitudes_ingreso SET estado=?, nota_admin=?, revisado_en=NOW(), revisado_por=? WHERE id=?")
       ->execute([$estado, $nota, $_SESSION['admin_id'], $sid]);
 
     if ($estado === 'aprobado') {
-      // Obtener datos de la solicitud
-      $s = $db->prepare("SELECT * FROM solicitudes_ingreso WHERE id=?");
-      $s->execute([$sid]);
-      $sol = $s->fetch();
       if ($sol) {
         // Verificar que el correo no exista ya
         $chk = $db->prepare("SELECT id FROM usuarios WHERE correo=?");

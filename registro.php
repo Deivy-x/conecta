@@ -178,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
 
     } catch (PDOException $e) {
-        echo json_encode(['ok'=>false,'msg'=>'Error al crear la cuenta. Inténtalo de nuevo.']);
+        echo json_encode(['ok'=>false,'msg'=>'Error BD: '.$e->getMessage()]);
     }
     exit;
 }
@@ -1168,11 +1168,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     const data = new FormData();
     
-    const campos=['nombre','apellido','correo','contrasena','contrasena2','telefono','ciudad','tipo','tipo_documento_hidden'];
+    const campos=['nombre','apellido','correo','contrasena','contrasena2','telefono','ciudad','tipo'];
     campos.forEach(id=>{const el=document.getElementById(id);if(el) data.append(id,el.value);});
 
     if(tipoReal==='candidato'){
       ['fecha_nacimiento','cedula'].forEach(id=>{const el=document.getElementById(id);if(el) data.append(id,el.value);});
+      data.append('tipo_documento_hidden', document.getElementById('tipo_documento_hidden').value);
       
       const areaVal = document.getElementById('profesion_tipo').value;
       if(areaVal==='otro'){
@@ -1210,7 +1211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       const tipDocNeg=document.getElementById('tipo_documento_neg').value;
       const cedulaNeg=document.getElementById('cedula_neg').value;
       data.set('tipo_documento_hidden',tipDocNeg);
-      data.append('cedula',cedulaNeg);
+      data.set('cedula',cedulaNeg);
       const fNeg=document.getElementById('doc_cedula_neg'); if(fNeg&&fNeg.files[0]) data.append('doc_cedula',fNeg.files[0]);
     }
     
@@ -1226,7 +1227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       data.append('precio_desde_neg', precioServ + unidad);
       data.append('descripcion_neg', generosServ);
       data.append('fecha_nacimiento', fechaNacServ);
-      data.append('cedula', cedulaServ);
+      data.set('cedula', cedulaServ);
       data.set('tipo_documento_hidden', tipDocServ);
       const fServ=document.getElementById('doc_cedula_serv'); if(fServ&&fServ.files[0]) data.append('doc_cedula',fServ.files[0]);
     }
