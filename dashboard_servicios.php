@@ -15,7 +15,6 @@ $stmt->execute([$_SESSION['usuario_id']]);
 $usuario = $stmt->fetch();
 if (!$usuario) { session_destroy(); header('Location: inicio_sesion.php'); exit; }
 
-// Solo candidatos con subTipo servicio
 $extras = [];
 try {
     $solStmt = $db->prepare("SELECT nota_admin FROM solicitudes_ingreso WHERE correo=? ORDER BY creado_en DESC LIMIT 1");
@@ -24,14 +23,13 @@ try {
 } catch(Exception $e){}
 
 $profesionTipo = strtolower($extras['profesion_tipo'] ?? '');
-$esServicio = ($usuario['tipo']==='candidato') &&
-    preg_match('/(dj|disc jockey|chirimía|chirimia|música|musica|cantante|fotograf|video|catering|decorac|animador|maestro.*ceremonia)/i',$profesionTipo);
+$esServicioUser = ($usuario['tipo'] === 'servicio');
+$esCandidateWithService = ($usuario['tipo'] === 'candidato' && preg_match('/(dj|disc jockey|chirimía|chirimia|música|musica|cantante|fotograf|video|catering|decorac|animador|maestro.*ceremonia)/i',$profesionTipo));
 
-if ($usuario['tipo'] !== 'candidato' && !$esServicio) {
+if (!$esServicioUser && !$esCandidateWithService) {
     header('Location: dashboard.php'); exit;
 }
 
-// ── POST ACTIONS ──────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     $action = $_POST['_action'] ?? '';
@@ -63,7 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->prepare("INSERT INTO talento_perfil (usuario_id,profesion,bio,skills,generos,precio_desde,tipo_servicio,disponibilidad,visible,visible_admin) VALUES (?,?,?,?,?,?,?,?,0,1)")
                ->execute([$usuario['id'],$tipoSvc,$bio,$skills,$generos,$precioDes?:null,$tipoSvc,$disponib]);
         }
-        // instagram en extras / nota_admin no se edita desde aquí, se guarda en tabla si existe columna
         try { $db->exec("ALTER TABLE talento_perfil ADD COLUMN IF NOT EXISTS instagram VARCHAR(100) DEFAULT ''"); } catch(Exception $e){}
         try { $db->prepare("UPDATE talento_perfil SET instagram=? WHERE usuario_id=? ORDER BY id DESC LIMIT 1")->execute([$instagram,$usuario['id']]); } catch(Exception $e){}
 
@@ -167,7 +164,6 @@ if (isset($_GET['salir'])) {
     $_SESSION=[];session_destroy();header('Location: inicio_sesion.php');exit;
 }
 
-// ── DATOS ─────────────────────────────────────────────────────
 $tp = $db->prepare("SELECT * FROM talento_perfil WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
 $tp->execute([$usuario['id']]);
 $talento = $tp->fetch() ?: ['profesion'=>'','bio'=>'','skills'=>'','visible'=>0,'visible_admin'=>1,'generos'=>'','precio_desde'=>null,'tipo_servicio'=>'','calificacion'=>0,'disponibilidad'=>''];
@@ -315,7 +311,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
     .ac-desc{font-size:10.5px;color:var(--ink3);text-align:center}
     .ac-badge{position:absolute;top:-6px;right:-6px;background:#e74c3c;color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px}
 
-    /* PORTAFOLIO */
     .gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:12px}
     .gal-item{aspect-ratio:1;border-radius:10px;overflow:hidden;background:#e5e7eb;cursor:pointer;position:relative}
     .gal-item img{width:100%;height:100%;object-fit:cover}
@@ -326,7 +321,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
     .gal-add-ico{font-size:22px}
     .gal-add-txt{font-size:10.5px;font-weight:700;color:var(--mo)}
 
-    /* SERVICIOS OFRECIDOS */
     .svc-chip{display:inline-block;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;background:var(--moluz);color:var(--mo);border:1px solid #d8b4fe;margin:3px}
 
     .cp-head{display:flex;flex-direction:column;align-items:center;text-align:center;padding-bottom:14px;border-bottom:1px solid var(--borde)}
@@ -397,7 +391,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
 </head>
 <body>
 
-<!-- NAVBAR -->
 <header class="navbar">
   <a href="index.html" class="nav-marca">
     <img src="Imagenes/Quibdo.png" alt="Logo">
@@ -423,7 +416,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
   </div>
 </header>
 
-<!-- HERO -->
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-av" onclick="abrirModal()" title="Cambiar foto">
@@ -456,7 +448,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
   <div class="hero-deco">🎧</div>
 </div>
 
-<!-- ALERTAS -->
 <div style="padding:20px 36px 0">
   <?php if (!$tieneVerificado): ?>
     <?php if ($estadoVerif==='pendiente'): ?>
@@ -471,11 +462,9 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
   <?php endif; ?>
 </div>
 
-<!-- CONTENIDO -->
 <div class="contenido">
   <div class="grid">
 
-    <!-- BANNER + FOTO -->
     <div class="card span3" style="padding:0;overflow:visible;border:1.5px solid #d8b4fe">
       <div style="overflow:hidden;border-radius:15px">
         <div id="bannerZone" style="position:relative;height:150px;background:linear-gradient(135deg,#1a0a2e,#6b21a8);cursor:pointer;overflow:hidden" onclick="document.getElementById('bannerInput').click()">
@@ -520,7 +509,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
       </div>
     </div>
 
-    <!-- MINI STATS -->
     <div class="card mini">
       <div class="m-ico im">👁️</div>
       <div>
@@ -546,7 +534,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
       </div>
     </div>
 
-    <!-- ACCIONES RÁPIDAS -->
     <div class="card span3">
       <div class="ca-tit">⚡ Acciones rápidas</div>
       <div class="ac-row">
@@ -563,7 +550,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
       </div>
     </div>
 
-    <!-- PLAN ACTIVO -->
     <?php if (!empty($datosPlan)): ?>
     <?php $usados=$datosPlan['usados']??[];$cfg=$datosPlan['config']??[]; ?>
     <div class="card span3" style="background:linear-gradient(135deg,#faf5ff,#f3e8ff);border:1.5px solid #d8b4fe">
@@ -598,7 +584,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
     </div>
     <?php endif; ?>
 
-    <!-- PORTAFOLIO -->
     <div class="card span2">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <div class="ca-tit" style="margin-bottom:0">📸 Portafolio / Trabajo <span style="background:var(--moluz);color:var(--mo);font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;margin-left:6px"><?=$galeriaTotal?> fotos</span></div>
@@ -624,7 +609,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
         </div>
       <?php endif; ?>
 
-      <!-- SERVICIOS OFRECIDOS -->
       <?php if ($tipoServicio||$generos): ?>
       <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--borde)">
         <div style="font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🎵 Tipo de servicio</div>
@@ -637,7 +621,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
       <?php endif; ?>
     </div>
 
-    <!-- PERFIL LATERAL -->
     <div class="card" style="display:flex;flex-direction:column">
       <div class="cp-head">
         <div class="cp-av" onclick="abrirModal()">
@@ -673,7 +656,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
       <a href="servicios.php" class="btn-sec">🌐 Ver en directorio</a>
     </div>
 
-    <!-- ACTIVIDAD RECIENTE -->
     <div class="card span2">
       <div class="ca-tit">🕐 Actividad reciente</div>
       <div style="display:flex;flex-direction:column;gap:8px">
@@ -700,7 +682,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
       </div>
     </div>
 
-    <!-- BADGES -->
     <div class="card">
       <div class="ca-tit">🏆 Badges activos</div>
       <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:6px">
@@ -721,7 +702,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
   </div>
 </div>
 
-<!-- MODAL CROP BANNER -->
 <div id="cropBannerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:99999;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:18px;padding:22px;max-width:680px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)">
     <div style="font-size:15px;font-weight:800;color:#6b21a8;margin-bottom:12px;text-align:center">🖼️ Encuadra tu banner</div>
@@ -734,7 +714,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
   </div>
 </div>
 
-<!-- MODAL PORTAFOLIO -->
 <div class="modal-ov" id="modalPortafolio">
   <div class="modal-box">
     <button class="mcerrar" onclick="cerrarModalPortafolio()">✕</button>
@@ -757,7 +736,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
   </div>
 </div>
 
-<!-- MODAL EDITAR SERVICIO -->
 <div class="modal-ov" id="modalEditar">
   <div class="modal-box">
     <button class="mcerrar" onclick="cerrarModal()">✕</button>
@@ -766,7 +744,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
       <p class="msub">Actualiza tu información para que los clientes te contraten más fácilmente.</p>
       <div class="mmsg" id="editMsg"></div>
 
-      <!-- FOTO -->
       <div class="msec">Foto de perfil</div>
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
         <div id="fotoPreview" style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#6b21a8,#9333ea);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:white;overflow:hidden;flex-shrink:0;cursor:pointer" onclick="document.getElementById('fotoInput').click()">
@@ -827,7 +804,6 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
   </div>
 </div>
 
-<!-- MODAL ELIMINAR CUENTA -->
 <div id="modalEliminarCuenta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;padding:20px">
   <div style="background:#0f172a;border:1.5px solid rgba(239,68,68,.35);border-radius:18px;padding:32px 28px;max-width:420px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.6)">
     <div style="text-align:center;margin-bottom:20px">
