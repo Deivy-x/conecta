@@ -1711,7 +1711,7 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       <p>Talentos disponibles</p>
     </div>
     <div class="s reveal">
-      <h3>+50</h3>
+      <h3>32</h3>
       <p>Municipios del Chocó</p>
     </div>
     <div class="s reveal">

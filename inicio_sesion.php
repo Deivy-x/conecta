@@ -754,15 +754,15 @@
                     laboral de Quibd&oacute; y el Pac&iacute;fico colombiano en un solo lugar.</p>
                 <div class="izq-stats">
                     <div class="istat">
-                        <div class="istat-n c-v">+500</div>
+                        <div class="istat-n c-v" id="stat-talentos">+500</div>
                         <div class="istat-l">Talentos</div>
                     </div>
                     <div class="istat">
-                        <div class="istat-n c-a">+120</div>
+                        <div class="istat-n c-a" id="stat-empresas">+120</div>
                         <div class="istat-l">Empresas</div>
                     </div>
                     <div class="istat">
-                        <div class="istat-n c-r">+300</div>
+                        <div class="istat-n c-r" id="stat-vacantes">+300</div>
                         <div class="istat-l">Vacantes</div>
                     </div>
                 </div>
@@ -862,6 +862,42 @@
         }
         document.addEventListener('keypress', e => { if (e.key === 'Enter') login(); });
         document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) cerrarModal(); });
+
+        // ── Stats en tiempo real ──────────────────────────────────────────
+        function animarContador(el, desde, hasta, duracion) {
+            if (desde === hasta) return;
+            const inicio = performance.now();
+            const easeOut = t => 1 - Math.pow(1 - t, 3);
+            function tick(ahora) {
+                const progreso = Math.min((ahora - inicio) / duracion, 1);
+                el.textContent = '+' + Math.round(desde + (hasta - desde) * easeOut(progreso));
+                if (progreso < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+        }
+
+        async function cargarStatsLogin() {
+            try {
+                const res = await fetch('stats.php');
+                if (!res.ok) return;
+                const d = await res.json();
+                const mapa = {
+                    'stat-talentos': d.total_talentos,
+                    'stat-empresas': d.total_empresas,
+                    'stat-vacantes': d.total_empleos
+                };
+                Object.entries(mapa).forEach(([id, valor]) => {
+                    if (!valor) return;
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    // Leer valor actual que viene del HTML (ej: "+500" → 500)
+                    const actual = parseInt(el.textContent.replace('+', '')) || 0;
+                    animarContador(el, actual, valor, 1200);
+                });
+            } catch (e) { /* falla silenciosa, se quedan los valores por defecto */ }
+        }
+
+        cargarStatsLogin();
     </script>
 </body>
 
