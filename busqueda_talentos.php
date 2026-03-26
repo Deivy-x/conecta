@@ -8,6 +8,7 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
 
 require_once __DIR__ . '/Php/db.php';
 if (file_exists(__DIR__ . '/Php/badges_helper.php')) require_once __DIR__ . '/Php/badges_helper.php';
+if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
 
 if (!function_exists('getBadgesUsuario')) {
     function getBadgesUsuario($db, $id) { return []; }
@@ -36,6 +37,20 @@ $perfilEdu   = [];
 $perfilCert  = [];
 $perfilAptBland   = '';
 $perfilAptIdiomas = '';
+
+// ── Verificar límite ver_candidatos (si un logueado quiere ver un perfil) ──
+$_perfilBloqueo = null;
+if ($verPerfil && $db && isset($_SESSION['usuario_id']) && function_exists('verificarLimite')) {
+    $visitorId = (int)$_SESSION['usuario_id'];
+    if ($visitorId !== $verPerfil) {
+        $tipoVisitor = $_SESSION['usuario_tipo'] ?? '';
+        $accionVer = ($tipoVisitor === 'empresa') ? 'ver_candidatos' : 'ver_empresas';
+        $lim = verificarLimite($db, $visitorId, $accionVer);
+        if (!$lim['puede']) {
+            $_perfilBloqueo = msgLimiteSuperado($lim['plan'], $accionVer, $lim['limite']);
+        }
+    }
+}
 
 if ($verPerfil && $db) {
     try {
@@ -100,6 +115,10 @@ if ($verPerfil && $db) {
                 if ((int)$ck->fetchColumn() === 0) {
                     $db->prepare("INSERT INTO perfil_vistas (usuario_id,visitante_id,ip,seccion) VALUES (?,?,?,?)")
                        ->execute([$verPerfil, $visitorId, $ip, 'busqueda']);
+                    if (function_exists('registrarAccion') && $visitorId) {
+                        $tipoVis = $_SESSION['usuario_tipo'] ?? '';
+                        registrarAccion($db, $visitorId, $tipoVis === 'empresa' ? 'ver_candidatos' : 'ver_empresas');
+                    }
                 }
             } catch(Exception $e) {}
         }

@@ -1,8 +1,11 @@
 <?php
+// ============================================================
+// Php/chat/enviar.php — Enviar mensaje (POST)
+// ============================================================
 session_start();
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/Php/db.php';
-require_once __DIR__ . '/Php/planes_helper.php';
+require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../planes_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -23,7 +26,7 @@ $mensaje = trim($_POST['mensaje'] ?? '');
 if (!$para) { echo json_encode(['ok' => false, 'msg' => 'Destinatario no válido.']); exit; }
 if ($para === $de) { echo json_encode(['ok' => false, 'msg' => 'No puedes enviarte mensajes a ti mismo.']); exit; }
 if ($mensaje === '') { echo json_encode(['ok' => false, 'msg' => 'El mensaje no puede estar vacío.']); exit; }
-if (mb_strlen($mensaje) > 2000) { echo json_encode(['ok' => false, 'msg' => 'Mensaje demasiado largo (máx 2000 caracteres).']); exit; }
+if (mb_strlen($mensaje) > 2000) { echo json_encode(['ok' => false, 'msg' => 'El mensaje es demasiado largo (máx 2000 caracteres).']); exit; }
 
 $db = getDB();
 
@@ -46,4 +49,8 @@ $stmt->execute([$de, $para, $mensaje]);
 
 registrarAccion($db, $de, 'mensajes');
 
-echo json_encode(['ok' => true, 'id' => (int) $db->lastInsertId(), 'creado_en' => date('Y-m-d H:i:s')]);
+echo json_encode([
+    'ok' => true,
+    'id' => (int) $db->lastInsertId(),
+    'creado_en' => date('Y-m-d H:i:s')
+]);

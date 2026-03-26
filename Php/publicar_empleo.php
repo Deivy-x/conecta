@@ -5,6 +5,7 @@
 // ============================================================
 session_start();
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/planes_helper.php';
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -55,6 +56,14 @@ try {
         $empresa = $peRow ? $peRow['nombre_empresa'] : ($_SESSION['usuario_nombre'] ?? 'Empresa');
     }
 
+
+    // ── Verificar límite de vacantes del plan ────────────────────
+    $lim = verificarLimite($db, $_SESSION['usuario_id'], 'vacantes');
+    if (!$lim['puede']) {
+        echo msgLimiteSuperado($lim['plan'], 'vacantes', $lim['limite']);
+        exit;
+    }
+
     $db->prepare("
         INSERT INTO empleos
             (empresa_id, titulo, descripcion, categoria, barrio, ciudad,
@@ -72,6 +81,8 @@ try {
         $tipo,   // tipo_contrato: tiempo completo, medio tiempo, etc.
         $vence_en
     ]);
+
+    registrarAccion($db, $_SESSION['usuario_id'], 'vacantes');
 
     echo json_encode([
         'ok'  => true,

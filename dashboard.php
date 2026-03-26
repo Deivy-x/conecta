@@ -151,9 +151,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($action === 'subir_evidencia') {
     // Verificar límite según badge Selva Verde
-    require_once __DIR__ . '/Php/badges_helper.php';
-    $badgesU = getBadgesUsuario($db, $usuario['id']);
-    $tieneSelvaVerde = tieneBadge($badgesU, 'Selva Verde');
+    if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
+    if (file_exists(__DIR__ . '/Php/badges_helper.php')) require_once __DIR__ . '/Php/badges_helper.php';
+    $badgesU = function_exists('getBadgesUsuario') ? getBadgesUsuario($db, $usuario['id']) : [];
+    // Usar planes_helper si está disponible, fallback a badge Selva Verde
+    $tienePortafolio = function_exists('tieneBeneficio')
+        ? tieneBeneficio($db, $usuario['id'], 'portafolio')
+        : (function_exists('tieneBadge') && tieneBadge($badgesU, 'Selva Verde'));
+    $tieneSelvaVerde = $tienePortafolio; // alias para compatibilidad
 
     try {
       $db->exec("CREATE TABLE IF NOT EXISTS talento_galeria (
@@ -562,6 +567,7 @@ if (!empty($extras['profesion_tipo']) && $tipo === 'candidato') {
 }
 
 require_once __DIR__ . '/Php/badges_helper.php';
+if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
 $badgesUsuario = getBadgesUsuario($db, $usuario['id']);
 $badgesHTML = renderBadges($badgesUsuario);
 $tieneVerificado = (bool) ($usuario['verificado'] ?? false) || tieneBadge($badgesUsuario, 'Verificado') || tieneBadge($badgesUsuario, 'Usuario Verificado') || tieneBadge($badgesUsuario, 'Empresa Verificada');
@@ -597,6 +603,37 @@ try {
 } catch (Exception $e) {
   $vistasTotal = 0;
   $vistas7dias = 0;
+}
+
+// ── Plan del usuario y uso mensual ───────────────────────────
+$datosPlan  = [];
+$planActual = 'semilla';
+$maxVisitantes = 0;
+if (function_exists('getDatosPlan')) {
+  $datosPlan     = getDatosPlan($db, $usuario['id']);
+  $planActual    = $datosPlan['plan'];
+  $maxVisitantes = $datosPlan['config']['visitantes'] ?? 0;
+}
+
+// ── Quién me visitó (limitado por plan) ──────────────────────
+$visitantesRecientes = [];
+if ($maxVisitantes !== 0) {
+  try {
+    $limVis = ($maxVisitantes === -1) ? 50 : (int)$maxVisitantes;
+    $vvStmt = $db->prepare("
+      SELECT pv.visitante_id, pv.creado_en,
+             u.nombre, u.apellido, u.tipo
+      FROM perfil_vistas pv
+      JOIN usuarios u ON u.id = pv.visitante_id AND u.activo = 1
+      WHERE pv.usuario_id = ? AND pv.visitante_id IS NOT NULL
+      ORDER BY pv.creado_en DESC
+      LIMIT $limVis
+    ");
+    $vvStmt->execute([$usuario['id']]);
+    $visitantesRecientes = $vvStmt->fetchAll();
+  } catch (Exception $e) {
+    $visitantesRecientes = [];
+  }
 }
 
 // Estado verificación
@@ -3052,6 +3089,79 @@ if ($subTipo === 'servicio') {
           </a>
         </div>
       </div>
+
+      <!-- ── QUIÉN ME VIO + PLAN (span3) ── -->
+      <?php if (!empty($visitantesRecientes) || $maxVisitantes === 0): ?>
+      <div class="card span3">
+        <div class="ca-tit">👁️ Quién visitó tu perfil</div>
+        <?php if ($maxVisitantes === 0): ?>
+          <div style="text-align:center;padding:20px 10px;color:rgba(255,255,255,.45)">
+            <div style="font-size:36px;margin-bottom:8px">🔒</div>
+            <div style="font-size:13px">Esta función está disponible desde el plan <strong style="color:var(--a2)">Amarillo Oro</strong>.</div>
+            <a href="empresas.php#planes" style="display:inline-block;margin-top:10px;padding:6px 18px;background:var(--a2);color:#000;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none">Ver planes →</a>
+          </div>
+        <?php else: ?>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <?php foreach ($visitantesRecientes as $vis): ?>
+              <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 12px;min-width:160px">
+                <?php
+                  $inicial = strtoupper(substr($vis['nombre'] ?? '?', 0, 1));
+                  $colores = ['#00e676','#ff9800','#2196f3','#e91e63','#9c27b0'];
+                  $col = $colores[crc32($vis['visitante_id'] ?? 0) % 5];
+                ?>
+                <div style="width:32px;height:32px;border-radius:50%;background:<?= $col ?>22;border:1.5px solid <?= $col ?>;display:flex;align-items:center;justify-content:center;font-weight:700;color:<?= $col ?>;font-size:13px;flex-shrink:0"><?= $inicial ?></div>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:#fff"><?= htmlspecialchars(($vis['nombre'] ?? '') . ' ' . ($vis['apellido'] ?? '')) ?></div>
+                  <div style="font-size:10px;color:rgba(255,255,255,.4)"><?= ucfirst($vis['tipo'] ?? '') ?> · <?= date('d/m', strtotime($vis['creado_en'])) ?></div>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
+
+      <!-- ── INDICADOR DE PLAN ACTIVO (span3) ── -->
+      <?php if (!empty($datosPlan)): ?>
+      <div class="card span3" style="background:linear-gradient(135deg,rgba(0,230,118,.06),rgba(33,150,243,.06));border-color:rgba(0,230,118,.2)">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Plan activo</div>
+            <div style="font-size:18px;font-weight:800;color:var(--v2)"><?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
+          </div>
+          <?php
+            $usados   = $datosPlan['usados'] ?? [];
+            $cfg      = $datosPlan['config'] ?? [];
+            $showBars = [
+              'mensajes'     => ['🗨️', 'Mensajes'],
+              'aplicaciones' => ['📋', 'Aplicaciones'],
+              'vacantes'     => ['💼', 'Vacantes'],
+            ];
+          ?>
+          <div style="display:flex;gap:20px;flex-wrap:wrap">
+            <?php foreach ($showBars as $key => [$ico, $label]): ?>
+              <?php
+                $limite = $cfg[$key] ?? 0;
+                if ($limite === 0) continue;
+                $usado  = $usados[$key] ?? 0;
+                $pctBar = ($limite === -1) ? 100 : min(100, ($usado / max(1, $limite)) * 100);
+                $color  = $pctBar >= 90 ? 'var(--ro)' : ($pctBar >= 70 ? '#ff9800' : 'var(--v2)');
+              ?>
+              <div style="min-width:90px">
+                <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px"><?= $ico ?> <?= $label ?></div>
+                <div style="font-size:15px;font-weight:700;color:#fff">
+                  <?= $usado ?> / <?= $limite === -1 ? '∞' : $limite ?>
+                </div>
+                <div style="height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:4px">
+                  <div style="height:3px;width:<?= $pctBar ?>%;background:<?= $color ?>;border-radius:2px;transition:.3s"></div>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          </div>
+          <a href="empresas.php#planes" style="padding:8px 20px;background:var(--v2);color:#000;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">Mejorar plan →</a>
+        </div>
+      </div>
+      <?php endif; ?>
 
       <!-- ── LISTA EMPLEOS / VACANTES / TALENTOS ── -->
       <div class="card span2">

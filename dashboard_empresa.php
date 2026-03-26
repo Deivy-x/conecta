@@ -8,6 +8,7 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 require_once __DIR__ . '/Php/db.php';
+if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
 
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: inicio_sesion.php'); exit;
@@ -155,6 +156,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $peRow = $peStmt->fetch();
         $nombreEmp = $peRow ? $peRow['nombre_empresa'] : ($usuario['nombre'] ?? 'Empresa');
 
+        // ── Verificar límite de vacantes del plan ────────────────────
+        if (function_exists('verificarLimite')) {
+            $lim = verificarLimite($db, $usuario['id'], 'vacantes');
+            if (!$lim['puede']) {
+                echo msgLimiteSuperado($lim['plan'], 'vacantes', $lim['limite']);
+                exit;
+            }
+        }
+
         try {
             $db->prepare("
                 INSERT INTO empleos
@@ -170,6 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $modalidad,
                 $vence_en
             ]);
+            if (function_exists('registrarAccion')) registrarAccion($db, $usuario['id'], 'vacantes');
             echo json_encode(['ok'=>true,'msg'=>'✅ Vacante enviada. El administrador la aprobará en 24–48 h.']);
         } catch (Exception $e) {
             echo json_encode(['ok'=>false,'msg'=>'Error al guardar: '.$e->getMessage()]);
@@ -250,6 +261,9 @@ if (!$ep) {
 require_once __DIR__ . '/Php/badges_helper.php';
 $badgesUsuario = getBadgesUsuario($db, $usuario['id']);
 $badgesHTML    = renderBadges($badgesUsuario);
+// Plan datos
+$datosPlan  = function_exists('getDatosPlan') ? getDatosPlan($db, $usuario['id']) : [];
+$planActual = $datosPlan['plan'] ?? 'semilla';
 $tieneVerificado = (bool)($usuario['verificado'] ?? false)
     || tieneBadge($badgesUsuario, 'Verificado')
     || tieneBadge($badgesUsuario, 'Empresa Verificada');

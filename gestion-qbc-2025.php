@@ -7,6 +7,7 @@
 session_start();
 date_default_timezone_set('America/Bogota');
 require_once __DIR__ . '/Php/db.php';
+if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
 
 // ─── CÓDIGO DE EMERGENCIA (solo Deivy-x lo sabe) ───────────
 define('EMERGENCY_CODE', 'QuibdoAdmin#2026!');
@@ -243,6 +244,88 @@ if ($action && $logueado) {
     echo json_encode(['ok' => true, 'asignados' => $asignados]);
     exit;
   }
+
+  // ── ASIGNAR PLAN DE PAGO (crea/reemplaza badge de plan) ──────
+  // Llamar cuando el admin confirma un pago de suscripción.
+  // POST: usuario_id, plan ('verde_selva'|'amarillo_oro'|'azul_profundo'|'microempresa'|'semilla')
+  if ($action === 'asignar_plan' && $_SERVER['REQUEST_METHOD'] === 'POST' && in_array($nivel, ['superadmin', 'admin'])) {
+    $uid     = (int) ($_POST['usuario_id'] ?? 0);
+    $planKey = trim($_POST['plan'] ?? '');
+    $planesValidos = ['semilla', 'verde_selva', 'amarillo_oro', 'azul_profundo', 'microempresa'];
+
+    if (!$uid || !in_array($planKey, $planesValidos)) {
+      echo json_encode(['ok' => false, 'msg' => 'Datos inválidos (usuario_id o plan).']);
+      exit;
+    }
+
+    // Nombres exactos de badges de plan en el catálogo
+    $planNombres = [
+      'semilla'       => null,          // sin badge
+      'verde_selva'   => 'Verde Selva',
+      'amarillo_oro'  => 'Amarillo Oro',
+      'azul_profundo' => 'Azul Profundo',
+      'microempresa'  => 'Microempresa',
+    ];
+    $todosPlanesNombres = array_filter(array_values($planNombres));
+
+    // Obtener badges actuales del usuario
+    $u = $db->prepare("SELECT badges_custom, nombre FROM usuarios WHERE id=?");
+    $u->execute([$uid]);
+    $uRow = $u->fetch();
+    if (!$uRow) {
+      echo json_encode(['ok' => false, 'msg' => 'Usuario no encontrado.']);
+      exit;
+    }
+    $asignados = $uRow['badges_custom'] ? json_decode($uRow['badges_custom'], true) : [];
+    if (!is_array($asignados)) $asignados = [];
+
+    // Quitar todos los badges de plan anteriores
+    if (!empty($asignados)) {
+      $phStr = implode(',', array_fill(0, count($asignados), '?'));
+      $bStmt = $db->prepare("SELECT id, nombre FROM badges_catalog WHERE id IN ($phStr)");
+      $bStmt->execute($asignados);
+      $bRows = $bStmt->fetchAll(PDO::FETCH_ASSOC);
+      $idsAQuitar = [];
+      foreach ($bRows as $br) {
+        if (in_array($br['nombre'], $todosPlanesNombres)) {
+          $idsAQuitar[] = $br['id'];
+        }
+      }
+      $asignados = array_values(array_diff($asignados, $idsAQuitar));
+    }
+
+    // Asignar nuevo badge de plan (si no es semilla)
+    $nuevoBadgeNombre = $planNombres[$planKey] ?? null;
+    if ($nuevoBadgeNombre) {
+      $bFind = $db->prepare("SELECT id FROM badges_catalog WHERE nombre=? AND activo=1 LIMIT 1");
+      $bFind->execute([$nuevoBadgeNombre]);
+      $bId = (int) $bFind->fetchColumn();
+      if (!$bId) {
+        // Crear badge de plan automáticamente si no existe
+        $coloresPlan = [
+          'Verde Selva'   => '#00e676',
+          'Amarillo Oro'  => '#ffc107',
+          'Azul Profundo' => '#2196f3',
+          'Microempresa'  => '#9c27b0',
+        ];
+        $color = $coloresPlan[$nuevoBadgeNombre] ?? '#00e676';
+        $db->prepare("INSERT INTO badges_catalog (nombre, emoji, descripcion, color, tipo, activo) VALUES (?,?,?,?,'pago',1)")
+           ->execute([$nuevoBadgeNombre, '⭐', "Plan $nuevoBadgeNombre activo", $color]);
+        $bId = (int) $db->lastInsertId();
+      }
+      if (!in_array($bId, $asignados)) $asignados[] = $bId;
+    }
+
+    $db->prepare("UPDATE usuarios SET badges_custom=? WHERE id=?")->execute([json_encode($asignados), $uid]);
+    try {
+      $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")
+         ->execute([$_SESSION['admin_id'], 'asignar_plan', "Plan '$planKey' asignado a #{$uid} ({$uRow['nombre']})"]);
+    } catch (Exception $e) {}
+
+    echo json_encode(['ok' => true, 'plan' => $planKey, 'badges' => $asignados, 'msg' => "Plan $planKey asignado correctamente."]);
+    exit;
+  }
+
 
   // Métricas del dashboard
   // Subir foto de perfil del admin
@@ -3821,7 +3904,8 @@ if ($action) {
                 style="padding:10px 18px;background:var(--blue-bg);border:1px solid rgba(68,136,255,.3);border-radius:8px;color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">🔍
                 Cargar usuario</button>
             </div>
-            <div id="badges-usuario-panel" style="display:none">
+  <div id="badges-usuario-extra"></div>
+          <div id="badges-usuario-panel" style="display:none">
               <div id="badges-usuario-info"
                 style="margin-bottom:16px;padding:12px 16px;background:var(--bg3);border-radius:10px;font-size:13px">
               </div>
@@ -5888,7 +5972,19 @@ if ($action) {
         </div>`;
           }).join('');
 
-          document.getElementById('badges-usuario-panel').style.display = 'block';
+          document.getElementById('badges-usuario-extra').innerHTML = `          <div style="margin-top:12px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);border-radius:10px;padding:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:12px;color:rgba(255,255,255,.6);font-weight:600">⚡ Asignar plan de pago:</span>
+            <select id="plan-selector" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:12px">
+              <option value="semilla">🌱 Semilla (gratis)</option>
+              <option value="verde_selva">🌿 Verde Selva</option>
+              <option value="amarillo_oro">⭐ Amarillo Oro</option>
+              <option value="azul_profundo">💎 Azul Profundo</option>
+              <option value="microempresa">🏪 Microempresa</option>
+            </select>
+            <button onclick="asignarPlan(badgesUsuarioActual?.uid, document.getElementById('plan-selector').value)" 
+              class="btn-sm green" style="font-size:12px">Aplicar plan</button>
+          </div>`;
+                    document.getElementById('badges-usuario-panel').style.display = 'block';
         } catch (e) { console.error(e); }
       }
 
@@ -5909,6 +6005,27 @@ if ($action) {
             cargarBadgesUsuario();
           }
         } catch (e) { btn.disabled = false; }
+      }
+
+
+      // ── ASIGNAR PLAN (atajo desde panel de badges) ──────────────
+      async function asignarPlan(uid, plan) {
+        if (!uid || !plan) { alert('Selecciona un usuario y un plan.'); return; }
+        if (!confirm(`¿Asignar plan "${plan}" al usuario #${uid}? Se reemplazará el plan anterior.`)) return;
+        const fd = new FormData();
+        fd.append('usuario_id', uid);
+        fd.append('plan', plan);
+        try {
+          const r = await fetch('gestion-qbc-2025.php?action=asignar_plan', { method: 'POST', body: fd });
+          const d = await r.json();
+          if (d.ok) {
+            mostrarToast('✅ ' + d.msg, 'green');
+            document.getElementById('badge-uid').value = uid;
+            cargarBadgesUsuario();
+          } else {
+            mostrarToast('❌ ' + (d.msg || 'Error'), 'red');
+          }
+        } catch (e) { mostrarToast('Error de red', 'red'); }
       }
 
       // CREAR badge

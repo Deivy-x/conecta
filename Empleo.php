@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'soli
   if (!$empleo_id) { echo json_encode(['ok' => false, 'msg' => 'Vacante no válida.']); exit; }
   try {
     if (file_exists(__DIR__ . '/Php/db.php')) require_once __DIR__ . '/Php/db.php';
+    if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
     $db = getDB();
     $db->exec("CREATE TABLE IF NOT EXISTS solicitudes_empleo (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -32,7 +33,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'soli
       INDEX idx_empleo (empleo_id),
       INDEX idx_candidato (candidato_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    $chkS = $db->prepare("SELECT id FROM solicitudes_empleo WHERE empleo_id=? AND candidato_id=?");
+
+    // ── Verificar límite de aplicaciones del plan ────────────────
+    if (function_exists('verificarLimite')) {
+      $lim = verificarLimite($db, $_SESSION['usuario_id'], 'aplicaciones');
+      if (!$lim['puede']) {
+        echo msgLimiteSuperado($lim['plan'], 'aplicaciones', $lim['limite']);
+        exit;
+      }
+    }
+
+        $chkS = $db->prepare("SELECT id FROM solicitudes_empleo WHERE empleo_id=? AND candidato_id=?");
     $chkS->execute([$empleo_id, $_SESSION['usuario_id']]);
     if ($chkS->fetch()) {
       echo json_encode(['ok' => false, 'msg' => 'Ya aplicaste a esta vacante.', 'ya_aplicado' => true]);
@@ -41,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'soli
     $mensaje = substr(trim($_POST['mensaje'] ?? ''), 0, 1000);
     $db->prepare("INSERT INTO solicitudes_empleo (empleo_id, candidato_id, mensaje) VALUES (?,?,?)")
        ->execute([$empleo_id, $_SESSION['usuario_id'], $mensaje ?: null]);
+    if (function_exists('registrarAccion')) registrarAccion($db, $_SESSION['usuario_id'], 'aplicaciones');
     echo json_encode(['ok' => true, 'msg' => '✅ ¡Solicitud enviada! La empresa revisará tu perfil.']);
   } catch (Exception $ex) {
     echo json_encode(['ok' => false, 'msg' => 'Error: ' . $ex->getMessage()]);
