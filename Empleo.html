@@ -9,6 +9,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap"
         rel="stylesheet">
     <style>
+
+        /* ══ IMÁGENES DE SECCIONES ══
+           Cambia 'none' por url('ruta/imagen.jpg') para activar fondo en cada sección
+           Ejemplo: --img-hero-empleo: url('Imagenes/quibdo4.jpg');
+        ══════════════════════════════ */
+        :root {
+            --img-hero-empleo:  none;   /* Hero de empleos */
+            --img-categorias:   none;   /* Sección Categorías */
+            --img-empleos:      none;   /* Sección listado de Empleos */
+            --img-cta-empleo:   none;   /* CTA final */
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -63,57 +75,6 @@
 
         .brand span {
             color: #1f9d55;
-        }
-
-        .nav-center {
-            display: flex;
-            align-items: center;
-            gap: 22px;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .nav-center a {
-            color: #333;
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: 500;
-            padding: 6px 4px;
-            position: relative;
-        }
-
-        .nav-center a::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            bottom: -6px;
-            width: 0%;
-            height: 2px;
-            background: #1f9d55;
-            transition: width 0.3s ease;
-        }
-
-        .nav-center a:hover::after,
-        .nav-center a.active::after {
-            width: 100%;
-        }
-
-        .nav-center .highlight {
-            background: linear-gradient(135deg, #1f9d55, #2ecc71);
-            color: white !important;
-            padding: 9px 20px;
-            border-radius: 25px;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(31, 157, 85, 0.35);
-            transition: transform 0.2s;
-        }
-
-        .nav-center .highlight:hover {
-            transform: translateY(-1px);
-        }
-
-        .nav-center .highlight::after {
-            display: none;
         }
 
         /* HAMBURGER */
@@ -405,11 +366,19 @@
         /* ========================= HERO ========================= */
         .hero {
             padding: 160px 48px 100px;
-            background: linear-gradient(135deg, #0b3a7e 0%, #0f172a 60%, #0b3a7e 100%);
+            background: var(--img-hero-empleo, linear-gradient(135deg, #0b3a7e 0%, #0f172a 60%, #0b3a7e 100%)) center/cover no-repeat;
             text-align: center;
             position: relative;
             overflow: hidden;
         }
+        .hero-img-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(11, 30, 60, 0.80);
+            display: none;
+            z-index: 1;
+        }
+        .hero-content { position: relative; z-index: 2; }
 
         .hero::before {
             content: '';
@@ -531,9 +500,19 @@
         /* ========================= CATEGORÍAS ========================= */
         .categorias {
             padding: 90px 48px;
-            background: white;
+            background: var(--img-categorias) center/cover no-repeat;
+            background-color: white;
             text-align: center;
+            position: relative;
         }
+        .categorias-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.92);
+            display: none;
+            pointer-events: none;
+        }
+        .categorias-inner { position: relative; z-index: 2; }
 
         .categorias h2 {
             font-family: 'Syne', sans-serif;
@@ -634,8 +613,18 @@
         /* ========================= EMPLEOS ========================= */
         .empleos {
             padding: 90px 48px;
-            background: #f9fafb;
+            background: var(--img-empleos) center/cover no-repeat;
+            background-color: #f9fafb;
+            position: relative;
         }
+        .empleos-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(249,250,251,0.94);
+            display: none;
+            pointer-events: none;
+        }
+        .empleos-inner { position: relative; z-index: 2; }
 
         .empleos-header {
             display: flex;
@@ -778,10 +767,19 @@
         /* ========================= CTA FINAL ========================= */
         .final-cta {
             padding: 100px 48px;
-            background: #0f172a;
+            background: var(--img-cta-empleo, #0f172a) center/cover no-repeat;
+            background-color: #0f172a;
             text-align: center;
             color: white;
+            position: relative;
         }
+        .cta-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(8, 16, 30, 0.88);
+            display: none;
+        }
+        .cta-inner { position: relative; z-index: 2; }
 
         .final-cta h2 {
             font-family: 'Syne', sans-serif;
@@ -860,7 +858,7 @@
         }
         @media (max-width: 768px) {
             .navbar { padding: 0 20px; }
-            .nav-center, .nav-right { display: none; }
+            .nav-right { display: none; }
             .hamburger { display: flex; }
             .hero { padding: 110px 20px 70px; }
             .hero h1 { font-size: 32px; line-height: 1.15; }
@@ -902,13 +900,6 @@
             <img src="Imagenes/QuibConec.png" alt="Quibdó Conecta" class="logo">
             <span class="brand">Quibdó<span>Conecta</span></span>
         </div>
-        <nav class="nav-center">
-            <a href="index.html">Inicio</a>
-            <a href="Empleo.html" class="active">Empleos</a>
-            <a href="talentos.php">Talento</a>
-            <a href="Empresas.html">Empresas</a>
-                        <a href="Ayuda.html">Ayuda</a>
-        </nav>
         <div class="nav-right">
             <a href="inicio_sesion.php" class="login">Iniciar sesión</a>
             <a href="registro.php" class="register">Registrarse</a>
@@ -933,6 +924,7 @@
 
     <!-- HERO -->
     <section class="hero">
+        <div class="hero-img-overlay" id="heroImgOverlay"></div>
         <div class="hero-content reveal">
             <h1>Encuentra trabajo en <span>Quibdó</span></h1>
             <p class="hero-subtitle">Conecta con oportunidades laborales reales en tu ciudad y en todo el Chocó.</p>
@@ -969,6 +961,8 @@
 
     <!-- CATEGORÍAS -->
     <section class="categorias">
+        <div class="categorias-overlay" id="catsOverlay"></div>
+        <div class="categorias-inner">
         <h2 class="reveal">Explora por categoría</h2>
         <p class="subtitulo">Encuentra el empleo ideal según tu área profesional</p>
 
@@ -1019,10 +1013,13 @@
                 <span class="count">12 empleos</span>
             </button>
         </div>
+        </div><!-- /categorias-inner -->
     </section>
 
     <!-- EMPLEOS -->
     <section class="empleos">
+        <div class="empleos-overlay" id="empleosOverlay"></div>
+        <div class="empleos-inner">
         <div class="empleos-header">
             <h2 class="reveal">Empleos disponibles</h2>
             <div class="filtros">
@@ -1211,16 +1208,20 @@
             </div>
 
         </div>
+        </div><!-- /empleos-inner -->
     </section>
 
     <!-- CTA FINAL -->
     <section class="final-cta">
+        <div class="cta-overlay" id="ctaOverlay"></div>
+        <div class="cta-inner">
         <h2>¿Buscas talento o empleo?</h2>
         <p>Publica oportunidades o encuentra trabajo en tu ciudad.</p>
         <div class="cta-buttons">
             
             <a href="talentos.html" class="cta-secondary">🌟 Explorar talentos</a>
         </div>
+        </div><!-- /cta-inner -->
     </section>
 
     <!-- MODAL DETALLE EMPLEO -->
@@ -1391,6 +1392,26 @@
             }, {threshold:0.12});
             reveals.forEach(el => obs.observe(el));
         })();
+
+        // ── ACTIVAR OVERLAYS DE IMAGEN ──
+        (function(){
+            const root = document.documentElement;
+            const cs = getComputedStyle(root);
+            const secciones = [
+                { varName: '--img-hero-empleo',  overlayId: 'heroImgOverlay' },
+                { varName: '--img-categorias',   overlayId: 'catsOverlay' },
+                { varName: '--img-empleos',      overlayId: 'empleosOverlay' },
+                { varName: '--img-cta-empleo',   overlayId: 'ctaOverlay' },
+            ];
+            secciones.forEach(function(s) {
+                const val = cs.getPropertyValue(s.varName).trim();
+                if (val && val !== 'none') {
+                    const el = document.getElementById(s.overlayId);
+                    if (el) el.style.display = 'block';
+                }
+            });
+        })();
+
     </script>
 
 
