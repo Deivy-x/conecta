@@ -474,6 +474,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $tipo = $usuario['tipo'] ?? 'candidato';
 
+// Redirigir a su dashboard correspondiente si no es candidato
+if ($tipo === 'servicio') {
+  header('Location: dashboard_servicios.php');
+  exit;
+}
+if ($tipo === 'negocio') {
+  header('Location: dashboard_negocios.php');
+  exit;
+}
+if ($tipo === 'empresa') {
+  header('Location: dashboard_empresa.php');
+  exit;
+}
+
 $tp = $db->prepare("SELECT * FROM talento_perfil WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
 $tp->execute([$usuario['id']]);
 $talento = $tp->fetch() ?: ['profesion' => '', 'bio' => '', 'skills' => '', 'visible' => 0, 'visible_admin' => 1, 'generos' => '', 'precio_desde' => null, 'tipo_servicio' => '', 'calificacion' => 0];
