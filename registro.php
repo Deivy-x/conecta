@@ -7,6 +7,18 @@ if (isset($_SESSION['usuario_id'])) {
     header('Location: dashboard.php'); exit;
 }
 
+if (isset($_GET['check_modo'])) {
+    header('Content-Type: application/json');
+    $cfgFile = __DIR__ . '/Php/registro_config.json';
+    $modo = 'solicitud';
+    if (file_exists($cfgFile)) {
+        $cfg = json_decode(file_get_contents($cfgFile), true);
+        $modo = $cfg['modo'] ?? 'solicitud';
+    }
+    echo json_encode(['modo' => $modo]);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
 
@@ -79,34 +91,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['ok'=>false,'msg'=>'El nombre del negocio es obligatorio.']); exit;
     }
 
+    $cfgFile = __DIR__ . '/Php/registro_config.json';
+    $modoRegistro = 'solicitud';
+    if (file_exists($cfgFile)) {
+        $cfg = json_decode(file_get_contents($cfgFile), true);
+        $modoRegistro = $cfg['modo'] ?? 'solicitud';
+    }
+
     try {
         $db = getDB();
 
         $st = $db->prepare("SELECT id FROM usuarios WHERE correo = ?");
-        $st->execute([$correo]); 
+        $st->execute([$correo]);
         if ($st->fetch()) {
             echo json_encode(['ok'=>false,'msg'=>'Este correo ya está registrado.']); exit;
-        }
-
-        $st2 = $db->prepare("SELECT id, estado FROM solicitudes_ingreso WHERE correo = ? ORDER BY creado_en DESC LIMIT 1");
-        $st2->execute([$correo]);
-        $solEx = $st2->fetch();
-        if ($solEx) {
-            if ($solEx['estado'] === 'pendiente') {
-                echo json_encode(['ok'=>false,'msg'=>'Ya tienes una solicitud pendiente. El administrador la revisará pronto.']); exit;
-            }
-            if ($solEx['estado'] === 'rechazado') {
-                echo json_encode(['ok'=>false,'msg'=>'Tu solicitud anterior fue rechazada. Contacta al administrador.']); exit;
-            }
         }
 
         $hash = password_hash($pass, PASSWORD_BCRYPT);
         $cedula = trim($_POST['cedula'] ?? '');
         $tipo_doc = trim($_POST['tipo_documento_hidden'] ?? 'cedula') ?: 'cedula';
 
+        if ($modoRegistro === 'solicitud') {
+            $st2 = $db->prepare("SELECT id, estado FROM solicitudes_ingreso WHERE correo = ? ORDER BY creado_en DESC LIMIT 1");
+            $st2->execute([$correo]);
+            $solEx = $st2->fetch();
+            if ($solEx) {
+                if ($solEx['estado'] === 'pendiente') {
+                    echo json_encode(['ok'=>false,'msg'=>'Ya tienes una solicitud pendiente. El administrador la revisará pronto.']); exit;
+                }
+                if ($solEx['estado'] === 'rechazado') {
+                    echo json_encode(['ok'=>false,'msg'=>'Tu solicitud anterior fue rechazada. Contacta al administrador.']); exit;
+                }
+            }
+        }
+
         if (in_array($tipo, ['candidato','servicio'])) {
             if (!$cedula) { echo json_encode(['ok'=>false,'msg'=>'El número de documento es obligatorio.']); exit; }
-            if (empty($_FILES['doc_cedula']['name'])) { echo json_encode(['ok'=>false,'msg'=>'Debes subir la foto o PDF de tu documento.']); exit; }
+            if ($modoRegistro === 'solicitud' && empty($_FILES['doc_cedula']['name'])) {
+                echo json_encode(['ok'=>false,'msg'=>'Debes subir la foto o PDF de tu documento.']); exit;
+            }
         }
 
         $docUrl = null;
@@ -157,25 +180,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tipoBD = $tipo;
         $nombreEmpresaBD = $tipo === 'empresa' ? $nombre_empresa : ($tipo === 'negocio' ? $nombre_negocio : '');
 
-        $db->prepare("
-            INSERT INTO solicitudes_ingreso
-              (nombre, apellido, correo, contrasena_hash, telefono, ciudad,
-               tipo, nombre_empresa, sector, nit, fecha_nacimiento,
-               cedula, doc_url, tipo_documento, nota_admin)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        ")->execute([
-            $nombre, $apellido ?: '', $correo, $hash, $telefono, $ciudad,
-            $tipoBD, $nombreEmpresaBD, $sector, $nit, $fecha_nac_final,
-            $cedula, $docUrl, $tipo_doc, $extras
-        ]);
+        if ($modoRegistro === 'directo') {
+            $db->prepare("
+                INSERT INTO usuarios
+                  (nombre, apellido, correo, contrasena, telefono, ciudad,
+                   tipo, cedula, fecha_nacimiento, activo, creado_en)
+                VALUES (?,?,?,?,?,?,?,?,?,1,NOW())
+            ")->execute([
+                $nombre, $apellido ?: '', $correo, $hash, $telefono, $ciudad,
+                $tipoBD, $cedula, $fecha_nac_final
+            ]);
+            $newId = (int)$db->lastInsertId();
 
-        echo json_encode([
-            'ok'       => true,
-            'pendiente'=> true,
-            'msg'      => '¡Solicitud enviada! El administrador la revisará y recibirás acceso una vez aprobada.',
-            'tipo'     => $tipo,
-            'nombre'   => $nombreResp,
-        ]);
+            if ($tipo === 'candidato' || $tipo === 'servicio') {
+                try { $db->prepare("INSERT INTO perfiles_candidato (usuario_id) VALUES (?)")->execute([$newId]); } catch (Exception $e) {}
+                if ($tipo === 'servicio') {
+                    $extArr = json_decode($extras, true);
+                    try {
+                        $db->prepare("INSERT INTO talento_perfil (usuario_id, profesion, precio_desde, descripcion, visible, visible_admin) VALUES (?,?,?,?,1,1)")
+                           ->execute([$newId, $extArr['profesion_tipo'] ?? '', $extArr['precio_desde_neg'] ?? null, $extArr['descripcion_neg'] ?? '']);
+                    } catch (Exception $e) {}
+                }
+            } elseif ($tipo === 'empresa') {
+                try {
+                    $db->prepare("INSERT INTO perfiles_empresa (usuario_id,nombre_empresa,sector,nit) VALUES (?,?,?,?)")
+                       ->execute([$newId, $nombre_empresa, $sector, $nit]);
+                } catch (Exception $e) {}
+            } elseif ($tipo === 'negocio') {
+                $extArr = json_decode($extras, true);
+                try {
+                    $db->prepare("INSERT INTO negocios_locales (usuario_id,nombre_negocio,categoria,whatsapp,descripcion,tipo_negocio,visible,visible_admin) VALUES (?,?,?,?,?,?,1,1)")
+                       ->execute([$newId, $nombre_negocio, $extArr['categoria_neg'] ?? '', $extArr['whatsapp_neg'] ?? '', $extArr['descripcion_neg'] ?? '', $extArr['tipo_negocio_reg'] ?? 'emp']);
+                } catch (Exception $e) {}
+            }
+
+            if ($docUrl) {
+                try {
+                    $db->prepare("INSERT INTO verificaciones (usuario_id, doc_url, tipo_doc, estado, creado_en) VALUES (?,?,?,'pendiente',NOW())")
+                       ->execute([$newId, $docUrl, $tipo_doc]);
+                } catch (Exception $e) {}
+            }
+
+            echo json_encode([
+                'ok'       => true,
+                'pendiente'=> false,
+                'directo'  => true,
+                'msg'      => '¡Cuenta creada! Ya puedes iniciar sesión.',
+                'tipo'     => $tipo,
+                'nombre'   => $nombreResp,
+            ]);
+
+        } else {
+            $db->prepare("
+                INSERT INTO solicitudes_ingreso
+                  (nombre, apellido, correo, contrasena_hash, telefono, ciudad,
+                   tipo, nombre_empresa, sector, nit, fecha_nacimiento,
+                   cedula, doc_url, tipo_documento, nota_admin)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ")->execute([
+                $nombre, $apellido ?: '', $correo, $hash, $telefono, $ciudad,
+                $tipoBD, $nombreEmpresaBD, $sector, $nit, $fecha_nac_final,
+                $cedula, $docUrl, $tipo_doc, $extras
+            ]);
+
+            echo json_encode([
+                'ok'       => true,
+                'pendiente'=> true,
+                'msg'      => '¡Solicitud enviada! El administrador la revisará y recibirás acceso una vez aprobada.',
+                'tipo'     => $tipo,
+                'nombre'   => $nombreResp,
+            ]);
+        }
 
     } catch (PDOException $e) {
         echo json_encode(['ok'=>false,'msg'=>'Error BD: '.$e->getMessage()]);
@@ -1295,9 +1370,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       const json = await res.json();
       if(json.ok){
         document.getElementById('formSection').style.display='none';
-        document.getElementById('successIcon').textContent='⏳';
-        document.getElementById('successNombre').textContent='¡Solicitud enviada, '+json.nombre+'!';
-        document.getElementById('successMsg').textContent='Tu solicitud fue recibida. El administrador la revisará y te notificará cuando tu cuenta esté lista.';
+        if(json.directo){
+          document.getElementById('successIcon').textContent='✅';
+          document.getElementById('successNombre').textContent='¡Bienvenido/a, '+json.nombre+'!';
+          document.getElementById('successMsg').textContent='Tu cuenta fue creada exitosamente. Ya puedes iniciar sesión.';
+        } else {
+          document.getElementById('successIcon').textContent='⏳';
+          document.getElementById('successNombre').textContent='¡Solicitud enviada, '+json.nombre+'!';
+          document.getElementById('successMsg').textContent='Tu solicitud fue recibida. El administrador la revisará y te notificará cuando tu cuenta esté lista.';
+        }
         document.getElementById('successScreen').style.display='block';
       } else {
         showMsg(json.msg,'error');
@@ -1309,6 +1390,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
   document.addEventListener('keypress',e=>{if(e.key==='Enter') registrar();});
+
+  (async function detectarModoRegistro() {
+    try {
+      const r = await fetch('registro.php?check_modo=1');
+      if (!r.ok) return;
+      const d = await r.json();
+      if (d.modo === 'directo') {
+        const btn = document.getElementById('btnRegistro');
+        if (btn) btn.textContent = '⚡ Crear cuenta';
+      }
+    } catch(e) {}
+  })();
 </script>
 </body>
 </html>
