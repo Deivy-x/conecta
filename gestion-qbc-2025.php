@@ -7,7 +7,8 @@
 session_start();
 date_default_timezone_set('America/Bogota');
 require_once __DIR__ . '/Php/db.php';
-if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
+if (file_exists(__DIR__ . '/Php/planes_helper.php'))
+  require_once __DIR__ . '/Php/planes_helper.php';
 
 // ─── CÓDIGO DE EMERGENCIA (solo Deivy-x lo sabe) ───────────
 define('EMERGENCY_CODE', 'QuibdoAdmin#2026!');
@@ -249,7 +250,7 @@ if ($action && $logueado) {
   // Llamar cuando el admin confirma un pago de suscripción.
   // POST: usuario_id, plan ('verde_selva'|'amarillo_oro'|'azul_profundo'|'microempresa'|'semilla')
   if ($action === 'asignar_plan' && $_SERVER['REQUEST_METHOD'] === 'POST' && in_array($nivel, ['superadmin', 'admin'])) {
-    $uid     = (int) ($_POST['usuario_id'] ?? 0);
+    $uid = (int) ($_POST['usuario_id'] ?? 0);
     $planKey = trim($_POST['plan'] ?? '');
     $planesValidos = ['semilla', 'verde_selva', 'amarillo_oro', 'azul_profundo', 'microempresa'];
 
@@ -260,11 +261,11 @@ if ($action && $logueado) {
 
     // Nombres exactos de badges de plan en el catálogo
     $planNombres = [
-      'semilla'       => null,          // sin badge
-      'verde_selva'   => 'Verde Selva',
-      'amarillo_oro'  => 'Amarillo Oro',
+      'semilla' => null,          // sin badge
+      'verde_selva' => 'Verde Selva',
+      'amarillo_oro' => 'Amarillo Oro',
       'azul_profundo' => 'Azul Profundo',
-      'microempresa'  => 'Microempresa',
+      'microempresa' => 'Microempresa',
     ];
     $todosPlanesNombres = array_filter(array_values($planNombres));
 
@@ -277,7 +278,8 @@ if ($action && $logueado) {
       exit;
     }
     $asignados = $uRow['badges_custom'] ? json_decode($uRow['badges_custom'], true) : [];
-    if (!is_array($asignados)) $asignados = [];
+    if (!is_array($asignados))
+      $asignados = [];
 
     // Quitar todos los badges de plan anteriores
     if (!empty($asignados)) {
@@ -303,24 +305,26 @@ if ($action && $logueado) {
       if (!$bId) {
         // Crear badge de plan automáticamente si no existe
         $coloresPlan = [
-          'Verde Selva'   => '#00e676',
-          'Amarillo Oro'  => '#ffc107',
+          'Verde Selva' => '#00e676',
+          'Amarillo Oro' => '#ffc107',
           'Azul Profundo' => '#2196f3',
-          'Microempresa'  => '#9c27b0',
+          'Microempresa' => '#9c27b0',
         ];
         $color = $coloresPlan[$nuevoBadgeNombre] ?? '#00e676';
         $db->prepare("INSERT INTO badges_catalog (nombre, emoji, descripcion, color, tipo, activo) VALUES (?,?,?,?,'pago',1)")
-           ->execute([$nuevoBadgeNombre, '⭐', "Plan $nuevoBadgeNombre activo", $color]);
+          ->execute([$nuevoBadgeNombre, '⭐', "Plan $nuevoBadgeNombre activo", $color]);
         $bId = (int) $db->lastInsertId();
       }
-      if (!in_array($bId, $asignados)) $asignados[] = $bId;
+      if (!in_array($bId, $asignados))
+        $asignados[] = $bId;
     }
 
     $db->prepare("UPDATE usuarios SET badges_custom=? WHERE id=?")->execute([json_encode($asignados), $uid]);
     try {
       $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")
-         ->execute([$_SESSION['admin_id'], 'asignar_plan', "Plan '$planKey' asignado a #{$uid} ({$uRow['nombre']})"]);
-    } catch (Exception $e) {}
+        ->execute([$_SESSION['admin_id'], 'asignar_plan', "Plan '$planKey' asignado a #{$uid} ({$uRow['nombre']})"]);
+    } catch (Exception $e) {
+    }
 
     echo json_encode(['ok' => true, 'plan' => $planKey, 'badges' => $asignados, 'msg' => "Plan $planKey asignado correctamente."]);
     exit;
@@ -378,8 +382,16 @@ if ($action && $logueado) {
     $reg = $db->query("SELECT DATE(creado_en) as dia, COUNT(*) as total FROM usuarios WHERE creado_en >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(creado_en) ORDER BY dia ASC");
     foreach ($reg->fetchAll() as $r)
       $stats['registros_semana'][$r['dia']] = (int) $r['total'];
-    try { $stats['total_servicios'] = $db->query("SELECT COUNT(DISTINCT usuario_id) FROM talento_perfil WHERE (tipo_servicio IS NOT NULL AND tipo_servicio<>'') OR precio_desde IS NOT NULL")->fetchColumn(); } catch(Exception $e){ $stats['total_servicios']=0; }
-    try { $stats['total_negocios'] = $db->query("SELECT COUNT(DISTINCT usuario_id) FROM negocios_locales WHERE visible_admin=1")->fetchColumn(); } catch(Exception $e){ $stats['total_negocios']=0; }
+    try {
+      $stats['total_servicios'] = $db->query("SELECT COUNT(DISTINCT usuario_id) FROM talento_perfil WHERE (tipo_servicio IS NOT NULL AND tipo_servicio<>'') OR precio_desde IS NOT NULL")->fetchColumn();
+    } catch (Exception $e) {
+      $stats['total_servicios'] = 0;
+    }
+    try {
+      $stats['total_negocios'] = $db->query("SELECT COUNT(DISTINCT usuario_id) FROM negocios_locales WHERE visible_admin=1")->fetchColumn();
+    } catch (Exception $e) {
+      $stats['total_negocios'] = 0;
+    }
     echo json_encode(['ok' => true, 'stats' => $stats]);
     exit;
   }
@@ -438,36 +450,54 @@ if ($action && $logueado) {
       exit;
     }
     $uid = (int) ($_POST['id'] ?? 0);
-    if (!$uid) { echo json_encode(['ok' => false, 'msg' => 'ID inválido.']); exit; }
+    if (!$uid) {
+      echo json_encode(['ok' => false, 'msg' => 'ID inválido.']);
+      exit;
+    }
     // Proteger: no eliminar admins ni al propio admin logueado
     $tipoU = $db->prepare("SELECT tipo FROM usuarios WHERE id=?");
     $tipoU->execute([$uid]);
     $rowU = $tipoU->fetch();
-    if (!$rowU) { echo json_encode(['ok' => false, 'msg' => 'Usuario no encontrado.']); exit; }
-    if ($rowU['tipo'] === 'admin') { echo json_encode(['ok' => false, 'msg' => 'No se puede eliminar una cuenta de admin desde aquí.']); exit; }
-    if ($uid === (int)$_SESSION['admin_id']) { echo json_encode(['ok' => false, 'msg' => 'No puedes eliminar tu propia cuenta.']); exit; }
+    if (!$rowU) {
+      echo json_encode(['ok' => false, 'msg' => 'Usuario no encontrado.']);
+      exit;
+    }
+    if ($rowU['tipo'] === 'admin') {
+      echo json_encode(['ok' => false, 'msg' => 'No se puede eliminar una cuenta de admin desde aquí.']);
+      exit;
+    }
+    if ($uid === (int) $_SESSION['admin_id']) {
+      echo json_encode(['ok' => false, 'msg' => 'No puedes eliminar tu propia cuenta.']);
+      exit;
+    }
     try {
       // Borrar tablas sin CASCADE
-      foreach (['perfiles_empresa','sesiones','negocios_locales','talento_galeria','talento_educacion','talento_certificaciones','talento_experiencia','perfil_vistas'] as $tabla) {
-        try { $db->prepare("DELETE FROM $tabla WHERE usuario_id=?")->execute([$uid]); } catch(Exception $e) {}
+      foreach (['perfiles_empresa', 'sesiones', 'negocios_locales', 'talento_galeria', 'talento_educacion', 'talento_certificaciones', 'talento_experiencia', 'perfil_vistas'] as $tabla) {
+        try {
+          $db->prepare("DELETE FROM $tabla WHERE usuario_id=?")->execute([$uid]);
+        } catch (Exception $e) {
+        }
       }
       // Borrar fotos/logos del disco
       $fotoRow = $db->prepare("SELECT foto FROM usuarios WHERE id=?");
       $fotoRow->execute([$uid]);
       $fotoFile = $fotoRow->fetchColumn();
-      if ($fotoFile && !str_starts_with($fotoFile, 'http') && file_exists(__DIR__.'/uploads/fotos/'.$fotoFile)) {
-        @unlink(__DIR__.'/uploads/fotos/'.$fotoFile);
+      if ($fotoFile && !str_starts_with($fotoFile, 'http') && file_exists(__DIR__ . '/uploads/fotos/' . $fotoFile)) {
+        @unlink(__DIR__ . '/uploads/fotos/' . $fotoFile);
       }
       $logoRow = $db->prepare("SELECT logo FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
       $logoRow->execute([$uid]);
       $logoFile = $logoRow->fetchColumn();
-      if ($logoFile && file_exists(__DIR__.'/uploads/logos/'.$logoFile)) {
-        @unlink(__DIR__.'/uploads/logos/'.$logoFile);
+      if ($logoFile && file_exists(__DIR__ . '/uploads/logos/' . $logoFile)) {
+        @unlink(__DIR__ . '/uploads/logos/' . $logoFile);
       }
       // Borrar usuario (CASCADE limpia el resto)
       $db->prepare("DELETE FROM usuarios WHERE id=?")->execute([$uid]);
       // Auditoría
-      try { $db->prepare("INSERT INTO admin_auditoria (admin_id, accion, detalle) VALUES (?,?,?)")->execute([$_SESSION['admin_id'], 'eliminar_usuario', "Usuario $uid eliminado permanentemente"]); } catch(Exception $e) {}
+      try {
+        $db->prepare("INSERT INTO admin_auditoria (admin_id, accion, detalle) VALUES (?,?,?)")->execute([$_SESSION['admin_id'], 'eliminar_usuario', "Usuario $uid eliminado permanentemente"]);
+      } catch (Exception $e) {
+      }
       echo json_encode(['ok' => true]);
     } catch (Exception $e) {
       echo json_encode(['ok' => false, 'msg' => 'Error: ' . $e->getMessage()]);
@@ -578,7 +608,13 @@ if ($action && $logueado) {
     $limit = 20;
     $offset = ($page - 1) * $limit;
 
-    $where = "WHERE 1=1";
+    // Asegurar columna eliminado
+    try {
+      $db->exec("ALTER TABLE verificaciones ADD COLUMN IF NOT EXISTS eliminado TINYINT(1) DEFAULT 0");
+    } catch (Exception $e) {
+    }
+
+    $where = "WHERE (v.eliminado IS NULL OR v.eliminado=0)";
     $params = [];
     if ($buscar) {
       $where .= " AND (u.nombre LIKE ? OR u.apellido LIKE ? OR u.correo LIKE ?)";
@@ -616,12 +652,114 @@ if ($action && $logueado) {
 
     // Stats globales
     $stats = [];
-    $stmtStats = $db->query("SELECT estado, COUNT(*) as total FROM verificaciones GROUP BY estado");
+    $stmtStats = $db->query("SELECT estado, COUNT(*) as total FROM verificaciones WHERE (eliminado IS NULL OR eliminado=0) GROUP BY estado");
     foreach ($stmtStats->fetchAll() as $row)
       $stats[$row['estado']] = (int) $row['total'];
     $stats['total'] = array_sum($stats);
+    $stats['papelera'] = (int) $db->query("SELECT COUNT(*) FROM verificaciones WHERE eliminado=1")->fetchColumn();
 
     echo json_encode(['ok' => true, 'docs' => $docs, 'total' => $total, 'page' => $page, 'limit' => $limit, 'stats' => $stats]);
+    exit;
+  }
+
+  // ── ELIMINAR DOCUMENTO (soft-delete) ────────────────────────
+  if ($action === 'eliminar_documento' && $_SERVER['REQUEST_METHOD'] === 'POST' && $ajaxPerms['documentos']) {
+    $id = (int) ($_POST['id'] ?? 0);
+    if (!$id) {
+      echo json_encode(['ok' => false, 'msg' => 'ID inválido']);
+      exit;
+    }
+    // Añadir columna si no existe
+    try {
+      $db->exec("ALTER TABLE verificaciones ADD COLUMN IF NOT EXISTS eliminado TINYINT(1) DEFAULT 0");
+    } catch (Exception $e) {
+    }
+    try {
+      $db->exec("ALTER TABLE verificaciones ADD COLUMN IF NOT EXISTS eliminado_en DATETIME DEFAULT NULL");
+    } catch (Exception $e) {
+    }
+    try {
+      $db->exec("ALTER TABLE verificaciones ADD COLUMN IF NOT EXISTS eliminado_por INT DEFAULT NULL");
+    } catch (Exception $e) {
+    }
+    $db->prepare("UPDATE verificaciones SET eliminado=1, eliminado_en=NOW(), eliminado_por=? WHERE id=?")->execute([$_SESSION['admin_id'], $id]);
+    try {
+      $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")->execute([$_SESSION['admin_id'], 'eliminar_documento', "Documento #$id enviado a papelera"]);
+    } catch (Exception $e) {
+    }
+    echo json_encode(['ok' => true]);
+    exit;
+  }
+
+  // ── PAPELERA: listar documentos eliminados ───────────────────
+  if ($action === 'papelera_documentos' && $ajaxPerms['documentos']) {
+    try {
+      $db->exec("ALTER TABLE verificaciones ADD COLUMN IF NOT EXISTS eliminado TINYINT(1) DEFAULT 0");
+    } catch (Exception $e) {
+    }
+    try {
+      $db->exec("ALTER TABLE verificaciones ADD COLUMN IF NOT EXISTS eliminado_en DATETIME DEFAULT NULL");
+    } catch (Exception $e) {
+    }
+    try {
+      $db->exec("ALTER TABLE verificaciones ADD COLUMN IF NOT EXISTS eliminado_por INT DEFAULT NULL");
+    } catch (Exception $e) {
+    }
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $limit = 20;
+    $offset = ($page - 1) * $limit;
+    $stmt = $db->prepare("SELECT v.id, v.usuario_id, v.estado, v.doc_url, v.foto_doc_url, v.tipo_doc, v.creado_en, v.eliminado_en,
+                          u.nombre, u.apellido, u.correo
+                          FROM verificaciones v INNER JOIN usuarios u ON u.id=v.usuario_id
+                          WHERE v.eliminado=1 ORDER BY v.eliminado_en DESC LIMIT $limit OFFSET $offset");
+    $stmt->execute();
+    $docs = $stmt->fetchAll();
+    $total = (int) $db->query("SELECT COUNT(*) FROM verificaciones WHERE eliminado=1")->fetchColumn();
+    echo json_encode(['ok' => true, 'docs' => $docs, 'total' => $total, 'page' => $page, 'limit' => $limit]);
+    exit;
+  }
+
+  // ── RESTAURAR DOCUMENTO ──────────────────────────────────────
+  if ($action === 'restaurar_documento' && $_SERVER['REQUEST_METHOD'] === 'POST' && $ajaxPerms['documentos']) {
+    $id = (int) ($_POST['id'] ?? 0);
+    if (!$id) {
+      echo json_encode(['ok' => false, 'msg' => 'ID inválido']);
+      exit;
+    }
+    $db->prepare("UPDATE verificaciones SET eliminado=0, eliminado_en=NULL, eliminado_por=NULL WHERE id=?")->execute([$id]);
+    try {
+      $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")->execute([$_SESSION['admin_id'], 'restaurar_documento', "Documento #$id restaurado"]);
+    } catch (Exception $e) {
+    }
+    echo json_encode(['ok' => true]);
+    exit;
+  }
+
+  // ── VACIAR PAPELERA ──────────────────────────────────────────
+  if ($action === 'vaciar_papelera' && $_SERVER['REQUEST_METHOD'] === 'POST' && $nivel === 'superadmin') {
+    $count = (int) $db->query("SELECT COUNT(*) FROM verificaciones WHERE eliminado=1")->fetchColumn();
+    $db->exec("DELETE FROM verificaciones WHERE eliminado=1");
+    try {
+      $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")->execute([$_SESSION['admin_id'], 'vaciar_papelera', "Papelera vaciada — $count documentos eliminados permanentemente"]);
+    } catch (Exception $e) {
+    }
+    echo json_encode(['ok' => true, 'eliminados' => $count]);
+    exit;
+  }
+
+  // ── BUSCAR USUARIO POR CORREO (para asignar roles) ───────────
+  if ($action === 'buscar_usuario_correo' && $nivel === 'superadmin') {
+    $q = trim($_GET['q'] ?? '');
+    if (strlen($q) < 3) {
+      echo json_encode(['ok' => true, 'usuarios', []]);
+      exit;
+    }
+    $stmt = $db->prepare("SELECT u.id, u.nombre, u.apellido, u.correo, u.tipo,
+                          (SELECT ar.nivel FROM admin_roles ar WHERE ar.usuario_id=u.id LIMIT 1) as rol_actual
+                          FROM usuarios u WHERE (u.correo LIKE ? OR u.nombre LIKE ? OR u.apellido LIKE ?) AND u.activo=1 LIMIT 8");
+    $b = "%$q%";
+    $stmt->execute([$b, $b, $b]);
+    echo json_encode(['ok' => true, 'usuarios' => $stmt->fetchAll()]);
     exit;
   }
 
@@ -725,7 +863,7 @@ if ($action && $logueado) {
 
   // Toggle empleo activo/inactivo
   if ($action === 'toggle_empleo' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $eid    = (int) ($_POST['id']    ?? 0);
+    $eid = (int) ($_POST['id'] ?? 0);
     $activo = (int) ($_POST['activo'] ?? 0);
     if ($eid)
       $db->prepare("UPDATE empleos SET activo = ? WHERE id = ?")->execute([$activo, $eid]);
@@ -739,17 +877,24 @@ if ($action && $logueado) {
       echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
       exit;
     }
-    $eid   = (int) ($_POST['id']    ?? 0);
+    $eid = (int) ($_POST['id'] ?? 0);
     $valor = (int) ($_POST['valor'] ?? 0);
-    if (!$eid) { echo json_encode(['ok' => false, 'msg' => 'ID inválido']); exit; }
+    if (!$eid) {
+      echo json_encode(['ok' => false, 'msg' => 'ID inválido']);
+      exit;
+    }
     // Verifica si la columna existe antes de actualizar (compatibilidad)
     try {
       $db->prepare("UPDATE empleos SET destacado = ? WHERE id = ?")->execute([$valor, $eid]);
       try {
         $db->prepare("INSERT INTO admin_auditoria (admin_id, accion, detalle, creado_en) VALUES (?,?,?,NOW())")
-           ->execute([$_SESSION['admin_id'], 'toggle_empleo_destacado',
-             ($valor ? "Destacó" : "Quitó destacado de") . " empleo #$eid en index"]);
-      } catch (Exception $e) {}
+          ->execute([
+            $_SESSION['admin_id'],
+            'toggle_empleo_destacado',
+            ($valor ? "Destacó" : "Quitó destacado de") . " empleo #$eid en index"
+          ]);
+      } catch (Exception $e) {
+      }
       echo json_encode(['ok' => true]);
     } catch (Exception $e) {
       // Columna no existe todavía — guiar al admin
@@ -764,12 +909,16 @@ if ($action && $logueado) {
       echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
       exit;
     }
-    $origen  = trim($_GET['origen'] ?? 'todas');
-    $where   = "WHERE 1=1";
-    $params  = [];
-    if ($origen === 'pendiente') { $where .= " AND activo=0 AND origen='empresa'"; }
-    elseif ($origen === 'empresa') { $where .= " AND origen='empresa'"; }
-    elseif ($origen === 'admin')   { $where .= " AND origen='admin'"; }
+    $origen = trim($_GET['origen'] ?? 'todas');
+    $where = "WHERE 1=1";
+    $params = [];
+    if ($origen === 'pendiente') {
+      $where .= " AND activo=0 AND origen='empresa'";
+    } elseif ($origen === 'empresa') {
+      $where .= " AND origen='empresa'";
+    } elseif ($origen === 'admin') {
+      $where .= " AND origen='admin'";
+    }
     $stmt = $db->prepare("SELECT c.*, u.nombre AS empresa_nombre, u.correo AS empresa_correo
         FROM convocatorias c
         LEFT JOIN usuarios u ON u.id = c.usuario_id
@@ -781,29 +930,47 @@ if ($action && $logueado) {
 
   // ── APROBAR / RECHAZAR convocatoria de empresa ───────────────
   if ($action === 'conv_aprobar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!$ajaxPerms['convocatorias']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $cid    = (int)($_POST['id'] ?? 0);
-    $activo = (int)($_POST['activo'] ?? 1); // 1=aprobar, -1=rechazar(borrar)
-    if (!$cid) { echo json_encode(['ok'=>false,'msg'=>'ID inválido']); exit; }
+    if (!$ajaxPerms['convocatorias']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $cid = (int) ($_POST['id'] ?? 0);
+    $activo = (int) ($_POST['activo'] ?? 1); // 1=aprobar, -1=rechazar(borrar)
+    if (!$cid) {
+      echo json_encode(['ok' => false, 'msg' => 'ID inválido']);
+      exit;
+    }
     if ($activo === -1) {
       $db->prepare("DELETE FROM convocatorias WHERE id=? AND origen='empresa'")->execute([$cid]);
-      try { $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")->execute([$_SESSION['admin_id'],'conv_rechazar',"Rechazó convocatoria #$cid"]); } catch(Exception $e){}
+      try {
+        $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")->execute([$_SESSION['admin_id'], 'conv_rechazar', "Rechazó convocatoria #$cid"]);
+      } catch (Exception $e) {
+      }
     } else {
-      $db->prepare("UPDATE convocatorias SET activo=1, aprobado_por=?, aprobado_en=NOW() WHERE id=?")->execute([$_SESSION['admin_id'],$cid]);
-      try { $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")->execute([$_SESSION['admin_id'],'conv_aprobar',"Aprobó convocatoria #$cid"]); } catch(Exception $e){}
+      $db->prepare("UPDATE convocatorias SET activo=1, aprobado_por=?, aprobado_en=NOW() WHERE id=?")->execute([$_SESSION['admin_id'], $cid]);
+      try {
+        $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")->execute([$_SESSION['admin_id'], 'conv_aprobar', "Aprobó convocatoria #$cid"]);
+      } catch (Exception $e) {
+      }
     }
-    echo json_encode(['ok'=>true]);
+    echo json_encode(['ok' => true]);
     exit;
   }
 
   // ── TOGGLE activo de convocatoria (admin directo) ─────────────
   if ($action === 'conv_toggle' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!$ajaxPerms['convocatorias']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $cid   = (int)($_POST['id'] ?? 0);
-    $valor = (int)($_POST['activo'] ?? 0);
-    if (!$cid) { echo json_encode(['ok'=>false,'msg'=>'ID inválido']); exit; }
-    $db->prepare("UPDATE convocatorias SET activo=? WHERE id=?")->execute([$valor,$cid]);
-    echo json_encode(['ok'=>true]);
+    if (!$ajaxPerms['convocatorias']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $cid = (int) ($_POST['id'] ?? 0);
+    $valor = (int) ($_POST['activo'] ?? 0);
+    if (!$cid) {
+      echo json_encode(['ok' => false, 'msg' => 'ID inválido']);
+      exit;
+    }
+    $db->prepare("UPDATE convocatorias SET activo=? WHERE id=?")->execute([$valor, $cid]);
+    echo json_encode(['ok' => true]);
     exit;
   }
 
@@ -1137,8 +1304,11 @@ if ($action && $logueado) {
 
   // Mensajes recientes
   if ($action === 'mensajes_recientes') {
-    if (!$ajaxPerms['mensajes']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $page  = max(1, (int)($_GET['page'] ?? 1));
+    if (!$ajaxPerms['mensajes']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $page = max(1, (int) ($_GET['page'] ?? 1));
     $limit = 50;
     $offset = ($page - 1) * $limit;
     $q = trim($_GET['q'] ?? '');
@@ -1147,11 +1317,11 @@ if ($action && $logueado) {
     if ($q !== '') {
       $where = "(m.mensaje LIKE ? OR u1.nombre LIKE ? OR u1.apellido LIKE ? OR u2.nombre LIKE ? OR u2.apellido LIKE ?)";
       $lq = "%$q%";
-      $params = [$lq,$lq,$lq,$lq,$lq];
+      $params = [$lq, $lq, $lq, $lq, $lq];
     }
     $total = $db->prepare("SELECT COUNT(*) FROM mensajes m INNER JOIN usuarios u1 ON u1.id=m.de_usuario INNER JOIN usuarios u2 ON u2.id=m.para_usuario WHERE $where");
     $total->execute($params);
-    $totalRows = (int)$total->fetchColumn();
+    $totalRows = (int) $total->fetchColumn();
     $stmt = $db->prepare("
       SELECT m.id, m.mensaje, m.creado_en, m.leido,
              m.de_usuario, m.para_usuario,
@@ -1164,15 +1334,21 @@ if ($action && $logueado) {
       ORDER BY m.creado_en DESC LIMIT $limit OFFSET $offset
     ");
     $stmt->execute($params);
-    echo json_encode(['ok'=>true,'mensajes'=>$stmt->fetchAll(),'total'=>$totalRows,'page'=>$page,'pages'=>ceil($totalRows/$limit)]);
+    echo json_encode(['ok' => true, 'mensajes' => $stmt->fetchAll(), 'total' => $totalRows, 'page' => $page, 'pages' => ceil($totalRows / $limit)]);
     exit;
   }
 
   if ($action === 'chat_conversacion') {
-    if (!$ajaxPerms['mensajes']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $u1 = (int)($_GET['u1'] ?? 0);
-    $u2 = (int)($_GET['u2'] ?? 0);
-    if (!$u1 || !$u2) { echo json_encode(['ok'=>false,'msg'=>'Faltan IDs']); exit; }
+    if (!$ajaxPerms['mensajes']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $u1 = (int) ($_GET['u1'] ?? 0);
+    $u2 = (int) ($_GET['u2'] ?? 0);
+    if (!$u1 || !$u2) {
+      echo json_encode(['ok' => false, 'msg' => 'Faltan IDs']);
+      exit;
+    }
     $stmt = $db->prepare("
       SELECT m.id, m.mensaje, m.creado_en, m.leido, m.de_usuario,
              u1.nombre as de_nombre, u1.apellido as de_apellido
@@ -1181,23 +1357,28 @@ if ($action && $logueado) {
       WHERE (m.de_usuario=? AND m.para_usuario=?) OR (m.de_usuario=? AND m.para_usuario=?)
       ORDER BY m.creado_en ASC
     ");
-    $stmt->execute([$u1,$u2,$u2,$u1]);
+    $stmt->execute([$u1, $u2, $u2, $u1]);
     $infoU1 = $db->prepare("SELECT id,nombre,apellido,tipo FROM usuarios WHERE id=?");
-    $infoU1->execute([$u1]); $user1 = $infoU1->fetch();
+    $infoU1->execute([$u1]);
+    $user1 = $infoU1->fetch();
     $infoU2 = $db->prepare("SELECT id,nombre,apellido,tipo FROM usuarios WHERE id=?");
-    $infoU2->execute([$u2]); $user2 = $infoU2->fetch();
-    echo json_encode(['ok'=>true,'mensajes'=>$stmt->fetchAll(),'user1'=>$user1,'user2'=>$user2]);
+    $infoU2->execute([$u2]);
+    $user2 = $infoU2->fetch();
+    echo json_encode(['ok' => true, 'mensajes' => $stmt->fetchAll(), 'user1' => $user1, 'user2' => $user2]);
     exit;
   }
 
   if ($action === 'chat_stats') {
-    if (!$ajaxPerms['mensajes']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $total   = $db->query("SELECT COUNT(*) FROM mensajes")->fetchColumn();
-    $hoy     = $db->query("SELECT COUNT(*) FROM mensajes WHERE DATE(creado_en)=CURDATE()")->fetchColumn();
-    $semana  = $db->query("SELECT COUNT(*) FROM mensajes WHERE creado_en >= DATE_SUB(NOW(),INTERVAL 7 DAY)")->fetchColumn();
-    $convs   = $db->query("SELECT COUNT(DISTINCT LEAST(de_usuario,para_usuario)*100000+GREATEST(de_usuario,para_usuario)) FROM mensajes")->fetchColumn();
-    $top     = $db->query("SELECT u.nombre,u.apellido,COUNT(*) as total FROM mensajes m INNER JOIN usuarios u ON u.id=m.de_usuario GROUP BY m.de_usuario ORDER BY total DESC LIMIT 5")->fetchAll();
-    echo json_encode(['ok'=>true,'total'=>$total,'hoy'=>$hoy,'semana'=>$semana,'conversaciones'=>$convs,'top_usuarios'=>$top]);
+    if (!$ajaxPerms['mensajes']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $total = $db->query("SELECT COUNT(*) FROM mensajes")->fetchColumn();
+    $hoy = $db->query("SELECT COUNT(*) FROM mensajes WHERE DATE(creado_en)=CURDATE()")->fetchColumn();
+    $semana = $db->query("SELECT COUNT(*) FROM mensajes WHERE creado_en >= DATE_SUB(NOW(),INTERVAL 7 DAY)")->fetchColumn();
+    $convs = $db->query("SELECT COUNT(DISTINCT LEAST(de_usuario,para_usuario)*100000+GREATEST(de_usuario,para_usuario)) FROM mensajes")->fetchColumn();
+    $top = $db->query("SELECT u.nombre,u.apellido,COUNT(*) as total FROM mensajes m INNER JOIN usuarios u ON u.id=m.de_usuario GROUP BY m.de_usuario ORDER BY total DESC LIMIT 5")->fetchAll();
+    echo json_encode(['ok' => true, 'total' => $total, 'hoy' => $hoy, 'semana' => $semana, 'conversaciones' => $convs, 'top_usuarios' => $top]);
     exit;
   }
 
@@ -1280,7 +1461,10 @@ if ($action && $logueado) {
   // ── GET EMPRESA ──────────────────────────────────────────
   if ($action === 'get_empresa') {
     $uid = (int) ($_GET['id'] ?? 0);
-    if (!$uid) { echo json_encode(['ok' => false, 'msg' => 'ID inválido']); exit; }
+    if (!$uid) {
+      echo json_encode(['ok' => false, 'msg' => 'ID inválido']);
+      exit;
+    }
     $stmt = $db->prepare("
       SELECT u.id, u.nombre, u.correo, u.ciudad, u.telefono,
              ep.nombre_empresa, ep.sector, ep.nit, ep.descripcion,
@@ -1295,7 +1479,10 @@ if ($action && $logueado) {
     ");
     $stmt->execute([$uid]);
     $empresa = $stmt->fetch();
-    if (!$empresa) { echo json_encode(['ok' => false, 'msg' => 'Empresa no encontrada']); exit; }
+    if (!$empresa) {
+      echo json_encode(['ok' => false, 'msg' => 'Empresa no encontrada']);
+      exit;
+    }
     echo json_encode(['ok' => true, 'empresa' => $empresa]);
     exit;
   }
@@ -1303,22 +1490,26 @@ if ($action && $logueado) {
   // ── EDITAR EMPRESA ───────────────────────────────────────
   if ($action === 'editar_empresa' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$ajaxPerms['talentos']) {
-      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']); exit;
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
     }
     $uid = (int) ($_POST['id'] ?? 0);
-    if (!$uid) { echo json_encode(['ok' => false, 'msg' => 'ID inválido']); exit; }
+    if (!$uid) {
+      echo json_encode(['ok' => false, 'msg' => 'ID inválido']);
+      exit;
+    }
 
-    $nombre_empresa   = trim($_POST['nombre_empresa']   ?? '');
-    $sector           = trim($_POST['sector']           ?? '');
-    $nit              = trim($_POST['nit']              ?? '');
-    $descripcion      = trim($_POST['descripcion']      ?? '');
-    $sitio_web        = trim($_POST['sitio_web']        ?? '');
+    $nombre_empresa = trim($_POST['nombre_empresa'] ?? '');
+    $sector = trim($_POST['sector'] ?? '');
+    $nit = trim($_POST['nit'] ?? '');
+    $descripcion = trim($_POST['descripcion'] ?? '');
+    $sitio_web = trim($_POST['sitio_web'] ?? '');
     $telefono_empresa = trim($_POST['telefono_empresa'] ?? '');
-    $municipio        = trim($_POST['municipio']        ?? '');
-    $ciudad           = trim($_POST['ciudad']           ?? '');
-    $avatar_color     = trim($_POST['avatar_color']     ?? '');
-    $visible_admin    = (int)($_POST['visible_admin']   ?? 1);
-    $destacado        = (int)($_POST['destacado']       ?? 0);
+    $municipio = trim($_POST['municipio'] ?? '');
+    $ciudad = trim($_POST['ciudad'] ?? '');
+    $avatar_color = trim($_POST['avatar_color'] ?? '');
+    $visible_admin = (int) ($_POST['visible_admin'] ?? 1);
+    $destacado = (int) ($_POST['destacado'] ?? 0);
 
     if ($ciudad) {
       $db->prepare("UPDATE usuarios SET ciudad = ? WHERE id = ?")->execute([$ciudad, $uid]);
@@ -1343,15 +1534,25 @@ if ($action && $logueado) {
         visible_admin    = VALUES(visible_admin),
         destacado        = VALUES(destacado)
     ")->execute([
-      $uid, $nombre_empresa, $sector, $nit, $descripcion,
-      $sitio_web, $telefono_empresa, $municipio, $avatar_color,
-      $visible_admin, $visible_admin, $destacado
-    ]);
+          $uid,
+          $nombre_empresa,
+          $sector,
+          $nit,
+          $descripcion,
+          $sitio_web,
+          $telefono_empresa,
+          $municipio,
+          $avatar_color,
+          $visible_admin,
+          $visible_admin,
+          $destacado
+        ]);
 
     try {
       $db->prepare("INSERT INTO admin_auditoria (admin_id, accion, detalle, creado_en) VALUES (?,?,?,NOW())")
-         ->execute([$_SESSION['admin_id'], 'editar_empresa', "Editó perfil de empresa #$uid"]);
-    } catch (Exception $e) {}
+        ->execute([$_SESSION['admin_id'], 'editar_empresa', "Editó perfil de empresa #$uid"]);
+    } catch (Exception $e) {
+    }
 
     echo json_encode(['ok' => true]);
     exit;
@@ -1439,106 +1640,144 @@ if ($action && $logueado) {
 
   // ── CANDIDATOS (usuarios tipo candidato con talento_perfil) ──────────
   if ($action === 'candidatos') {
-    if (!$ajaxPerms['usuarios']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $page   = max(1,(int)($_GET['page']??1));
-    $buscar = trim($_GET['q']??'');
-    $visible= isset($_GET['visible'])?(int)$_GET['visible']:-1;
-    $limit  = 20; $offset = ($page-1)*$limit;
-    $where  = "WHERE u.activo=1 AND u.tipo='candidato'";
+    if (!$ajaxPerms['usuarios']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $buscar = trim($_GET['q'] ?? '');
+    $visible = isset($_GET['visible']) ? (int) $_GET['visible'] : -1;
+    $limit = 20;
+    $offset = ($page - 1) * $limit;
+    $where = "WHERE u.activo=1 AND u.tipo='candidato'";
     $params = [];
     if ($buscar) {
       $where .= " AND (u.nombre LIKE ? OR u.apellido LIKE ? OR tp.profesion LIKE ? OR tp.skills LIKE ?)";
-      $b = "%$buscar%"; $params = array_merge($params,[$b,$b,$b,$b]);
+      $b = "%$buscar%";
+      $params = array_merge($params, [$b, $b, $b, $b]);
     }
-    if ($visible===0||$visible===1) { $where .= " AND COALESCE(tp.visible_admin,1)=?"; $params[]=$visible; }
+    if ($visible === 0 || $visible === 1) {
+      $where .= " AND COALESCE(tp.visible_admin,1)=?";
+      $params[] = $visible;
+    }
     $stmtT = $db->prepare("SELECT COUNT(DISTINCT u.id) FROM usuarios u LEFT JOIN talento_perfil tp ON tp.id=(SELECT MAX(id) FROM talento_perfil WHERE usuario_id=u.id) $where");
     $stmtT->execute($params);
-    $total = (int)$stmtT->fetchColumn();
+    $total = (int) $stmtT->fetchColumn();
     $sql = "SELECT u.id,u.nombre,u.apellido,u.ciudad,u.foto,u.verificado,
                    tp.profesion,tp.skills,tp.visible_admin,tp.destacado,tp.avatar_color
             FROM usuarios u
             LEFT JOIN talento_perfil tp ON tp.id=(SELECT MAX(id) FROM talento_perfil WHERE usuario_id=u.id)
             $where ORDER BY tp.destacado DESC,u.verificado DESC,u.id DESC LIMIT $limit OFFSET $offset";
-    $stmt = $db->prepare($sql); $stmt->execute($params);
-    echo json_encode(['ok'=>true,'candidatos'=>$stmt->fetchAll(),'total'=>$total,'page'=>$page]);
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    echo json_encode(['ok' => true, 'candidatos' => $stmt->fetchAll(), 'total' => $total, 'page' => $page]);
     exit;
   }
 
   // ── EMPRESAS DIRECTORIO ───────────────────────────────────────────────
   if ($action === 'empresas_dir') {
-    if (!$ajaxPerms['usuarios']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $page   = max(1,(int)($_GET['page']??1));
-    $buscar = trim($_GET['q']??'');
-    $visible= isset($_GET['visible'])?(int)$_GET['visible']:-1;
-    $limit  = 20; $offset = ($page-1)*$limit;
-    $where  = "WHERE u.activo=1 AND u.tipo='empresa'";
+    if (!$ajaxPerms['usuarios']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $buscar = trim($_GET['q'] ?? '');
+    $visible = isset($_GET['visible']) ? (int) $_GET['visible'] : -1;
+    $limit = 20;
+    $offset = ($page - 1) * $limit;
+    $where = "WHERE u.activo=1 AND u.tipo='empresa'";
     $params = [];
     if ($buscar) {
       $where .= " AND (u.nombre LIKE ? OR ep.nombre_empresa LIKE ? OR ep.sector LIKE ?)";
-      $b = "%$buscar%"; $params = array_merge($params,[$b,$b,$b]);
+      $b = "%$buscar%";
+      $params = array_merge($params, [$b, $b, $b]);
     }
-    if ($visible===0||$visible===1) { $where .= " AND COALESCE(ep.visible_admin,1)=?"; $params[]=$visible; }
+    if ($visible === 0 || $visible === 1) {
+      $where .= " AND COALESCE(ep.visible_admin,1)=?";
+      $params[] = $visible;
+    }
     $stmtT = $db->prepare("SELECT COUNT(DISTINCT u.id) FROM usuarios u LEFT JOIN perfiles_empresa ep ON ep.id=(SELECT MAX(id) FROM perfiles_empresa WHERE usuario_id=u.id) $where");
     $stmtT->execute($params);
-    $total = (int)$stmtT->fetchColumn();
+    $total = (int) $stmtT->fetchColumn();
     $sql = "SELECT u.id,u.nombre,u.ciudad,u.verificado,
                    ep.nombre_empresa,ep.sector,ep.nit,ep.logo,ep.avatar_color,
                    COALESCE(ep.visible_admin,1) as visible_admin,COALESCE(ep.destacado,0) as destacado
             FROM usuarios u
             LEFT JOIN perfiles_empresa ep ON ep.id=(SELECT MAX(id) FROM perfiles_empresa WHERE usuario_id=u.id)
             $where ORDER BY ep.destacado DESC,u.verificado DESC,u.id DESC LIMIT $limit OFFSET $offset";
-    $stmt = $db->prepare($sql); $stmt->execute($params);
-    echo json_encode(['ok'=>true,'empresas'=>$stmt->fetchAll(),'total'=>$total,'page'=>$page]);
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    echo json_encode(['ok' => true, 'empresas' => $stmt->fetchAll(), 'total' => $total, 'page' => $page]);
     exit;
   }
 
   // ── SERVICIOS DIRECTORIO (candidatos con tipo_servicio o precio_desde) ──
   if ($action === 'servicios_dir') {
-    if (!$ajaxPerms['usuarios']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $page   = max(1,(int)($_GET['page']??1));
-    $buscar = trim($_GET['q']??'');
-    $visible= isset($_GET['visible'])?(int)$_GET['visible']:-1;
-    $limit  = 20; $offset = ($page-1)*$limit;
-    $where  = "WHERE u.activo=1 AND (tp.tipo_servicio IS NOT NULL AND tp.tipo_servicio<>'' OR tp.precio_desde IS NOT NULL)";
+    if (!$ajaxPerms['usuarios']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $buscar = trim($_GET['q'] ?? '');
+    $visible = isset($_GET['visible']) ? (int) $_GET['visible'] : -1;
+    $limit = 20;
+    $offset = ($page - 1) * $limit;
+    $where = "WHERE u.activo=1 AND (tp.tipo_servicio IS NOT NULL AND tp.tipo_servicio<>'' OR tp.precio_desde IS NOT NULL)";
     $params = [];
     if ($buscar) {
       $where .= " AND (u.nombre LIKE ? OR u.apellido LIKE ? OR tp.tipo_servicio LIKE ?)";
-      $b = "%$buscar%"; $params = array_merge($params,[$b,$b,$b]);
+      $b = "%$buscar%";
+      $params = array_merge($params, [$b, $b, $b]);
     }
-    if ($visible===0||$visible===1) { $where .= " AND COALESCE(tp.visible_admin,1)=?"; $params[]=$visible; }
+    if ($visible === 0 || $visible === 1) {
+      $where .= " AND COALESCE(tp.visible_admin,1)=?";
+      $params[] = $visible;
+    }
     $stmtT = $db->prepare("SELECT COUNT(DISTINCT u.id) FROM usuarios u LEFT JOIN talento_perfil tp ON tp.id=(SELECT MAX(id) FROM talento_perfil WHERE usuario_id=u.id) $where");
     $stmtT->execute($params);
-    $total = (int)$stmtT->fetchColumn();
+    $total = (int) $stmtT->fetchColumn();
     $sql = "SELECT u.id,u.nombre,u.apellido,u.foto,u.ciudad,u.verificado,
                    tp.tipo_servicio,tp.generos,tp.precio_desde,
                    tp.avatar_color,COALESCE(tp.visible_admin,1) as visible_admin,COALESCE(tp.destacado,0) as destacado
             FROM usuarios u
             LEFT JOIN talento_perfil tp ON tp.id=(SELECT MAX(id) FROM talento_perfil WHERE usuario_id=u.id)
             $where ORDER BY tp.destacado DESC,u.verificado DESC,u.id DESC LIMIT $limit OFFSET $offset";
-    $stmt = $db->prepare($sql); $stmt->execute($params);
-    echo json_encode(['ok'=>true,'servicios'=>$stmt->fetchAll(),'total'=>$total,'page'=>$page]);
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    echo json_encode(['ok' => true, 'servicios' => $stmt->fetchAll(), 'total' => $total, 'page' => $page]);
     exit;
   }
 
   // ── NEGOCIOS DIRECTORIO ──────────────────────────────────────────────
   if ($action === 'negocios_dir') {
-    if (!$ajaxPerms['usuarios']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $page      = max(1,(int)($_GET['page']??1));
-    $buscar    = trim($_GET['q']??'');
-    $visible   = isset($_GET['visible'])?(int)$_GET['visible']:-1;
-    $tipo_neg  = trim($_GET['tipo']??'');
-    $limit     = 20; $offset = ($page-1)*$limit;
-    $where     = "WHERE u.activo=1 AND nl.id IS NOT NULL";
-    $params    = [];
+    if (!$ajaxPerms['usuarios']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $buscar = trim($_GET['q'] ?? '');
+    $visible = isset($_GET['visible']) ? (int) $_GET['visible'] : -1;
+    $tipo_neg = trim($_GET['tipo'] ?? '');
+    $limit = 20;
+    $offset = ($page - 1) * $limit;
+    $where = "WHERE u.activo=1 AND nl.id IS NOT NULL";
+    $params = [];
     if ($buscar) {
       $where .= " AND (nl.nombre_negocio LIKE ? OR nl.categoria LIKE ? OR u.nombre LIKE ?)";
-      $b = "%$buscar%"; $params = array_merge($params,[$b,$b,$b]);
+      $b = "%$buscar%";
+      $params = array_merge($params, [$b, $b, $b]);
     }
-    if ($visible===0||$visible===1) { $where .= " AND COALESCE(nl.visible_admin,1)=?"; $params[]=$visible; }
-    if ($tipo_neg==='cc'||$tipo_neg==='emp') { $where .= " AND nl.tipo_negocio=?"; $params[]=$tipo_neg; }
+    if ($visible === 0 || $visible === 1) {
+      $where .= " AND COALESCE(nl.visible_admin,1)=?";
+      $params[] = $visible;
+    }
+    if ($tipo_neg === 'cc' || $tipo_neg === 'emp') {
+      $where .= " AND nl.tipo_negocio=?";
+      $params[] = $tipo_neg;
+    }
     $stmtT = $db->prepare("SELECT COUNT(DISTINCT u.id) FROM usuarios u LEFT JOIN negocios_locales nl ON nl.id=(SELECT MAX(id) FROM negocios_locales WHERE usuario_id=u.id) $where");
     $stmtT->execute($params);
-    $total = (int)$stmtT->fetchColumn();
+    $total = (int) $stmtT->fetchColumn();
     $sql = "SELECT u.id,u.nombre,u.ciudad,u.verificado,
                    nl.id as negocio_id,nl.nombre_negocio,nl.categoria,nl.whatsapp,
                    nl.tipo_negocio,nl.logo,nl.avatar_color,nl.descripcion,nl.ubicacion,
@@ -1546,15 +1785,19 @@ if ($action && $logueado) {
             FROM usuarios u
             LEFT JOIN negocios_locales nl ON nl.id=(SELECT MAX(id) FROM negocios_locales WHERE usuario_id=u.id)
             $where ORDER BY nl.destacado DESC,u.verificado DESC,u.id DESC LIMIT $limit OFFSET $offset";
-    $stmt = $db->prepare($sql); $stmt->execute($params);
-    echo json_encode(['ok'=>true,'negocios'=>$stmt->fetchAll(),'total'=>$total,'page'=>$page]);
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    echo json_encode(['ok' => true, 'negocios' => $stmt->fetchAll(), 'total' => $total, 'page' => $page]);
     exit;
   }
 
   // ── GET NEGOCIO (para modal de edición) ─────────────────────────────
   if ($action === 'get_negocio') {
-    $uid = (int)($_GET['id']??0);
-    if (!$uid) { echo json_encode(['ok'=>false,'msg'=>'ID inválido']); exit; }
+    $uid = (int) ($_GET['id'] ?? 0);
+    if (!$uid) {
+      echo json_encode(['ok' => false, 'msg' => 'ID inválido']);
+      exit;
+    }
     $stmt = $db->prepare("
       SELECT u.id,u.nombre,u.ciudad,
              nl.id as negocio_id,nl.nombre_negocio,nl.categoria,nl.descripcion,
@@ -1565,24 +1808,33 @@ if ($action && $logueado) {
       WHERE u.id=?");
     $stmt->execute([$uid]);
     $negocio = $stmt->fetch();
-    if (!$negocio) { echo json_encode(['ok'=>false,'msg'=>'Negocio no encontrado']); exit; }
-    echo json_encode(['ok'=>true,'negocio'=>$negocio]);
+    if (!$negocio) {
+      echo json_encode(['ok' => false, 'msg' => 'Negocio no encontrado']);
+      exit;
+    }
+    echo json_encode(['ok' => true, 'negocio' => $negocio]);
     exit;
   }
 
   // ── EDITAR NEGOCIO ───────────────────────────────────────────────────
-  if ($action === 'editar_negocio' && $_SERVER['REQUEST_METHOD']==='POST') {
-    if (!$ajaxPerms['talentos']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $uid           = (int)($_POST['id']??0);
-    if (!$uid) { echo json_encode(['ok'=>false,'msg'=>'ID inválido']); exit; }
-    $nombre_negocio= trim($_POST['nombre_negocio']??'');
-    $categoria     = trim($_POST['categoria']??'');
-    $whatsapp      = trim($_POST['whatsapp']??'');
-    $descripcion   = trim($_POST['descripcion']??'');
-    $ubicacion     = trim($_POST['ubicacion']??'');
-    $tipo_negocio  = trim($_POST['tipo_negocio']??'emp');
-    $visible_admin = (int)($_POST['visible_admin']??1);
-    $destacado     = (int)($_POST['destacado']??0);
+  if ($action === 'editar_negocio' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!$ajaxPerms['talentos']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $uid = (int) ($_POST['id'] ?? 0);
+    if (!$uid) {
+      echo json_encode(['ok' => false, 'msg' => 'ID inválido']);
+      exit;
+    }
+    $nombre_negocio = trim($_POST['nombre_negocio'] ?? '');
+    $categoria = trim($_POST['categoria'] ?? '');
+    $whatsapp = trim($_POST['whatsapp'] ?? '');
+    $descripcion = trim($_POST['descripcion'] ?? '');
+    $ubicacion = trim($_POST['ubicacion'] ?? '');
+    $tipo_negocio = trim($_POST['tipo_negocio'] ?? 'emp');
+    $visible_admin = (int) ($_POST['visible_admin'] ?? 1);
+    $destacado = (int) ($_POST['destacado'] ?? 0);
     $db->prepare("
       INSERT INTO negocios_locales (usuario_id,nombre_negocio,categoria,whatsapp,descripcion,ubicacion,tipo_negocio,visible,visible_admin,destacado)
       VALUES (?,?,?,?,?,?,?,?,?,?)
@@ -1591,26 +1843,31 @@ if ($action && $logueado) {
         whatsapp=VALUES(whatsapp),descripcion=VALUES(descripcion),
         ubicacion=VALUES(ubicacion),tipo_negocio=VALUES(tipo_negocio),
         visible=VALUES(visible),visible_admin=VALUES(visible_admin),destacado=VALUES(destacado)
-    ")->execute([$uid,$nombre_negocio,$categoria,$whatsapp,$descripcion,$ubicacion,$tipo_negocio,$visible_admin,$visible_admin,$destacado]);
+    ")->execute([$uid, $nombre_negocio, $categoria, $whatsapp, $descripcion, $ubicacion, $tipo_negocio, $visible_admin, $visible_admin, $destacado]);
     try {
       $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")
-         ->execute([$_SESSION['admin_id'],'editar_negocio',"Editó negocio de usuario #$uid"]);
-    } catch(Exception $e){}
-    echo json_encode(['ok'=>true]);
+        ->execute([$_SESSION['admin_id'], 'editar_negocio', "Editó negocio de usuario #$uid"]);
+    } catch (Exception $e) {
+    }
+    echo json_encode(['ok' => true]);
     exit;
   }
 
   // ── TOGGLE VISIBLE/DESTACADO inline (para las 4 nuevas tablas) ───────
-  if ($action === 'toggle_dir_campo' && $_SERVER['REQUEST_METHOD']==='POST') {
-    if (!$ajaxPerms['talentos']) { echo json_encode(['ok'=>false,'msg'=>'Sin permisos']); exit; }
-    $uid    = (int)($_POST['id']??0);
-    $tabla  = $_POST['tabla']??'';
-    $campo  = $_POST['campo']??'';
-    $valor  = (int)($_POST['valor']??0);
-    $tablas_ok = ['talento_perfil','perfiles_empresa','negocios_locales'];
-    $campos_ok = ['visible_admin','destacado'];
-    if (!$uid || !in_array($tabla,$tablas_ok) || !in_array($campo,$campos_ok)) {
-      echo json_encode(['ok'=>false,'msg'=>'Parámetros inválidos']); exit;
+  if ($action === 'toggle_dir_campo' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!$ajaxPerms['talentos']) {
+      echo json_encode(['ok' => false, 'msg' => 'Sin permisos']);
+      exit;
+    }
+    $uid = (int) ($_POST['id'] ?? 0);
+    $tabla = $_POST['tabla'] ?? '';
+    $campo = $_POST['campo'] ?? '';
+    $valor = (int) ($_POST['valor'] ?? 0);
+    $tablas_ok = ['talento_perfil', 'perfiles_empresa', 'negocios_locales'];
+    $campos_ok = ['visible_admin', 'destacado'];
+    if (!$uid || !in_array($tabla, $tablas_ok) || !in_array($campo, $campos_ok)) {
+      echo json_encode(['ok' => false, 'msg' => 'Parámetros inválidos']);
+      exit;
     }
     try {
       if ($tabla === 'talento_perfil') {
@@ -1621,11 +1878,11 @@ if ($action && $logueado) {
           ON DUPLICATE KEY UPDATE $campo = VALUES($campo)
         ")->execute([$uid, $valor]);
       } else {
-        $db->prepare("UPDATE $tabla SET $campo=? WHERE usuario_id=?")->execute([$valor,$uid]);
+        $db->prepare("UPDATE $tabla SET $campo=? WHERE usuario_id=?")->execute([$valor, $uid]);
       }
-      echo json_encode(['ok'=>true]);
-    } catch(Exception $e) {
-      echo json_encode(['ok'=>false,'msg'=>$e->getMessage()]);
+      echo json_encode(['ok' => true]);
+    } catch (Exception $e) {
+      echo json_encode(['ok' => false, 'msg' => $e->getMessage()]);
     }
     exit;
   }
@@ -2259,12 +2516,14 @@ if ($action) {
       flex-direction: column;
       gap: 4px;
     }
+
     .stat-mini .sm-val {
       font-size: 24px;
       font-weight: 800;
       color: var(--green);
       font-family: 'JetBrains Mono', monospace;
     }
+
     .stat-mini .sm-lbl {
       font-size: 11px;
       color: var(--text3);
@@ -3404,6 +3663,10 @@ if ($action) {
           <button class="sb-item" data-tip="Documentos" onclick="irA('documentos')" id="nav-documentos">
             <span class="ic">🗂️</span><span>Documentos</span>
           </button>
+          <button class="sb-item" data-tip="Papelera" onclick="irA('papelera')" id="nav-papelera">
+            <span class="ic">🗑️</span><span>Papelera <span id="badge-papelera"
+                style="display:none;background:var(--red);color:white;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px">0</span></span>
+          </button>
         <?php endif; ?>
         <div class="sb-section">Gestión</div>
         <?php if ($perms['usuarios']): ?>
@@ -3616,6 +3879,33 @@ if ($action) {
             <div id="docs-loading" class="loading"><span class="spin">⚙️</span></div>
             <div id="docs-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap">
             </div>
+          </div>
+        <?php endif; ?>
+
+        <!-- ═══ PAPELERA DE DOCUMENTOS ═══ -->
+        <?php if ($perms['documentos']): ?>
+          <div class="section" id="section-papelera">
+            <div class="section-header">
+              <h2>🗑️ Papelera de documentos</h2>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <span id="papelera-count-label" style="font-size:13px;color:var(--text2)">Cargando...</span>
+                <?php if ($adminUser['nivel'] === 'superadmin'): ?>
+                  <button onclick="vaciarPapelera()" id="btn-vaciar-papelera"
+                    style="padding:8px 16px;background:var(--red-bg);border:1px solid rgba(255,68,68,.3);border-radius:10px;color:var(--red);font-size:13px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">
+                    🔥 Vaciar papelera
+                  </button>
+                <?php endif; ?>
+              </div>
+            </div>
+            <div id="papelera-empty" style="display:none" class="empty-state">
+              <span class="ei">🗑️</span>
+              <p>La papelera está vacía</p>
+            </div>
+            <div id="papelera-loading" class="loading"><span class="spin">⚙️</span></div>
+            <div id="papelera-grid"
+              style="display:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px"></div>
+            <div id="papelera-pagination"
+              style="display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap"></div>
           </div>
         <?php endif; ?>
 
@@ -3861,7 +4151,9 @@ if ($action) {
                 </tr>
               </thead>
               <tbody id="convocatorias-tbody">
-                <tr><td colspan="8" class="loading"><span class="spin">⚙️</span></td></tr>
+                <tr>
+                  <td colspan="8" class="loading"><span class="spin">⚙️</span></td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -3913,8 +4205,8 @@ if ($action) {
                 style="padding:10px 18px;background:var(--blue-bg);border:1px solid rgba(68,136,255,.3);border-radius:8px;color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">🔍
                 Cargar usuario</button>
             </div>
-  <div id="badges-usuario-extra"></div>
-          <div id="badges-usuario-panel" style="display:none">
+            <div id="badges-usuario-extra"></div>
+            <div id="badges-usuario-panel" style="display:none">
               <div id="badges-usuario-info"
                 style="margin-bottom:16px;padding:12px 16px;background:var(--bg3);border-radius:10px;font-size:13px">
               </div>
@@ -4033,11 +4325,15 @@ if ($action) {
           </div>
 
           <!-- Stats cards -->
-          <div id="chat-stats-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;">
-            <div class="stat-mini" id="cs-total"><span class="sm-val">…</span><span class="sm-lbl">Total mensajes</span></div>
+          <div id="chat-stats-row"
+            style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;">
+            <div class="stat-mini" id="cs-total"><span class="sm-val">…</span><span class="sm-lbl">Total mensajes</span>
+            </div>
             <div class="stat-mini" id="cs-hoy"><span class="sm-val">…</span><span class="sm-lbl">Hoy</span></div>
-            <div class="stat-mini" id="cs-semana"><span class="sm-val">…</span><span class="sm-lbl">Esta semana</span></div>
-            <div class="stat-mini" id="cs-convs"><span class="sm-val">…</span><span class="sm-lbl">Conversaciones</span></div>
+            <div class="stat-mini" id="cs-semana"><span class="sm-val">…</span><span class="sm-lbl">Esta semana</span>
+            </div>
+            <div class="stat-mini" id="cs-convs"><span class="sm-val">…</span><span class="sm-lbl">Conversaciones</span>
+            </div>
           </div>
 
           <!-- Buscador -->
@@ -4045,7 +4341,9 @@ if ($action) {
             <input id="msg-search" type="text" placeholder="🔍 Buscar por usuario o contenido…"
               oninput="clearTimeout(window._msgT);window._msgT=setTimeout(()=>cargarMensajes(1),400)"
               style="flex:1;min-width:200px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text1);font-size:13px;outline:none;">
-            <button onclick="exportarCSV()" style="padding:10px 16px;background:var(--green);color:white;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">⬇ Exportar CSV</button>
+            <button onclick="exportarCSV()"
+              style="padding:10px 16px;background:var(--green);color:white;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">⬇
+              Exportar CSV</button>
           </div>
 
           <!-- Tabla principal -->
@@ -4063,13 +4361,16 @@ if ($action) {
                 </tr>
               </thead>
               <tbody id="mensajes-tbody">
-                <tr><td colspan="7" class="loading"><span class="spin">⚙️</span></td></tr>
+                <tr>
+                  <td colspan="7" class="loading"><span class="spin">⚙️</span></td>
+                </tr>
               </tbody>
             </table>
           </div>
 
           <!-- Paginación -->
-          <div id="msg-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap;"></div>
+          <div id="msg-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+          </div>
 
           <!-- Top usuarios -->
           <div style="margin-top:28px;">
@@ -4079,19 +4380,26 @@ if ($action) {
         </div>
 
         <!-- Modal conversación completa -->
-        <div id="modal-conv" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:900;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);">
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:18px;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 40px 100px rgba(0,0,0,.6);">
-            <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div id="modal-conv"
+          style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:900;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);">
+          <div
+            style="background:var(--bg2);border:1px solid var(--border);border-radius:18px;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 40px 100px rgba(0,0,0,.6);">
+            <div
+              style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
               <div>
                 <div id="conv-title" style="font-size:15px;font-weight:800;color:var(--text1);">Conversación</div>
                 <div id="conv-sub" style="font-size:12px;color:var(--text3);margin-top:2px;"></div>
               </div>
               <div style="display:flex;gap:8px;align-items:center;">
-                <button id="conv-export-btn" onclick="exportarConvCSV()" style="padding:7px 13px;background:var(--green);color:white;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;">⬇ CSV</button>
-                <button onclick="document.getElementById('modal-conv').style.display='none'" style="background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+                <button id="conv-export-btn" onclick="exportarConvCSV()"
+                  style="padding:7px 13px;background:var(--green);color:white;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;">⬇
+                  CSV</button>
+                <button onclick="document.getElementById('modal-conv').style.display='none'"
+                  style="background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
               </div>
             </div>
-            <div id="conv-messages" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:8px;"></div>
+            <div id="conv-messages"
+              style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:8px;"></div>
           </div>
         </div>
 
@@ -4109,9 +4417,26 @@ if ($action) {
             <div
               style="margin-top:24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px">
               <h3 style="font-size:15px;margin-bottom:16px;color:var(--amber)">➕ Asignar nuevo rol</h3>
-              <div style="display:flex;gap:12px;flex-wrap:wrap">
-                <input type="number" id="rol-uid" placeholder="ID del usuario"
-                  style="padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none;width:160px">
+              <!-- Buscador por correo/nombre -->
+              <div style="position:relative;margin-bottom:14px">
+                <input type="text" id="rol-buscar" placeholder="🔍 Buscar por nombre o correo..."
+                  oninput="buscarUsuarioRol(this.value)"
+                  style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
+                <div id="rol-sugerencias"
+                  style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;z-index:99;max-height:220px;overflow-y:auto;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+                </div>
+              </div>
+              <!-- Preview usuario seleccionado -->
+              <div id="rol-preview"
+                style="display:none;padding:12px 14px;background:var(--bg3);border:1px solid rgba(0,230,118,.2);border-radius:10px;margin-bottom:14px">
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <div id="rol-preview-info" style="flex:1;font-size:13px"></div>
+                  <button onclick="limpiarSeleccionRol()"
+                    style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1">×</button>
+                </div>
+              </div>
+              <input type="hidden" id="rol-uid">
+              <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
                 <select id="rol-nivel"
                   style="padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
                   <option value="admin">Admin Delegado</option>
@@ -4165,7 +4490,8 @@ if ($action) {
             </div>
             <div id="cand-loading" class="loading" style="display:none"><span class="spin">⚙️</span></div>
             <div id="cand-table"></div>
-            <div id="cand-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap"></div>
+            <div id="cand-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+            </div>
           </div>
 
           <!-- ══ SECTION: EMPRESAS DIRECTORIO ══ -->
@@ -4186,7 +4512,8 @@ if ($action) {
             </div>
             <div id="empdir-loading" class="loading" style="display:none"><span class="spin">⚙️</span></div>
             <div id="empdir-table"></div>
-            <div id="empdir-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap"></div>
+            <div id="empdir-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+            </div>
           </div>
 
           <!-- ══ SECTION: SERVICIOS DIRECTORIO ══ -->
@@ -4207,7 +4534,8 @@ if ($action) {
             </div>
             <div id="srvdir-loading" class="loading" style="display:none"><span class="spin">⚙️</span></div>
             <div id="srvdir-table"></div>
-            <div id="srvdir-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap"></div>
+            <div id="srvdir-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+            </div>
           </div>
 
           <!-- ══ SECTION: NEGOCIOS DIRECTORIO ══ -->
@@ -4234,7 +4562,8 @@ if ($action) {
             </div>
             <div id="negdir-loading" class="loading" style="display:none"><span class="spin">⚙️</span></div>
             <div id="negdir-table"></div>
-            <div id="negdir-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap"></div>
+            <div id="negdir-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+            </div>
           </div>
 
           <!-- MODAL PERMISOS -->
@@ -4248,9 +4577,12 @@ if ($action) {
               <p id="permisos-nombre" style="color:var(--text2);font-size:13px;margin-bottom:20px"></p>
               <input type="hidden" id="permisos-uid">
               <!-- Seleccionar todos -->
-              <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px">
-                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">
-                  <input type="checkbox" id="perm-select-all" onchange="toggleTodosPermisos(this.checked)" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer">
+              <div
+                style="display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px">
+                <label
+                  style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">
+                  <input type="checkbox" id="perm-select-all" onchange="toggleTodosPermisos(this.checked)"
+                    style="width:16px;height:16px;accent-color:var(--green);cursor:pointer">
                   <span>Seleccionar todos los permisos</span>
                 </label>
                 <span style="font-size:11px;color:var(--text3)" id="perm-count-label">0 / 0</span>
@@ -4344,117 +4676,188 @@ if ($action) {
 
         <!-- ── SIMULADOR DE INGRESOS ── -->
         <?php if ($perms['simulador']): ?>
-        <div class="section" id="section-simulador">
-          <div style="background:#0d1a0d;min-height:100%;padding:32px;border-radius:16px">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px">
-              <div>
-                <div style="display:inline-block;background:rgba(31,107,58,.3);color:#5cd98a;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🔒 Solo superadmin y admin</div>
-                <h2 style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800;color:white;margin:0">💹 Simulador de ingresos</h2>
-                <p style="font-size:13px;color:rgba(255,255,255,.5);margin-top:4px">Proyecta cuánto puede generar QuibdóConecta en 12 meses. Ajusta los supuestos y explora escenarios.</p>
+          <div class="section" id="section-simulador">
+            <div style="background:#0d1a0d;min-height:100%;padding:32px;border-radius:16px">
+              <div
+                style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px">
+                <div>
+                  <div
+                    style="display:inline-block;background:rgba(31,107,58,.3);color:#5cd98a;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">
+                    🔒 Solo superadmin y admin</div>
+                  <h2 style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800;color:white;margin:0">💹
+                    Simulador de ingresos</h2>
+                  <p style="font-size:13px;color:rgba(255,255,255,.5);margin-top:4px">Proyecta cuánto puede generar
+                    QuibdóConecta en 12 meses. Ajusta los supuestos y explora escenarios.</p>
+                </div>
+                <div style="font-size:11px;color:rgba(255,255,255,.3);text-align:right;line-height:1.6">Acceso
+                  restringido<br><?= htmlspecialchars($nombre) ?> · <?= $nivel ?></div>
               </div>
-              <div style="font-size:11px;color:rgba(255,255,255,.3);text-align:right;line-height:1.6">Acceso restringido<br><?= htmlspecialchars($nombre) ?> · <?= $nivel ?></div>
-            </div>
 
-            <!-- Etapas -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-              <button style="padding:9px 18px;border-radius:30px;border:1.5px solid #1D9E75;background:#1D9E75;cursor:pointer;font-size:13px;font-weight:600;color:white;font-family:'Space Grotesk',sans-serif;transition:all .2s" onclick="simSetEtapa(1,this)" id="sim-e1">Etapa 1 — Lanzamiento</button>
-              <button style="padding:9px 18px;border-radius:30px;border:1.5px solid rgba(255,255,255,.15);background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);font-family:'Space Grotesk',sans-serif;transition:all .2s" onclick="simSetEtapa(2,this)" id="sim-e2">Etapa 2 — Crecimiento</button>
-              <button style="padding:9px 18px;border-radius:30px;border:1.5px solid rgba(255,255,255,.15);background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);font-family:'Space Grotesk',sans-serif;transition:all .2s" onclick="simSetEtapa(3,this)" id="sim-e3">Etapa 3 — Consolidación</button>
-            </div>
-            <div id="sim-etapa-info-admin" style="background:rgba(255,255,255,.06);border-left:3px solid #1D9E75;border-radius:0 10px 10px 0;padding:12px 16px;font-size:13px;color:rgba(255,255,255,.65);margin-bottom:24px;max-width:800px"></div>
+              <!-- Etapas -->
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+                <button
+                  style="padding:9px 18px;border-radius:30px;border:1.5px solid #1D9E75;background:#1D9E75;cursor:pointer;font-size:13px;font-weight:600;color:white;font-family:'Space Grotesk',sans-serif;transition:all .2s"
+                  onclick="simSetEtapa(1,this)" id="sim-e1">Etapa 1 — Lanzamiento</button>
+                <button
+                  style="padding:9px 18px;border-radius:30px;border:1.5px solid rgba(255,255,255,.15);background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);font-family:'Space Grotesk',sans-serif;transition:all .2s"
+                  onclick="simSetEtapa(2,this)" id="sim-e2">Etapa 2 — Crecimiento</button>
+                <button
+                  style="padding:9px 18px;border-radius:30px;border:1.5px solid rgba(255,255,255,.15);background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);font-family:'Space Grotesk',sans-serif;transition:all .2s"
+                  onclick="simSetEtapa(3,this)" id="sim-e3">Etapa 3 — Consolidación</button>
+              </div>
+              <div id="sim-etapa-info-admin"
+                style="background:rgba(255,255,255,.06);border-left:3px solid #1D9E75;border-radius:0 10px 10px 0;padding:12px 16px;font-size:13px;color:rgba(255,255,255,.65);margin-bottom:24px;max-width:800px">
+              </div>
 
-            <!-- Pills precios por etapa -->
-            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px">
-              <span style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#eef6f1;color:#4a7c59">🌱 Semilla — Gratis</span>
-              <span style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#e8f5ee;color:#1f6b3a">🌿 Verde Selva — <span id="adm-sp-selva">$15.000</span>/mes</span>
-              <span style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#fdf8e8;color:#b8860b">✦ Amarillo Oro — <span id="adm-sp-oro">$35.000</span>/mes</span>
-              <span style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#e8f0fa;color:#1a3f6f">◆ Azul Profundo — <span id="adm-sp-azul">$55.000</span>/mes</span>
-            </div>
+              <!-- Pills precios por etapa -->
+              <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px">
+                <span
+                  style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#eef6f1;color:#4a7c59">🌱
+                  Semilla — Gratis</span>
+                <span
+                  style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#e8f5ee;color:#1f6b3a">🌿
+                  Verde Selva — <span id="adm-sp-selva">$15.000</span>/mes</span>
+                <span
+                  style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#fdf8e8;color:#b8860b">✦
+                  Amarillo Oro — <span id="adm-sp-oro">$35.000</span>/mes</span>
+                <span
+                  style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#e8f0fa;color:#1a3f6f">◆
+                  Azul Profundo — <span id="adm-sp-azul">$55.000</span>/mes</span>
+              </div>
 
-            <!-- Métricas -->
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px">
-              <div style="background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.35);border-radius:14px;padding:18px 20px">
-                <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Ingresos año 1</div>
-                <div style="font-size:28px;font-weight:800;color:white;font-family:'JetBrains Mono',monospace;line-height:1" id="adm-sm-anual">$0</div>
-                <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">COP estimado</div>
+              <!-- Métricas -->
+              <div
+                style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px">
+                <div
+                  style="background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.35);border-radius:14px;padding:18px 20px">
+                  <div
+                    style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">
+                    Ingresos año 1</div>
+                  <div
+                    style="font-size:28px;font-weight:800;color:white;font-family:'JetBrains Mono',monospace;line-height:1"
+                    id="adm-sm-anual">$0</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">COP estimado</div>
+                </div>
+                <div
+                  style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px 20px">
+                  <div
+                    style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">
+                    Promedio mensual</div>
+                  <div
+                    style="font-size:28px;font-weight:800;color:white;font-family:'JetBrains Mono',monospace;line-height:1"
+                    id="adm-sm-mensual">$0</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">COP / mes</div>
+                </div>
+                <div
+                  style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px 20px">
+                  <div
+                    style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">
+                    Mejor mes (mes 12)</div>
+                  <div
+                    style="font-size:28px;font-weight:800;color:white;font-family:'JetBrains Mono',monospace;line-height:1"
+                    id="adm-sm-mejor">$0</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">Con crecimiento 5%</div>
+                </div>
+                <div
+                  style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px 20px">
+                  <div
+                    style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">
+                    Por día promedio</div>
+                  <div
+                    style="font-size:28px;font-weight:800;color:white;font-family:'JetBrains Mono',monospace;line-height:1"
+                    id="adm-sm-dia">$0</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">COP / día</div>
+                </div>
               </div>
-              <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px 20px">
-                <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Promedio mensual</div>
-                <div style="font-size:28px;font-weight:800;color:white;font-family:'JetBrains Mono',monospace;line-height:1" id="adm-sm-mensual">$0</div>
-                <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">COP / mes</div>
-              </div>
-              <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px 20px">
-                <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Mejor mes (mes 12)</div>
-                <div style="font-size:28px;font-weight:800;color:white;font-family:'JetBrains Mono',monospace;line-height:1" id="adm-sm-mejor">$0</div>
-                <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">Con crecimiento 5%</div>
-              </div>
-              <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px 20px">
-                <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Por día promedio</div>
-                <div style="font-size:28px;font-weight:800;color:white;font-family:'JetBrains Mono',monospace;line-height:1" id="adm-sm-dia">$0</div>
-                <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">COP / día</div>
-              </div>
-            </div>
 
-            <!-- Dos columnas: sliders + desglose -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px" class="sim-two-cols-admin">
-              <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px">
-                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:16px">⚙️ Ajusta los supuestos</div>
-                <?php
-                $sliders = [
-                  ['id'=>'visitas','label'=>'Visitas diarias','min'=>50,'max'=>500,'step'=>10,'val'=>100,'sfx'=>'/día'],
-                  ['id'=>'empresas','label'=>'Empresas registradas','min'=>5,'max'=>100,'step'=>1,'val'=>20,'sfx'=>''],
-                  ['id'=>'semilla','label'=>'Usuarios plan Semilla','min'=>10,'max'=>500,'step'=>10,'val'=>80,'sfx'=>''],
-                  ['id'=>'pctselva','label'=>'% empresas Verde Selva','min'=>0,'max'=>100,'step'=>5,'val'=>40,'sfx'=>'%'],
-                  ['id'=>'pctoro','label'=>'% empresas Amarillo Oro','min'=>0,'max'=>60,'step'=>5,'val'=>20,'sfx'=>'%'],
-                  ['id'=>'pctazul','label'=>'% empresas Azul Profundo','min'=>0,'max'=>30,'step'=>5,'val'=>5,'sfx'=>'%'],
-                  ['id'=>'comision','label'=>'Servicios con comisión/mes','min'=>0,'max'=>30,'step'=>1,'val'=>5,'sfx'=>''],
-                  ['id'=>'valorserv','label'=>'Valor promedio servicio','min'=>50000,'max'=>500000,'step'=>10000,'val'=>150000,'sfx'=>'$'],
-                  ['id'=>'destacados','label'=>'Perfiles destacados/mes','min'=>0,'max'=>50,'step'=>1,'val'=>10,'sfx'=>''],
-                  ['id'=>'alianzas','label'=>'Alianzas institucionales/mes','min'=>0,'max'=>5,'step'=>1,'val'=>1,'sfx'=>''],
-                ];
-                foreach ($sliders as $s): ?>
-                <div style="margin-bottom:14px">
-                  <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.65);margin-bottom:6px">
-                    <label><?= $s['label'] ?></label>
-                    <span id="adm-sv-<?= $s['id'] ?>" style="font-weight:700;color:#5cd98a;font-family:'JetBrains Mono',monospace"><?= $s['sfx'] === '$' ? '$'.number_format($s['val'],0,',','.') : $s['val'].$s['sfx'] ?></span>
+              <!-- Dos columnas: sliders + desglose -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px"
+                class="sim-two-cols-admin">
+                <div
+                  style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px">
+                  <div
+                    style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:16px">
+                    ⚙️ Ajusta los supuestos</div>
+                  <?php
+                  $sliders = [
+                    ['id' => 'visitas', 'label' => 'Visitas diarias', 'min' => 50, 'max' => 500, 'step' => 10, 'val' => 100, 'sfx' => '/día'],
+                    ['id' => 'empresas', 'label' => 'Empresas registradas', 'min' => 5, 'max' => 100, 'step' => 1, 'val' => 20, 'sfx' => ''],
+                    ['id' => 'semilla', 'label' => 'Usuarios plan Semilla', 'min' => 10, 'max' => 500, 'step' => 10, 'val' => 80, 'sfx' => ''],
+                    ['id' => 'pctselva', 'label' => '% empresas Verde Selva', 'min' => 0, 'max' => 100, 'step' => 5, 'val' => 40, 'sfx' => '%'],
+                    ['id' => 'pctoro', 'label' => '% empresas Amarillo Oro', 'min' => 0, 'max' => 60, 'step' => 5, 'val' => 20, 'sfx' => '%'],
+                    ['id' => 'pctazul', 'label' => '% empresas Azul Profundo', 'min' => 0, 'max' => 30, 'step' => 5, 'val' => 5, 'sfx' => '%'],
+                    ['id' => 'comision', 'label' => 'Servicios con comisión/mes', 'min' => 0, 'max' => 30, 'step' => 1, 'val' => 5, 'sfx' => ''],
+                    ['id' => 'valorserv', 'label' => 'Valor promedio servicio', 'min' => 50000, 'max' => 500000, 'step' => 10000, 'val' => 150000, 'sfx' => '$'],
+                    ['id' => 'destacados', 'label' => 'Perfiles destacados/mes', 'min' => 0, 'max' => 50, 'step' => 1, 'val' => 10, 'sfx' => ''],
+                    ['id' => 'alianzas', 'label' => 'Alianzas institucionales/mes', 'min' => 0, 'max' => 5, 'step' => 1, 'val' => 1, 'sfx' => ''],
+                  ];
+                  foreach ($sliders as $s): ?>
+                    <div style="margin-bottom:14px">
+                      <div
+                        style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.65);margin-bottom:6px">
+                        <label><?= $s['label'] ?></label>
+                        <span id="adm-sv-<?= $s['id'] ?>"
+                          style="font-weight:700;color:#5cd98a;font-family:'JetBrains Mono',monospace"><?= $s['sfx'] === '$' ? '$' . number_format($s['val'], 0, ',', '.') : $s['val'] . $s['sfx'] ?></span>
+                      </div>
+                      <input type="range" min="<?= $s['min'] ?>" max="<?= $s['max'] ?>" step="<?= $s['step'] ?>"
+                        value="<?= $s['val'] ?>" id="adm-ss-<?= $s['id'] ?>" oninput="admSimCalc()"
+                        style="width:100%;accent-color:#1D9E75;cursor:pointer">
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+
+                <div
+                  style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px">
+                  <div
+                    style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:16px">
+                    📊 Desglose mensual</div>
+                  <div id="adm-sim-fuentes"></div>
+                  <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)">
+                    <div
+                      style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:12px">
+                      Conversión</div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span
+                        style="color:rgba(255,255,255,.5)">Usuarios gratuitos (Semilla)</span><span
+                        style="font-weight:700;color:white" id="adm-sm-semilla-n">0</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span
+                        style="color:rgba(255,255,255,.5)">Empresas en planes de pago</span><span
+                        style="font-weight:700;color:white" id="adm-sm-pago-n">0</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px"><span
+                        style="color:rgba(255,255,255,.5)">Tasa de conversión</span><span
+                        style="font-weight:700;color:#5cd98a" id="adm-sm-conv">0%</span></div>
                   </div>
-                  <input type="range" min="<?= $s['min'] ?>" max="<?= $s['max'] ?>" step="<?= $s['step'] ?>" value="<?= $s['val'] ?>"
-                    id="adm-ss-<?= $s['id'] ?>"
-                    oninput="admSimCalc()"
-                    style="width:100%;accent-color:#1D9E75;cursor:pointer">
-                </div>
-                <?php endforeach; ?>
-              </div>
-
-              <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px">
-                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:16px">📊 Desglose mensual</div>
-                <div id="adm-sim-fuentes"></div>
-                <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)">
-                  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:12px">Conversión</div>
-                  <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span style="color:rgba(255,255,255,.5)">Usuarios gratuitos (Semilla)</span><span style="font-weight:700;color:white" id="adm-sm-semilla-n">0</span></div>
-                  <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span style="color:rgba(255,255,255,.5)">Empresas en planes de pago</span><span style="font-weight:700;color:white" id="adm-sm-pago-n">0</span></div>
-                  <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:rgba(255,255,255,.5)">Tasa de conversión</span><span style="font-weight:700;color:#5cd98a" id="adm-sm-conv">0%</span></div>
                 </div>
               </div>
-            </div>
 
-            <!-- Gráfico -->
-            <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px;margin-bottom:16px">
-              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:12px">📈 Proyección mes a mes — año 1</div>
-              <div style="display:flex;gap:20px;margin-bottom:12px;flex-wrap:wrap">
-                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:2px;background:#1D9E75;display:inline-block"></span>Lanzamiento</div>
-                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:2px;background:#BA7517;display:inline-block"></span>Crecimiento</div>
-                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:2px;background:#1a3f6f;display:inline-block"></span>Consolidación</div>
-                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:50%;background:#534AB7;display:inline-block"></span>Acumulado</div>
+              <!-- Gráfico -->
+              <div
+                style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px;margin-bottom:16px">
+                <div
+                  style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:12px">
+                  📈 Proyección mes a mes — año 1</div>
+                <div style="display:flex;gap:20px;margin-bottom:12px;flex-wrap:wrap">
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span
+                      style="width:10px;height:10px;border-radius:2px;background:#1D9E75;display:inline-block"></span>Lanzamiento
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span
+                      style="width:10px;height:10px;border-radius:2px;background:#BA7517;display:inline-block"></span>Crecimiento
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span
+                      style="width:10px;height:10px;border-radius:2px;background:#1a3f6f;display:inline-block"></span>Consolidación
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span
+                      style="width:10px;height:10px;border-radius:50%;background:#534AB7;display:inline-block"></span>Acumulado
+                  </div>
+                </div>
+                <div style="position:relative;width:100%;height:280px">
+                  <canvas id="adm-simChart"></canvas>
+                </div>
               </div>
-              <div style="position:relative;width:100%;height:280px">
-                <canvas id="adm-simChart"></canvas>
-              </div>
-            </div>
 
-            <p style="font-size:11px;color:rgba(255,255,255,.35);text-align:center;line-height:1.7">Asume crecimiento del 5% mensual. Etapa 1: meses 1-6 · Etapa 2: meses 7-9 · Etapa 3: meses 10-12. Valores orientativos.</p>
+              <p style="font-size:11px;color:rgba(255,255,255,.35);text-align:center;line-height:1.7">Asume crecimiento del
+                5% mensual. Etapa 1: meses 1-6 · Etapa 2: meses 7-9 · Etapa 3: meses 10-12. Valores orientativos.</p>
+            </div>
           </div>
-        </div>
         <?php endif; // fin simulador ?>
 
       </div><!-- /content -->
@@ -4597,8 +5000,8 @@ if ($action) {
         document.getElementById('empresa-nombre-label').textContent = `${nombreUsuario} · #${uid}`;
         document.getElementById('empresa-msg').style.display = 'none';
 
-        ['empresa-nombre','empresa-ciudad','empresa-descripcion','empresa-sector',
-         'empresa-nit','empresa-telefono','empresa-municipio','empresa-web','empresa-avatar-color'
+        ['empresa-nombre', 'empresa-ciudad', 'empresa-descripcion', 'empresa-sector',
+          'empresa-nit', 'empresa-telefono', 'empresa-municipio', 'empresa-web', 'empresa-avatar-color'
         ].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
 
         modal.style.display = 'flex';
@@ -4608,19 +5011,19 @@ if ($action) {
           const d = await r.json();
           if (d.ok && d.empresa) {
             const e = d.empresa;
-            document.getElementById('empresa-nombre').value    = e.nombre_empresa || e.nombre || '';
-            document.getElementById('empresa-ciudad').value    = e.ciudad || '';
+            document.getElementById('empresa-nombre').value = e.nombre_empresa || e.nombre || '';
+            document.getElementById('empresa-ciudad').value = e.ciudad || '';
             document.getElementById('empresa-descripcion').value = e.descripcion || '';
-            document.getElementById('empresa-sector').value    = e.sector || '';
-            document.getElementById('empresa-nit').value       = e.nit || '';
-            document.getElementById('empresa-telefono').value  = e.telefono_empresa || e.telefono || '';
+            document.getElementById('empresa-sector').value = e.sector || '';
+            document.getElementById('empresa-nit').value = e.nit || '';
+            document.getElementById('empresa-telefono').value = e.telefono_empresa || e.telefono || '';
             document.getElementById('empresa-municipio').value = e.municipio || '';
-            document.getElementById('empresa-web').value       = e.sitio_web || '';
+            document.getElementById('empresa-web').value = e.sitio_web || '';
             const color = e.avatar_color || '#1a56db';
             document.getElementById('empresa-avatar-color').value = color;
             document.getElementById('empresa-color-picker').value = color.startsWith('#') ? color : '#1a56db';
-            setSwitch('sw-empresa-visible',   parseInt(e.visible_admin ?? 1));
-            setSwitch('sw-empresa-destacado', parseInt(e.destacado     || 0));
+            setSwitch('sw-empresa-visible', parseInt(e.visible_admin ?? 1));
+            setSwitch('sw-empresa-destacado', parseInt(e.destacado || 0));
           } else {
             setSwitch('sw-empresa-visible', 1);
             setSwitch('sw-empresa-destacado', 0);
@@ -4642,24 +5045,24 @@ if ($action) {
         const msg = document.getElementById('empresa-msg');
         msg.style.display = 'none';
         const fd = new FormData();
-        fd.append('id',               uid);
-        fd.append('nombre_empresa',   document.getElementById('empresa-nombre').value.trim());
-        fd.append('ciudad',           document.getElementById('empresa-ciudad').value.trim());
-        fd.append('descripcion',      document.getElementById('empresa-descripcion').value.trim());
-        fd.append('sector',           document.getElementById('empresa-sector').value.trim());
-        fd.append('nit',              document.getElementById('empresa-nit').value.trim());
+        fd.append('id', uid);
+        fd.append('nombre_empresa', document.getElementById('empresa-nombre').value.trim());
+        fd.append('ciudad', document.getElementById('empresa-ciudad').value.trim());
+        fd.append('descripcion', document.getElementById('empresa-descripcion').value.trim());
+        fd.append('sector', document.getElementById('empresa-sector').value.trim());
+        fd.append('nit', document.getElementById('empresa-nit').value.trim());
         fd.append('telefono_empresa', document.getElementById('empresa-telefono').value.trim());
-        fd.append('municipio',        document.getElementById('empresa-municipio').value.trim());
-        fd.append('sitio_web',        document.getElementById('empresa-web').value.trim());
-        fd.append('avatar_color',     document.getElementById('empresa-avatar-color').value.trim());
-        fd.append('visible_admin',    document.getElementById('sw-empresa-visible').dataset.on   === '1' ? '1' : '0');
-        fd.append('destacado',        document.getElementById('sw-empresa-destacado').dataset.on === '1' ? '1' : '0');
+        fd.append('municipio', document.getElementById('empresa-municipio').value.trim());
+        fd.append('sitio_web', document.getElementById('empresa-web').value.trim());
+        fd.append('avatar_color', document.getElementById('empresa-avatar-color').value.trim());
+        fd.append('visible_admin', document.getElementById('sw-empresa-visible').dataset.on === '1' ? '1' : '0');
+        fd.append('destacado', document.getElementById('sw-empresa-destacado').dataset.on === '1' ? '1' : '0');
         try {
           const r = await fetch('gestion-qbc-2025.php?action=editar_empresa', { method: 'POST', body: fd });
           if (!r.ok) throw new Error('HTTP ' + r.status);
           const text = await r.text();
           let d;
-          try { d = JSON.parse(text); } catch(e) { throw new Error('Sesión expirada — recarga la página'); }
+          try { d = JSON.parse(text); } catch (e) { throw new Error('Sesión expirada — recarga la página'); }
           msg.style.display = 'block';
           if (d.ok) {
             msg.style.color = 'var(--green)';
@@ -4692,6 +5095,7 @@ if ($action) {
       const titulos = {
         dashboard: ['Dashboard', 'Vista general del sistema'],
         documentos: ['Repositorio de documentos', 'Todos los documentos subidos por usuarios'],
+        papelera: ['Papelera de documentos', 'Documentos eliminados — se pueden restaurar o borrar definitivamente'],
         solicitudes: ['Solicitudes de ingreso', 'Nuevas solicitudes de cuenta pendientes de aprobación'],
         verificaciones: ['Verificaciones', 'Cola de documentos pendientes'],
         usuarios: ['Usuarios', 'Gestión de cuentas registradas'],
@@ -4743,6 +5147,7 @@ if ($action) {
       function cargarSeccion(s) {
         if (s === 'dashboard') cargarDashboard();
         if (s === 'documentos') cargarDocumentos();
+        if (s === 'papelera') cargarPapelera();
         if (s === 'solicitudes') cargarSolicitudes('pendiente');
         if (s === 'verificaciones') cargarVerificaciones('pendiente');
         if (s === 'usuarios') cargarUsuarios();
@@ -4807,8 +5212,8 @@ if ($action) {
       ${mc('red', '⏳', 'Verif. pendientes', verPend, verPend > 0 ? 'Requieren atención' : 'Al día ✓', verPend > 0 ? 'up' : 'neutral')}
       ${mc('green', '💬', 'Mensajes', s.total_mensajes, '', 'neutral')}
       ${mc('blue', '📋', 'Convocatorias', s.convocatorias, '', 'neutral')}
-      ${mc('purple', '🛠️', 'Servicios', s.total_servicios||0, 'con precio/tipo definido', 'neutral')}
-      ${mc('amber', '🏪', 'Negocios', s.total_negocios||0, 'visibles en directorio', 'neutral')}
+      ${mc('purple', '🛠️', 'Servicios', s.total_servicios || 0, 'con precio/tipo definido', 'neutral')}
+      ${mc('amber', '🏪', 'Negocios', s.total_negocios || 0, 'visibles en directorio', 'neutral')}
       ${solPend > 0 ? mc('amber', '📋', 'Solicitudes nuevas', solPend, 'esperando aprobación', 'up') : ''}
     `;
 
@@ -4849,6 +5254,7 @@ if ($action) {
 
           document.getElementById('loading-dashboard').style.display = 'none';
           document.getElementById('dashboard-content').style.display = 'block';
+          actualizarBadgePapelera();
         } catch (e) {
           document.getElementById('loading-dashboard').innerHTML = '<span style="color:var(--red)">⚠️ Error: ' + e.message + '</span>';
         }
@@ -4910,23 +5316,27 @@ if ($action) {
         </div>
         <div style="padding:10px 16px;background:var(--red-bg);border:1px solid rgba(255,68,68,.2);border-radius:10px;font-size:13px;color:var(--red)">
           ❌ <strong>${d.stats.rechazado || 0}</strong> rechazados
-        </div>`;
+        </div>
+        ${(d.stats.papelera > 0) ? `<div onclick="irA('papelera')" style="padding:10px 16px;background:rgba(120,60,60,.15);border:1px solid rgba(180,60,60,.25);border-radius:10px;font-size:13px;color:#ff7070;cursor:pointer" title="Ver papelera">
+          🗑️ <strong>${d.stats.papelera}</strong> en papelera
+        </div>` : ''}`;
           }
+        }
 
-          if (!d.docs || !d.docs.length) {
-            empty.style.display = 'block'; return;
-          }
+            if (!d.docs || !d.docs.length) {
+          empty.style.display = 'block'; return;
+        }
 
-          grid.style.display = 'grid';
-          grid.innerHTML = d.docs.map(doc => {
-            const docUrl = doc.doc_url ? (doc.doc_url.startsWith('uploads/') ? doc.doc_url : 'uploads/verificaciones/' + doc.doc_url) : null;
-            const selfUrl = doc.foto_doc_url ? (doc.foto_doc_url.startsWith('uploads/') ? doc.foto_doc_url : 'uploads/verificaciones/' + doc.foto_doc_url) : null;
-            const ext = docUrl ? docUrl.split('.').pop().toLowerCase() : '';
-            const esImg = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
-            const esPdf = ext === 'pdf';
-            const estadoColor = doc.estado === 'aprobado' ? 'green' : doc.estado === 'pendiente' ? 'amber' : 'red';
+        grid.style.display = 'grid';
+        grid.innerHTML = d.docs.map(doc => {
+          const docUrl = doc.doc_url ? (doc.doc_url.startsWith('uploads/') ? doc.doc_url : 'uploads/verificaciones/' + doc.doc_url) : null;
+          const selfUrl = doc.foto_doc_url ? (doc.foto_doc_url.startsWith('uploads/') ? doc.foto_doc_url : 'uploads/verificaciones/' + doc.foto_doc_url) : null;
+          const ext = docUrl ? docUrl.split('.').pop().toLowerCase() : '';
+          const esImg = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
+          const esPdf = ext === 'pdf';
+          const estadoColor = doc.estado === 'aprobado' ? 'green' : doc.estado === 'pendiente' ? 'amber' : 'red';
 
-            return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+          return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden">
         <!-- Header -->
         <div style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
           <div style="width:38px;height:38px;border-radius:50%;background:${doc.user_tipo === 'empresa' ? '#2255cc' : '#1f9d55'};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0">
@@ -4973,11 +5383,116 @@ if ($action) {
             💬 Nota: ${esc(doc.nota_rechazo)}
           </div>` : ''}
 
-          <div style="margin-top:10px;font-size:11px;color:var(--text3)">
-            👤 ID usuario: #${doc.usuario_id} · 🆔 Verif: #${doc.id}
+          <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div style="font-size:11px;color:var(--text3)">
+              👤 ID: #${doc.usuario_id} · 🆔 Doc: #${doc.id}
+            </div>
+            <button onclick="eliminarDocumento(${doc.id})"
+              style="padding:5px 12px;background:var(--red-bg);border:1px solid rgba(255,68,68,.3);border-radius:8px;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s"
+              onmouseover="this.style.background='var(--red)';this.style.color='white'"
+              onmouseout="this.style.background='var(--red-bg)';this.style.color='var(--red)'">
+              🗑️ Mover a papelera
+            </button>
           </div>
         </div>
       </div>`;
+        }).join('');
+
+        // Paginación
+        const totalPages = Math.ceil(d.total / d.limit);
+        if (totalPages > 1) {
+          let html = '';
+          for (let i = 1; i <= totalPages; i++) {
+            html += `<button onclick="cargarDocumentos(${i})"
+          style="padding:6px 12px;border-radius:8px;border:1px solid ${i === docsPage ? 'var(--green)' : 'var(--border)'};background:${i === docsPage ? 'var(--green-bg)' : 'var(--bg3)'};color:${i === docsPage ? 'var(--green)' : 'var(--text)'};cursor:pointer;font-size:13px">${i}</button>`;
+          }
+          pag.innerHTML = `<div style="font-size:13px;color:var(--text2);margin-right:8px">${d.total} documentos</div>` + html;
+        }
+
+      } catch (e) {
+        loading.style.display = 'none';
+        grid.style.display = 'none';
+        empty.style.display = 'block';
+        document.getElementById('docs-empty').innerHTML = `<span class="ei">⚠️</span><p>${e.message}</p>`;
+      }
+        }
+
+      // ── ELIMINAR DOCUMENTO (mover a papelera) ──────────────────
+      async function eliminarDocumento(id) {
+        if (!confirm('¿Mover este documento a la papelera? Podrás restaurarlo después.')) return;
+        const fd = new FormData(); fd.append('id', id);
+        const r = await fetch('gestion-qbc-2025.php?action=eliminar_documento', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.ok) {
+          mostrarToast('🗑️ Documento movido a la papelera', 'green');
+          cargarDocumentos();
+          actualizarBadgePapelera();
+        } else {
+          mostrarToast('❌ ' + (d.msg || 'Error al eliminar'), 'red');
+        }
+      }
+
+      // ── PAPELERA ───────────────────────────────────────────────
+      let papeLeraPage = 1;
+      async function cargarPapelera(page) {
+        if (page) papeLeraPage = page;
+        const grid = document.getElementById('papelera-grid');
+        const empty = document.getElementById('papelera-empty');
+        const loading = document.getElementById('papelera-loading');
+        const pag = document.getElementById('papelera-pagination');
+        const label = document.getElementById('papelera-count-label');
+        if (!grid) return;
+
+        grid.style.display = 'none'; empty.style.display = 'none';
+        loading.style.display = 'block'; pag.innerHTML = '';
+
+        try {
+          const r = await fetch(`gestion-qbc-2025.php?action=papelera_documentos&page=${papeLeraPage}`);
+          const text = await r.text();
+          let d; try { d = JSON.parse(text); } catch (e) { throw new Error('Sesión expirada — recarga'); }
+          loading.style.display = 'none';
+
+          if (label) label.textContent = d.total + ' documento' + (d.total !== 1 ? 's' : '') + ' en papelera';
+
+          // Actualizar badge sidebar
+          const bp = document.getElementById('badge-papelera');
+          if (bp) { bp.textContent = d.total; bp.style.display = d.total > 0 ? 'inline' : 'none'; }
+
+          if (!d.docs || !d.docs.length) { empty.style.display = 'block'; return; }
+
+          grid.style.display = 'grid';
+          grid.innerHTML = d.docs.map(doc => {
+            const docUrl = doc.doc_url ? (doc.doc_url.startsWith('uploads/') ? doc.doc_url : 'uploads/verificaciones/' + doc.doc_url) : null;
+            const ext = docUrl ? docUrl.split('.').pop().toLowerCase() : '';
+            const esImg = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
+            const esPdf = ext === 'pdf';
+            return `<div style="background:var(--bg2);border:1px solid rgba(255,68,68,.18);border-radius:14px;overflow:hidden;opacity:.92">
+              <div style="padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)">
+                <div style="width:34px;height:34px;border-radius:50%;background:#7f1d1d;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">${esc(doc.nombre.charAt(0).toUpperCase())}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(doc.nombre + ' ' + (doc.apellido || ''))}</div>
+                  <div style="font-size:11px;color:var(--text2)">${esc(doc.correo)}</div>
+                </div>
+                <span style="font-size:10px;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:8px;flex-shrink:0">🗑️ eliminado</span>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:8px">
+                  📄 ${(doc.tipo_doc || 'Sin tipo').replace('_', ' ')} · Subido: ${fFecha(doc.creado_en)} · Eliminado: ${fFecha(doc.eliminado_en)}
+                </div>
+                ${docUrl ? (esImg
+              ? `<a href="${docUrl}" target="_blank"><img src="${docUrl}" alt="Doc" style="width:100%;height:140px;object-fit:contain;border-radius:8px;border:1px solid var(--border);background:#0a0a0a;display:block"></a>`
+              : esPdf
+                ? `<a href="${docUrl}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;height:60px;color:var(--blue);font-size:13px;font-weight:600;text-decoration:none;border:1px solid var(--border);border-radius:8px">📄 Ver PDF</a>`
+                : `<a href="${docUrl}" target="_blank" style="font-size:12px;color:var(--blue)">🔗 Ver archivo</a>`
+            ) : '<p style="font-size:12px;color:rgba(255,100,100,.6)">⚠️ Sin archivo adjunto</p>'}
+                <div style="margin-top:12px;display:flex;gap:8px">
+                  <button onclick="restaurarDocumento(${doc.id})"
+                    style="flex:1;padding:8px;background:var(--green-bg);border:1px solid rgba(0,230,118,.3);border-radius:8px;color:var(--green);font-size:12px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">
+                    ♻️ Restaurar
+                  </button>
+                </div>
+              </div>
+            </div>`;
           }).join('');
 
           // Paginación
@@ -4985,18 +5500,53 @@ if ($action) {
           if (totalPages > 1) {
             let html = '';
             for (let i = 1; i <= totalPages; i++) {
-              html += `<button onclick="cargarDocumentos(${i})"
-          style="padding:6px 12px;border-radius:8px;border:1px solid ${i === docsPage ? 'var(--green)' : 'var(--border)'};background:${i === docsPage ? 'var(--green-bg)' : 'var(--bg3)'};color:${i === docsPage ? 'var(--green)' : 'var(--text)'};cursor:pointer;font-size:13px">${i}</button>`;
+              html += `<button onclick="cargarPapelera(${i})"
+                style="padding:6px 12px;border-radius:8px;border:1px solid ${i === papeLeraPage ? 'var(--red)' : 'var(--border)'};background:${i === papeLeraPage ? 'var(--red-bg)' : 'var(--bg3)'};color:${i === papeLeraPage ? 'var(--red)' : 'var(--text)'};cursor:pointer;font-size:13px">${i}</button>`;
             }
-            pag.innerHTML = `<div style="font-size:13px;color:var(--text2);margin-right:8px">${d.total} documentos</div>` + html;
+            pag.innerHTML = html;
           }
-
         } catch (e) {
           loading.style.display = 'none';
-          grid.style.display = 'none';
           empty.style.display = 'block';
-          document.getElementById('docs-empty').innerHTML = `<span class="ei">⚠️</span><p>${e.message}</p>`;
+          document.getElementById('papelera-empty').innerHTML = `<span class="ei">⚠️</span><p>${e.message}</p>`;
         }
+      }
+
+      async function restaurarDocumento(id) {
+        const fd = new FormData(); fd.append('id', id);
+        const r = await fetch('gestion-qbc-2025.php?action=restaurar_documento', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.ok) {
+          mostrarToast('♻️ Documento restaurado', 'green');
+          cargarPapelera();
+          actualizarBadgePapelera();
+        } else {
+          mostrarToast('❌ ' + (d.msg || 'Error'), 'red');
+        }
+      }
+
+      async function vaciarPapelera() {
+        const countEl = document.getElementById('papelera-count-label');
+        const total = countEl ? parseInt(countEl.textContent) : 0;
+        if (!confirm(`⚠️ ¿Vaciar la papelera?\n\nEsto eliminará PERMANENTEMENTE todos los documentos (${total > 0 ? total : 'todos'}).\n\nEsta acción NO se puede deshacer.`)) return;
+        const fd = new FormData();
+        const r = await fetch('gestion-qbc-2025.php?action=vaciar_papelera', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.ok) {
+          mostrarToast(`🔥 Papelera vaciada — ${d.eliminados} documento(s) borrados`, 'red');
+          cargarPapelera();
+        } else {
+          mostrarToast('❌ ' + (d.msg || 'Sin permisos'), 'red');
+        }
+      }
+
+      async function actualizarBadgePapelera() {
+        try {
+          const r = await fetch('gestion-qbc-2025.php?action=papelera_documentos&page=1');
+          const d = await r.json();
+          const bp = document.getElementById('badge-papelera');
+          if (bp && d.ok) { bp.textContent = d.total; bp.style.display = d.total > 0 ? 'inline' : 'none'; }
+        } catch (e) { }
       }
 
       // ── SOLICITUDES DE INGRESO ──
@@ -5252,7 +5802,7 @@ if ($action) {
           ${parseInt(u.activo)
               ? `<button class="btn-sm red" onclick="toggleUsuario(${u.id},0,this)">Desactivar</button>`
               : `<button class="btn-sm green" onclick="toggleUsuario(${u.id},1,this)">Activar</button>`}
-          <button class="btn-sm" onclick="eliminarUsuario(${u.id},'${esc(u.nombre + ' ' + (u.apellido||''))}',this)" style="background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.45);color:#f87171;" title="Eliminar permanentemente">🗑 Eliminar</button>
+          <button class="btn-sm" onclick="eliminarUsuario(${u.id},'${esc(u.nombre + ' ' + (u.apellido || ''))}',this)" style="background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.45);color:#f87171;" title="Eliminar permanentemente">🗑 Eliminar</button>
         </div>
       </div>`;
           }).join('');
@@ -5300,7 +5850,7 @@ if ($action) {
             mostrarToast('❌ ' + (d.msg || 'Error al eliminar'), 'red');
             btn.disabled = false; btn.textContent = '🗑 Eliminar';
           }
-        } catch(e) {
+        } catch (e) {
           mostrarToast('❌ Error de conexión', 'red');
           btn.disabled = false; btn.textContent = '🗑 Eliminar';
         }
@@ -5315,7 +5865,7 @@ if ($action) {
           const d = await r.json();
           if (!d.empleos.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><span class="ei">💼</span><p>Sin empleos</p></td></tr>'; return; }
           tbody.innerHTML = d.empleos.map(e => {
-            const dest = parseInt(e.destacado||0);
+            const dest = parseInt(e.destacado || 0);
             return `
       <tr>
         <td style="font-family:'JetBrains Mono',monospace;color:var(--text3);font-size:11px">#${e.id}</td>
@@ -5326,12 +5876,12 @@ if ($action) {
         <td style="font-size:11px;color:var(--text3)">${fFecha(e.creado_en)}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap">
           ${parseInt(e.activo)
-            ? `<button class="btn-sm red" onclick="toggleEmpleo(${e.id},0,this)">Desactivar</button>`
-            : `<button class="btn-sm green" onclick="toggleEmpleo(${e.id},1,this)">Activar</button>`}
-          <button onclick="toggleEmpleoDestacado(${e.id},${dest?0:1},this)"
-            style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:${dest?'var(--amber)':'var(--text2)'};font-size:11px;font-family:'Space Grotesk',sans-serif;cursor:pointer"
-            title="${dest?'Quitar del index':'Mostrar en inicio (index)'}">
-            ${dest?'⭐ Quitar index':'☆ Poner en index'}
+              ? `<button class="btn-sm red" onclick="toggleEmpleo(${e.id},0,this)">Desactivar</button>`
+              : `<button class="btn-sm green" onclick="toggleEmpleo(${e.id},1,this)">Activar</button>`}
+          <button onclick="toggleEmpleoDestacado(${e.id},${dest ? 0 : 1},this)"
+            style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:${dest ? 'var(--amber)' : 'var(--text2)'};font-size:11px;font-family:'Space Grotesk',sans-serif;cursor:pointer"
+            title="${dest ? 'Quitar del index' : 'Mostrar en inicio (index)'}">
+            ${dest ? '⭐ Quitar index' : '☆ Poner en index'}
           </button>
         </td>
       </tr>`;
@@ -5361,7 +5911,7 @@ if ($action) {
             btn.disabled = false;
             btn.textContent = '?';
           }
-        } catch(e) {
+        } catch (e) {
           mostrarToast('❌ Error de red', 'red');
           btn.disabled = false;
           btn.textContent = '?';
@@ -5373,13 +5923,13 @@ if ($action) {
       async function cargarConvocatorias(origen, btnEl) {
         convOrigenActual = origen || 'todas';
         // Actualizar tabs
-        ['todas','pendiente','empresa','admin'].forEach(t => {
+        ['todas', 'pendiente', 'empresa', 'admin'].forEach(t => {
           const b = document.getElementById('conv-tab-' + t);
           if (!b) return;
           const activo = t === convOrigenActual;
           b.style.background = activo ? 'var(--green2)' : 'var(--bg2)';
-          b.style.color      = activo ? '#000' : 'var(--text)';
-          b.style.border     = activo ? '1px solid var(--green)' : '1px solid var(--border2)';
+          b.style.color = activo ? '#000' : 'var(--text)';
+          b.style.border = activo ? '1px solid var(--green)' : '1px solid var(--border2)';
         });
         const tbody = document.getElementById('convocatorias-tbody');
         tbody.innerHTML = '<tr><td colspan="8" class="loading"><span class="spin">⚙️</span></td></tr>';
@@ -5432,7 +5982,7 @@ if ($action) {
               <td>${acciones}</td>
             </tr>`;
           }).join('');
-        } catch(e) { tbody.innerHTML = `<tr><td colspan="8" style="color:var(--red);padding:16px">❌ ${e.message}</td></tr>`; }
+        } catch (e) { tbody.innerHTML = `<tr><td colspan="8" style="color:var(--red);padding:16px">❌ ${e.message}</td></tr>`; }
       }
 
       async function aprobarConv(cid, activo, btn) {
@@ -5440,13 +5990,13 @@ if ($action) {
         const fd = new FormData();
         fd.append('id', cid); fd.append('activo', activo);
         try {
-          const r = await fetch('gestion-qbc-2025.php?action=conv_aprobar', {method:'POST',body:fd});
+          const r = await fetch('gestion-qbc-2025.php?action=conv_aprobar', { method: 'POST', body: fd });
           const d = await r.json();
           if (d.ok) {
             mostrarToast(activo === 1 ? '✅ Convocatoria aprobada y publicada' : '🗑 Convocatoria rechazada', activo === 1 ? 'green' : 'red');
             cargarConvocatorias(convOrigenActual);
-          } else { mostrarToast('❌ ' + (d.msg||'Error'), 'red'); btn.disabled=false; btn.textContent='?'; }
-        } catch(e) { mostrarToast('❌ Error de red','red'); btn.disabled=false; btn.textContent='?'; }
+          } else { mostrarToast('❌ ' + (d.msg || 'Error'), 'red'); btn.disabled = false; btn.textContent = '?'; }
+        } catch (e) { mostrarToast('❌ Error de red', 'red'); btn.disabled = false; btn.textContent = '?'; }
       }
 
       async function toggleConv(cid, activo, btn) {
@@ -5454,11 +6004,11 @@ if ($action) {
         const fd = new FormData();
         fd.append('id', cid); fd.append('activo', activo);
         try {
-          const r = await fetch('gestion-qbc-2025.php?action=conv_toggle', {method:'POST',body:fd});
+          const r = await fetch('gestion-qbc-2025.php?action=conv_toggle', { method: 'POST', body: fd });
           const d = await r.json();
           if (d.ok) { mostrarToast('✅ Actualizado', 'green'); cargarConvocatorias(convOrigenActual); }
-          else { mostrarToast('❌ ' + (d.msg||'Error'), 'red'); btn.disabled=false; btn.textContent='?'; }
-        } catch(e) { mostrarToast('❌ Error de red','red'); btn.disabled=false; btn.textContent='?'; }
+          else { mostrarToast('❌ ' + (d.msg || 'Error'), 'red'); btn.disabled = false; btn.textContent = '?'; }
+        } catch (e) { mostrarToast('❌ Error de red', 'red'); btn.disabled = false; btn.textContent = '?'; }
       }
 
       // ── MENSAJES / HISTORIAL BACKUP ──
@@ -5479,8 +6029,8 @@ if ($action) {
           tbody.innerHTML = d.mensajes.map(m => `
             <tr>
               <td style="font-family:'JetBrains Mono',monospace;color:var(--text3);font-size:11px">#${m.id}</td>
-              <td style="font-weight:600;font-size:12px">${esc(m.de_nombre)} ${esc(m.de_apellido||'')}</td>
-              <td style="font-size:12px;color:var(--text2)">${esc(m.para_nombre)} ${esc(m.para_apellido||'')}</td>
+              <td style="font-weight:600;font-size:12px">${esc(m.de_nombre)} ${esc(m.de_apellido || '')}</td>
+              <td style="font-size:12px;color:var(--text2)">${esc(m.para_nombre)} ${esc(m.para_apellido || '')}</td>
               <td style="font-size:12px;color:var(--text2);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(m.mensaje)}">${esc(m.mensaje)}</td>
               <td style="text-align:center;font-size:14px">${parseInt(m.leido) ? '✅' : '🔵'}</td>
               <td style="font-size:11px;color:var(--text3)">${fFecha(m.creado_en)}</td>
@@ -5497,7 +6047,7 @@ if ($action) {
             btn.style.cssText = `padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);${i === d.page ? 'background:var(--green);color:white;border-color:var(--green)' : 'background:var(--bg2);color:var(--text2)'}`;
             pg.appendChild(btn);
           }
-        } catch(e) { console.error(e); }
+        } catch (e) { console.error(e); }
       }
 
       async function cargarChatStats() {
@@ -5510,20 +6060,20 @@ if ($action) {
           document.querySelector('#cs-semana .sm-val').textContent = d.semana.toLocaleString();
           document.querySelector('#cs-convs .sm-val').textContent = d.conversaciones.toLocaleString();
           const top = document.getElementById('top-usuarios');
-          top.innerHTML = d.top_usuarios.map((u,i) => `
+          top.innerHTML = d.top_usuarios.map((u, i) => `
             <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:10px;">
-              <span style="font-size:18px">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</span>
+              <span style="font-size:18px">${['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][i]}</span>
               <div>
-                <div style="font-size:13px;font-weight:700;color:var(--text1)">${esc(u.nombre)} ${esc(u.apellido||'')}</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text1)">${esc(u.nombre)} ${esc(u.apellido || '')}</div>
                 <div style="font-size:11px;color:var(--text3)">${u.total} mensajes</div>
               </div>
             </div>`).join('');
-        } catch(e) { console.error(e); }
+        } catch (e) { console.error(e); }
       }
 
       async function verConversacion(u1, u2) {
         const modal = document.getElementById('modal-conv');
-        const msgs  = document.getElementById('conv-messages');
+        const msgs = document.getElementById('conv-messages');
         modal.style.display = 'flex';
         msgs.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3)"><span class="spin">⚙️</span></div>';
         try {
@@ -5531,24 +6081,24 @@ if ($action) {
           const d = await r.json();
           if (!d.ok) { msgs.innerHTML = '<p style="color:var(--red);padding:20px">Error cargando</p>'; return; }
           _convData = d;
-          document.getElementById('conv-title').textContent = `${d.user1.nombre} ${d.user1.apellido||''} ↔ ${d.user2.nombre} ${d.user2.apellido||''}`;
+          document.getElementById('conv-title').textContent = `${d.user1.nombre} ${d.user1.apellido || ''} ↔ ${d.user2.nombre} ${d.user2.apellido || ''}`;
           document.getElementById('conv-sub').textContent = `${d.mensajes.length} mensajes totales`;
           let lastDate = '';
           msgs.innerHTML = d.mensajes.map(m => {
             const esDe1 = parseInt(m.de_usuario) === parseInt(u1);
             const fecha = m.creado_en.split(' ')[0];
-            const hora  = m.creado_en.split(' ')[1]?.substring(0,5) || '';
+            const hora = m.creado_en.split(' ')[1]?.substring(0, 5) || '';
             let sep = '';
             if (fecha !== lastDate) { lastDate = fecha; sep = `<div style="text-align:center;font-size:10px;color:var(--text3);padding:10px 0;font-weight:600">${fecha}</div>`; }
-            return `${sep}<div style="display:flex;flex-direction:column;align-items:${esDe1?'flex-end':'flex-start'};gap:2px;margin-bottom:2px;">
+            return `${sep}<div style="display:flex;flex-direction:column;align-items:${esDe1 ? 'flex-end' : 'flex-start'};gap:2px;margin-bottom:2px;">
               <div style="font-size:10px;color:var(--text3);padding:0 4px">${esc(m.de_nombre)}</div>
-              <div style="max-width:75%;padding:9px 14px;border-radius:16px;font-size:13px;line-height:1.5;word-wrap:break-word;${esDe1?'background:linear-gradient(135deg,#1a7a3c,#27a855);color:white;border-bottom-right-radius:4px':'background:var(--bg3,#1a1a2e);border:1px solid var(--border);color:var(--text1);border-bottom-left-radius:4px'}">
+              <div style="max-width:75%;padding:9px 14px;border-radius:16px;font-size:13px;line-height:1.5;word-wrap:break-word;${esDe1 ? 'background:linear-gradient(135deg,#1a7a3c,#27a855);color:white;border-bottom-right-radius:4px' : 'background:var(--bg3,#1a1a2e);border:1px solid var(--border);color:var(--text1);border-bottom-left-radius:4px'}">
                 ${esc(m.mensaje)}<span style="font-size:10px;opacity:.6;margin-left:8px">${hora}</span>
               </div>
             </div>`;
           }).join('');
           msgs.scrollTop = msgs.scrollHeight;
-        } catch(e) { msgs.innerHTML = '<p style="color:var(--red);padding:20px">Error de red</p>'; }
+        } catch (e) { msgs.innerHTML = '<p style="color:var(--red);padding:20px">Error de red</p>'; }
       }
 
       function exportarCSV() {
@@ -5557,681 +6107,715 @@ if ($action) {
 
       function exportarConvCSV() {
         if (!_convData) return;
-        const rows = [['ID','De','Para','Mensaje','Fecha','Leido']];
+        const rows = [['ID', 'De', 'Para', 'Mensaje', 'Fecha', 'Leido']];
         _convData.mensajes.forEach(m => {
           const esU1 = parseInt(m.de_usuario) === parseInt(_convData.user1.id);
-          rows.push([m.id, esc(m.de_nombre), esU1 ? `${_convData.user2.nombre} ${_convData.user2.apellido||''}` : `${_convData.user1.nombre} ${_convData.user1.apellido||''}`, `"${m.mensaje.replace(/"/g,'""')}"`, m.creado_en, m.leido ? 'Sí' : 'No']);
-        });
-        const csv = rows.map(r => r.join(',')).join('\n');
-        const a = document.createElement('a');
-        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF' + csv);
-        a.download = `chat_${_convData.user1.nombre}_${_convData.user2.nombre}.csv`;
-        a.click();
-      }
+          rows.push([m.id, esc(m.de_nombre), esU1 ? `${_convData.user2.nombre} ${_convData.user2.apellido || ''}` : `${_convData.user1.nombre} ${_convData.user1.apellido || ''}`, `"${m.mensaje.replace(/"/g, '""')}"`, m.creado_en, m.leido ? 'Sí' : 'No']);
+      });
+      const csv = rows.map(r => r.join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF' + csv);
+      a.download = `chat_${_convData.user1.nombre}_${_convData.user2.nombre}.csv`;
+      a.click();
+    }
 
-      // ── CONTRASEÑA USUARIOS (superadmin + admin delegado) ──
-      async function abrirPassUser(id, nombre) {
-        document.getElementById('pass-user-uid').value = id;
-        document.getElementById('pass-user-nombre').textContent = nombre + ' · #' + id;
-        document.getElementById('pass-user-hash').textContent = 'Cargando...';
-        document.getElementById('pass-user-nueva').value = '';
-        document.getElementById('pass-user-confirma').value = '';
-        document.getElementById('pass-user-msg').style.display = 'none';
-        document.getElementById('modal-pass-user').style.display = 'flex';
-        // Cargar hash
-        try {
-          const r = await fetch(`gestion-qbc-2025.php?action=ver_contrasena&id=${id}`);
-          const d = await r.json();
-          document.getElementById('pass-user-hash').textContent = d.ok ? d.hash : '❌ Sin acceso';
-        } catch (e) { document.getElementById('pass-user-hash').textContent = 'Error'; }
-      }
-      function cerrarPassUser() { document.getElementById('modal-pass-user').style.display = 'none'; }
-
-      async function cambiarContrasenaUser() {
-        const uid = document.getElementById('pass-user-uid').value;
-        const nueva = document.getElementById('pass-user-nueva').value;
-        const confirma = document.getElementById('pass-user-confirma').value;
-        const msg = document.getElementById('pass-user-msg');
-        msg.style.display = 'block';
-        if (nueva.length < 8) { msg.style.color = 'var(--red)'; msg.textContent = '❌ Mínimo 8 caracteres'; return; }
-        if (nueva !== confirma) { msg.style.color = 'var(--red)'; msg.textContent = '❌ Las contraseñas no coinciden'; return; }
-        const fd = new FormData();
-        fd.append('id', uid); fd.append('nueva', nueva); fd.append('confirma', confirma);
-        const r = await fetch('gestion-qbc-2025.php?action=cambiar_contrasena', { method: 'POST', body: fd });
+    // ── CONTRASEÑA USUARIOS (superadmin + admin delegado) ──
+    async function abrirPassUser(id, nombre) {
+      document.getElementById('pass-user-uid').value = id;
+      document.getElementById('pass-user-nombre').textContent = nombre + ' · #' + id;
+      document.getElementById('pass-user-hash').textContent = 'Cargando...';
+      document.getElementById('pass-user-nueva').value = '';
+      document.getElementById('pass-user-confirma').value = '';
+      document.getElementById('pass-user-msg').style.display = 'none';
+      document.getElementById('modal-pass-user').style.display = 'flex';
+      // Cargar hash
+      try {
+        const r = await fetch(`gestion-qbc-2025.php?action=ver_contrasena&id=${id}`);
         const d = await r.json();
-        if (d.ok) {
-          msg.style.color = 'var(--green)'; msg.textContent = '✅ Contraseña cambiada correctamente';
-          setTimeout(cerrarPassUser, 1500);
-        } else { msg.style.color = 'var(--red)'; msg.textContent = '❌ ' + (d.msg || 'Error'); }
-      }
+        document.getElementById('pass-user-hash').textContent = d.ok ? d.hash : '❌ Sin acceso';
+      } catch (e) { document.getElementById('pass-user-hash').textContent = 'Error'; }
+    }
+    function cerrarPassUser() { document.getElementById('modal-pass-user').style.display = 'none'; }
 
-      // ── PERMISOS GRANULARES (solo superadmin) ──
-      const PERMISOS_LABELS = {
-        perm_usuarios: '👥 Gestión de usuarios',
-        perm_empleos: '💼 Gestión de empleos',
-        perm_solicitudes: '📋 Solicitudes de ingreso',
-        perm_verificar: '✅ Verificar cuentas',
-        perm_mensajes: '💬 Ver mensajes',
-        perm_pagos: '💰 Historial de pagos',
-        perm_stats: '📊 Ver estadísticas',
-        perm_artistas: '🎵 Gestión de artistas',
-        perm_badges: '🏅 Asignar badges',
-        perm_convocatorias: '📋 Gestión convocatorias',
-        perm_talentos: '🌟 Editar perfiles de talento',
-        perm_actividad: '📋 Ver actividad del panel',
-        perm_auditoria: '🕵️ Ver auditoría',
-        perm_documentos: '🗂️ Repositorio documentos',
-        perm_simulador: '💹 Simulador de ingresos',
-      };
+    async function cambiarContrasenaUser() {
+      const uid = document.getElementById('pass-user-uid').value;
+      const nueva = document.getElementById('pass-user-nueva').value;
+      const confirma = document.getElementById('pass-user-confirma').value;
+      const msg = document.getElementById('pass-user-msg');
+      msg.style.display = 'block';
+      if (nueva.length < 8) { msg.style.color = 'var(--red)'; msg.textContent = '❌ Mínimo 8 caracteres'; return; }
+      if (nueva !== confirma) { msg.style.color = 'var(--red)'; msg.textContent = '❌ Las contraseñas no coinciden'; return; }
+      const fd = new FormData();
+      fd.append('id', uid); fd.append('nueva', nueva); fd.append('confirma', confirma);
+      const r = await fetch('gestion-qbc-2025.php?action=cambiar_contrasena', { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.ok) {
+        msg.style.color = 'var(--green)'; msg.textContent = '✅ Contraseña cambiada correctamente';
+        setTimeout(cerrarPassUser, 1500);
+      } else { msg.style.color = 'var(--red)'; msg.textContent = '❌ ' + (d.msg || 'Error'); }
+    }
 
-      async function abrirPermisos(uid) {
-        document.getElementById('permisos-uid').value = uid;
-        document.getElementById('permisos-msg').style.display = 'none';
-        document.getElementById('permisos-grid').innerHTML = '<div style="color:var(--text3);font-size:13px">Cargando...</div>';
-        document.getElementById('perm-select-all').checked = false;
-        document.getElementById('perm-count-label').textContent = '0 / 0';
-        document.getElementById('modal-permisos').style.display = 'flex';
-        try {
-          const r = await fetch(`gestion-qbc-2025.php?action=get_permisos&id=${uid}`);
-          const d = await r.json();
-          const p = d.permisos || {};
-          document.getElementById('permisos-nombre').textContent = (p.nombre || '') + ' ' + (p.apellido || '') + ' · ' + (p.correo || '') + ' · ' + (p.nivel || '');
-          document.getElementById('permisos-grid').innerHTML = Object.entries(PERMISOS_LABELS).map(([key, label]) => `
-      <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
-        <input type="checkbox" id="perm-${key}" name="${key}" ${parseInt(p[key] || 0) ? 'checked' : ''} onchange="actualizarContadorPermisos()" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer">
-        <span style="font-size:13px">${label}</span>
-      </label>`).join('');
-          actualizarContadorPermisos();
-        } catch (e) { document.getElementById('permisos-grid').innerHTML = '<p style="color:var(--red)">Error al cargar</p>'; }
-      }
+    // ── PERMISOS GRANULARES (solo superadmin) ──
+    const PERMISOS_LABELS = {
+      perm_usuarios: '👥 Gestión de usuarios',
+      perm_empleos: '💼 Gestión de empleos',
+      perm_solicitudes: '📋 Solicitudes de ingreso',
+      perm_verificar: '✅ Verificar cuentas',
+      perm_mensajes: '💬 Ver mensajes',
+      perm_pagos: '💰 Historial de pagos',
+      perm_stats: '📊 Ver estadísticas',
+      perm_artistas: '🎵 Gestión de artistas',
+      perm_badges: '🏅 Asignar badges',
+      perm_convocatorias: '📋 Gestión convocatorias',
+      perm_talentos: '🌟 Editar perfiles de talento',
+      perm_actividad: '📋 Ver actividad del panel',
+      perm_auditoria: '🕵️ Ver auditoría',
+      perm_documentos: '🗂️ Repositorio documentos',
+      perm_simulador: '💹 Simulador de ingresos',
+    };
 
-      function actualizarContadorPermisos() {
-        const total = Object.keys(PERMISOS_LABELS).length;
-        const marcados = Object.keys(PERMISOS_LABELS).filter(k => document.getElementById('perm-' + k)?.checked).length;
-        document.getElementById('perm-count-label').textContent = marcados + ' / ' + total;
-        const chkAll = document.getElementById('perm-select-all');
-        if (chkAll) {
-          chkAll.checked = marcados === total;
-          chkAll.indeterminate = marcados > 0 && marcados < total;
-        }
-      }
-
-      function toggleTodosPermisos(checked) {
-        Object.keys(PERMISOS_LABELS).forEach(key => {
-          const el = document.getElementById('perm-' + key);
-          if (el) el.checked = checked;
-        });
+    async function abrirPermisos(uid) {
+      document.getElementById('permisos-uid').value = uid;
+      document.getElementById('permisos-msg').style.display = 'none';
+      document.getElementById('permisos-grid').innerHTML = '<div style="color:var(--text3);font-size:13px">Cargando...</div>';
+      document.getElementById('perm-select-all').checked = false;
+      document.getElementById('perm-count-label').textContent = '0 / 0';
+      document.getElementById('modal-permisos').style.display = 'flex';
+      try {
+        const r = await fetch(`gestion-qbc-2025.php?action=get_permisos&id=${uid}`);
+        const d = await r.json();
+        const p = d.permisos || {};
+        document.getElementById('permisos-nombre').textContent = (p.nombre || '') + ' ' + (p.apellido || '') + ' · ' + (p.correo || '') + ' · ' + (p.nivel || '');
+        document.getElementById('permisos-grid').innerHTML = Object.entries(PERMISOS_LABELS).map(([key, label]) => `
+        <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+          <input type="checkbox" id="perm-${key}" name="${key}" ${parseInt(p[key] || 0) ? 'checked' : ''} onchange="actualizarContadorPermisos()" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer">
+          <span style="font-size:13px">${label}</span>
+        </label>`).join('');
         actualizarContadorPermisos();
-      }
-      function cerrarPermisos() { document.getElementById('modal-permisos').style.display = 'none'; }
+      } catch (e) { document.getElementById('permisos-grid').innerHTML = '<p style="color:var(--red)">Error al cargar</p>'; }
+    }
 
-      async function guardarPermisos() {
-        const uid = document.getElementById('permisos-uid').value;
-        const fd = new FormData();
-        fd.append('usuario_id', uid);
-        Object.keys(PERMISOS_LABELS).forEach(key => {
-          if (document.getElementById('perm-' + key)?.checked) fd.append(key, '1');
-        });
-        const r = await fetch('gestion-qbc-2025.php?action=actualizar_permisos', { method: 'POST', body: fd });
+    function actualizarContadorPermisos() {
+      const total = Object.keys(PERMISOS_LABELS).length;
+      const marcados = Object.keys(PERMISOS_LABELS).filter(k => document.getElementById('perm-' + k)?.checked).length;
+      document.getElementById('perm-count-label').textContent = marcados + ' / ' + total;
+      const chkAll = document.getElementById('perm-select-all');
+      if (chkAll) {
+        chkAll.checked = marcados === total;
+        chkAll.indeterminate = marcados > 0 && marcados < total;
+      }
+    }
+
+    function toggleTodosPermisos(checked) {
+      Object.keys(PERMISOS_LABELS).forEach(key => {
+        const el = document.getElementById('perm-' + key);
+        if (el) el.checked = checked;
+      });
+      actualizarContadorPermisos();
+    }
+    function cerrarPermisos() { document.getElementById('modal-permisos').style.display = 'none'; }
+
+    async function guardarPermisos() {
+      const uid = document.getElementById('permisos-uid').value;
+      const fd = new FormData();
+      fd.append('usuario_id', uid);
+      Object.keys(PERMISOS_LABELS).forEach(key => {
+        if (document.getElementById('perm-' + key)?.checked) fd.append(key, '1');
+      });
+      const r = await fetch('gestion-qbc-2025.php?action=actualizar_permisos', { method: 'POST', body: fd });
+      const d = await r.json();
+      const msg = document.getElementById('permisos-msg');
+      msg.style.display = 'block';
+      if (d.ok) {
+        msg.style.color = 'var(--green)'; msg.textContent = '✅ Permisos actualizados';
+        setTimeout(cerrarPermisos, 1200);
+      } else { msg.style.color = 'var(--red)'; msg.textContent = '❌ ' + (d.msg || 'Error'); }
+    }
+
+    // ── ROLES (actualizado con botones permisos y quitar) ──
+    async function cargarRoles() {
+      document.getElementById('roles-list').innerHTML = '<div class="loading"><span class="spin">⚙️</span></div>';
+      try {
+        const r = await fetch('gestion-qbc-2025.php?action=roles');
         const d = await r.json();
-        const msg = document.getElementById('permisos-msg');
-        msg.style.display = 'block';
-        if (d.ok) {
-          msg.style.color = 'var(--green)'; msg.textContent = '✅ Permisos actualizados';
-          setTimeout(cerrarPermisos, 1200);
-        } else { msg.style.color = 'var(--red)'; msg.textContent = '❌ ' + (d.msg || 'Error'); }
-      }
-
-      // ── ROLES (actualizado con botones permisos y quitar) ──
-      async function cargarRoles() {
-        document.getElementById('roles-list').innerHTML = '<div class="loading"><span class="spin">⚙️</span></div>';
-        try {
-          const r = await fetch('gestion-qbc-2025.php?action=roles');
-          const d = await r.json();
-          if (!d.roles.length) { document.getElementById('roles-list').innerHTML = '<div class="empty-state"><span class="ei">👑</span><p>Sin roles asignados</p></div>'; return; }
-          document.getElementById('roles-list').innerHTML = d.roles.map(r2 => `
-      <div class="rol-card">
-        <div class="rol-info">
-          <div class="name">${esc(r2.nombre + ' ' + (r2.apellido || ''))} ${r2.nivel === 'superadmin' ? '<span class="superadmin-crown">👑</span>' : ''}</div>
-          <div class="email">${esc(r2.correo)} · <span style="color:var(--amber)">${r2.nivel}</span> · ID: ${r2.usuario_id}</div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${r2.nivel !== 'superadmin' ? `
+        if (!d.roles.length) { document.getElementById('roles-list').innerHTML = '<div class="empty-state"><span class="ei">👑</span><p>Sin roles asignados</p></div>'; return; }
+        document.getElementById('roles-list').innerHTML = d.roles.map(r2 => `
+        <div class="rol-card">
+          <div class="rol-info">
+            <div class="name">${esc(r2.nombre + ' ' + (r2.apellido || ''))} ${r2.nivel === 'superadmin' ? '<span class="superadmin-crown">👑</span>' : ''}</div>
+            <div class="email">${esc(r2.correo)} · <span style="color:var(--amber)">${r2.nivel}</span> · ID: ${r2.usuario_id}</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${r2.nivel !== 'superadmin' ? `
             <button class="btn-sm" onclick="abrirPermisos(${r2.usuario_id})" style="border-color:rgba(68,136,255,.3);color:var(--blue);background:var(--blue-bg)">🔐 Permisos</button>
             <button class="btn-sm" onclick="abrirPassUser(${r2.usuario_id},'${esc(r2.nombre)}')" style="border-color:rgba(170,68,255,.3);color:var(--purple);background:var(--purple-bg)">🔑 Pass</button>
             <button class="btn-sm red" onclick="quitarRol(${r2.usuario_id})">Quitar rol</button>
           ` : '<span class="badge amber">Inamovible</span>'}
-        </div>
-      </div>`).join('');
-        } catch (e) { console.error(e); }
-      }
-
-      async function asignarRol() {
-        const uid = document.getElementById('rol-uid').value;
-        const nivel = document.getElementById('rol-nivel').value;
-        if (!uid) { alert('Ingresa el ID del usuario'); return; }
-        const fd = new FormData(); fd.append('usuario_id', uid); fd.append('nivel', nivel);
-        const r = await fetch('gestion-qbc-2025.php?action=asignar_rol', { method: 'POST', body: fd });
-        const d = await r.json();
-        if (d.ok) { document.getElementById('rol-uid').value = ''; cargarRoles(); }
-      }
-
-      // ── UTILIDADES ──
-      function esc(str) { const d2 = document.createElement('div'); d2.textContent = str || ''; return d2.innerHTML; }
-      function fFecha(f) {
-        if (!f) return '—';
-        const d2 = new Date(f.replace(' ', 'T'));
-        return d2.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
-      }
-
-      function fFechaHora(f) {
-        if (!f) return '—';
-        const d2 = new Date(f.replace(' ', 'T'));
-        return d2.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' }) + ' ' +
-          d2.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-      }
-
-      let debounceTimer = null;
-      function debounce(fn, ms) { return () => { clearTimeout(debounceTimer); debounceTimer = setTimeout(fn, ms); }; }
-
-      // ── MODAL EDITAR USUARIO ──
-      // Toggle switch — data-on stores state, no checkbox needed
-      function toggleSwitch(id) {
-        const sw = document.getElementById(id);
-        const dot = document.getElementById(id + '-dot');
-        const on = sw.dataset.on === '1';
-        sw.dataset.on = on ? '0' : '1';
-        sw.style.background = on ? 'rgba(255,255,255,0.15)' : '#1f9d55';
-        dot.style.transform = on ? 'translateX(0)' : 'translateX(20px)';
-      }
-
-      function setSwitch(id, val) {
-        const sw = document.getElementById(id);
-        const dot = document.getElementById(id + '-dot');
-        sw.dataset.on = val ? '1' : '0';
-        sw.style.background = val ? '#1f9d55' : 'rgba(255,255,255,0.15)';
-        dot.style.transform = val ? 'translateX(20px)' : 'translateX(0)';
-      }
-
-      async function abrirModal(id) {
-        const r = await fetch(`gestion-qbc-2025.php?action=get_usuario&id=${id}`);
-        const d = await r.json();
-        if (!d.ok || !d.usuario) return;
-        const u = d.usuario;
-        document.getElementById('modal-uid').value = u.id;
-        document.getElementById('modal-uid-label').textContent = `#${u.id}`;
-        document.getElementById('modal-nombre').value = u.nombre || '';
-        document.getElementById('modal-apellido').value = u.apellido || '';
-        document.getElementById('modal-correo').value = u.correo || '';
-        document.getElementById('modal-cedula').value = u.cedula || '';
-        document.getElementById('modal-fnac').value = u.tipo === 'empresa' ? (u.fecha_empresa || '') : (u.fecha_nacimiento || '');
-        document.getElementById('modal-ciudad').value = u.ciudad || '';
-        document.getElementById('modal-telefono').value = u.telefono || '';
-        document.getElementById('modal-tipo').value = u.tipo || 'candidato';
-        document.getElementById('modal-ultima-sesion').textContent = u.ultima_sesion ? fFechaHora(u.ultima_sesion) : 'Nunca';
-        document.getElementById('modal-ultima-salida').textContent = u.ultima_salida ? fFechaHora(u.ultima_salida) : '—';
-        // Toggles
-        setSwitch('sw-talentos', parseInt(u.en_talentos));
-        setSwitch('sw-destacado', parseInt(u.destacado));
-        // Permisos: solo superadmin y admin delegado
-        const puedeDestacar = ADMIN_NIVEL === 'superadmin' || ADMIN_NIVEL === 'admin';
-        const togWrapper = document.getElementById('toggles-visibilidad');
-        if (togWrapper) {
-          togWrapper.style.opacity = puedeDestacar ? '1' : '0.45';
-          togWrapper.style.pointerEvents = puedeDestacar ? 'auto' : 'none';
-          togWrapper.title = puedeDestacar ? '' : 'Solo superadmin y admin delegado';
-        }
-        // Cambiar labels según tipo
-        const esEmpresa = u.tipo === 'empresa';
-        document.getElementById('modal-fnac-label').textContent = esEmpresa ? 'Fecha de fundación' : 'Fecha de nacimiento';
-        document.getElementById('modal-cedula-label').textContent = esEmpresa ? 'NIT' : 'Cédula';
-        document.getElementById('modal-nombre-label').textContent = esEmpresa ? 'Nombre empresa' : 'Nombre';
-        document.getElementById('modal-apellido').parentElement.style.display = esEmpresa ? 'none' : 'block';
-        document.getElementById('modal-msg').style.display = 'none';
-        document.getElementById('modal-usuario').style.display = 'flex';
-      }
-
-      function cerrarModal() {
-        document.getElementById('modal-usuario').style.display = 'none';
-      }
-
-      async function guardarUsuario() {
-        const fd = new FormData();
-        fd.append('id', document.getElementById('modal-uid').value);
-        fd.append('nombre', document.getElementById('modal-nombre').value);
-        fd.append('apellido', document.getElementById('modal-apellido').value);
-        fd.append('correo', document.getElementById('modal-correo').value);
-        fd.append('cedula', document.getElementById('modal-cedula').value);
-        fd.append('fecha_nacimiento', document.getElementById('modal-fnac').value);
-        fd.append('ciudad', document.getElementById('modal-ciudad').value);
-        fd.append('telefono', document.getElementById('modal-telefono').value);
-        fd.append('tipo', document.getElementById('modal-tipo').value);
-        fd.append('en_talentos', document.getElementById('sw-talentos').dataset.on === '1' ? '1' : '0');
-        fd.append('destacado', document.getElementById('sw-destacado').dataset.on === '1' ? '1' : '0');
-        const r = await fetch('gestion-qbc-2025.php?action=editar_usuario', { method: 'POST', body: fd });
-        const d = await r.json();
-        const msg = document.getElementById('modal-msg');
-        msg.style.display = 'block';
-        if (d.ok) {
-          msg.style.color = 'var(--green)';
-          msg.textContent = '✅ Guardado correctamente';
-          setTimeout(() => { cerrarModal(); cargarUsuarios(); }, 1200);
-        } else {
-          msg.style.color = 'var(--red)';
-          msg.textContent = '❌ ' + (d.msg || 'Error al guardar');
-        }
-      }
-
-      // ── ESTADÍSTICAS DETALLADAS ──
-      async function cargarEstadisticas() {
-        document.getElementById('stats-content').innerHTML = '<div class="loading"><span class="spin">⚙️</span></div>';
-        try {
-          const r = await fetch('gestion-qbc-2025.php?action=stats_detalladas');
-          const d = await r.json();
-          if (!d.ok) return;
-          const s = d.data;
-
-          // Barras ciudades
-          const maxCiudad = Math.max(...(s.por_ciudad.map(c => parseInt(c.total))), 1);
-          const ciudadBars = s.por_ciudad.map(c => `
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-        <div style="width:100px;font-size:12px;color:var(--text2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.ciudad || 'Sin ciudad')}</div>
-        <div style="flex:1;height:28px;background:var(--bg3);border-radius:6px;overflow:hidden">
-          <div style="height:100%;width:${Math.max(4, (parseInt(c.total) / maxCiudad) * 100)}%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:6px;transition:width .5s"></div>
-        </div>
-        <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--green);width:30px">${c.total}</div>
-      </div>`).join('');
-
-          // Barras meses
-          const maxMes = Math.max(...(s.por_mes.map(m => parseInt(m.total))), 1);
-          const mesBars = s.por_mes.map(m => {
-            const h = Math.max(4, (parseInt(m.total) / maxMes) * 80);
-            return `<div class="chart-bar-col">
-        <div class="chart-bar-val">${m.total}</div>
-        <div class="chart-bar" style="height:${h}px;background:linear-gradient(180deg,var(--blue),var(--green))"></div>
-        <div class="chart-bar-label">${m.mes.slice(5)}</div>
-      </div>`;
-          }).join('');
-
-          // Verificaciones donut text
-          const verifTexto = s.verif_estado.map(v => `
-      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
-        <span style="color:var(--text2)">${v.estado}</span>
-        <span class="badge ${v.estado === 'aprobado' ? 'green' : v.estado === 'pendiente' ? 'amber' : 'red'}">${v.total}</span>
-      </div>`).join('') || '<p style="color:var(--text3);font-size:13px">Sin datos</p>';
-
-          document.getElementById('stats-content').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-        <div class="chart-wrap">
-          <h3>🗓️ Registros por mes</h3>
-          <div class="chart-bars" style="height:100px">${mesBars || '<p style="color:var(--text3);font-size:12px">Sin datos</p>'}</div>
-        </div>
-        <div class="chart-wrap">
-          <h3>✅ Estado verificaciones</h3>
-          ${verifTexto}
-        </div>
-      </div>
-      <div class="chart-wrap">
-        <h3>🌍 Usuarios por ciudad</h3>
-        ${ciudadBars || '<p style="color:var(--text3);font-size:13px">Sin datos de ciudad</p>'}
-      </div>`;
-        } catch (e) { console.error(e); }
-      }
-
-      // ── AUDITORÍA ──
-      let paginaAuditoria = 1;
-      async function cargarAuditoria() {
-        const tbody = document.getElementById('auditoria-tbody');
-        tbody.innerHTML = '<tr><td colspan="5" class="loading"><span class="spin">⚙️</span></td></tr>';
-        try {
-          const r = await fetch(`gestion-qbc-2025.php?action=auditoria&page=${paginaAuditoria}`);
-          const d = await r.json();
-          if (!d.logs.length) {
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><span class="ei">🕵️</span><p>Sin registros de auditoría aún</p></td></tr>';
-            return;
-          }
-          tbody.innerHTML = d.logs.map(l => `
-      <tr>
-        <td style="font-family:'JetBrains Mono',monospace;color:var(--text3);font-size:11px">#${l.id}</td>
-        <td style="font-weight:600;font-size:12px">${esc(l.admin_nombre || 'Sistema')}</td>
-        <td><span class="badge blue">${esc(l.accion)}</span></td>
-        <td style="font-size:12px;color:var(--text2)">${esc(l.detalle || '—')}</td>
-        <td style="font-size:11px;color:var(--text3)">${fFecha(l.creado_en)}</td>
-      </tr>`).join('');
-          const pages = Math.ceil(d.total / 30);
-          let pags = '';
-          if (pages > 1) {
-            pags += `<button class="page-btn" onclick="cambiarPagAudit(${paginaAuditoria - 1})" ${paginaAuditoria <= 1 ? 'disabled' : ''}>←</button>`;
-            for (let i = 1; i <= Math.min(pages, 7); i++) pags += `<button class="page-btn ${i === paginaAuditoria ? 'active' : ''}" onclick="cambiarPagAudit(${i})">${i}</button>`;
-            pags += `<button class="page-btn" onclick="cambiarPagAudit(${paginaAuditoria + 1})" ${paginaAuditoria >= pages ? 'disabled' : ''}>→</button>`;
-          }
-          document.getElementById('auditoria-pagination').innerHTML = pags;
-        } catch (e) { console.error(e); }
-      }
-      function cambiarPagAudit(p) { paginaAuditoria = p; cargarAuditoria(); }
-
-      // ── SISTEMA DE BADGES ──
-      let badgesCatalogo = [];
-      let badgesUsuarioActual = null;
-
-      async function cargarBadgesCatalogo() {
-        document.getElementById('badges-catalogo-wrap').innerHTML = '<div class="loading"><span class="spin">⚙️</span></div>';
-        try {
-          const r = await fetch('gestion-qbc-2025.php?action=badges_catalogo');
-          const d = await r.json();
-          badgesCatalogo = d.badges || [];
-          if (!badgesCatalogo.length) {
-            document.getElementById('badges-catalogo-wrap').innerHTML = '<div class="empty-state"><span class="ei">🏅</span><p>No hay badges en el catálogo</p></div>';
-            return;
-          }
-          // Agrupar por tipo
-          const grupos = { manual: '🏅 Manuales', pago: '💰 De pago', verificacion: '✅ Verificación' };
-          let html = '';
-          for (const [tipo, label] of Object.entries(grupos)) {
-            const del_tipo = badgesCatalogo.filter(b => b.tipo === tipo);
-            if (!del_tipo.length) continue;
-            html += `<h3 style="font-size:13px;font-weight:700;color:var(--text2);margin:0 0 12px;text-transform:uppercase;letter-spacing:.8px">${label}</h3>`;
-            html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:24px">`;
-            html += del_tipo.map(b => `
-        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="width:38px;height:38px;border-radius:10px;background:${b.color}22;border:1px solid ${b.color}44;display:flex;align-items:center;justify-content:center;font-size:20px">${b.emoji}</div>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:${b.color}">${esc(b.nombre)}</div>
-              <div style="font-size:11px;color:var(--text3)">${esc(b.descripcion || '—')}</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:6px">
-            <button onclick="editarBadge(${b.id})" class="btn-sm amber" style="font-size:11px">✏️</button>
-            ${ADMIN_NIVEL === 'superadmin' ? `<button onclick="eliminarBadge(${b.id},'${esc(b.nombre)}')" class="btn-sm red" style="font-size:11px">🗑️</button>` : ''}
           </div>
         </div>`).join('');
-            html += '</div>';
-          }
-          document.getElementById('badges-catalogo-wrap').innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:0">${html}</div>`;
-        } catch (e) { console.error(e); }
+      } catch (e) { console.error(e); }
+    }
+
+    async function asignarRol() {
+      const uid = document.getElementById('rol-uid').value;
+      const nivel = document.getElementById('rol-nivel').value;
+      if (!uid) { mostrarToast('Selecciona un usuario primero', 'red'); return; }
+      const fd = new FormData(); fd.append('usuario_id', uid); fd.append('nivel', nivel);
+      const r = await fetch('gestion-qbc-2025.php?action=asignar_rol', { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.ok) {
+        limpiarSeleccionRol();
+        mostrarToast('✅ Rol asignado correctamente', 'green');
+        cargarRoles();
+      } else {
+        mostrarToast('❌ ' + (d.msg || 'Error al asignar rol'), 'red');
       }
+    }
 
-      // Cargar badges de un usuario específico
-      async function cargarBadgesUsuario() {
-        const uid = document.getElementById('badge-uid').value;
-        if (!uid) { alert('Escribe el ID del usuario'); return; }
+    let rolBuscarTimer = null;
+    function buscarUsuarioRol(q) {
+      clearTimeout(rolBuscarTimer);
+      const sug = document.getElementById('rol-sugerencias');
+      if (!q || q.length < 2) { sug.style.display = 'none'; return; }
+      rolBuscarTimer = setTimeout(async () => {
         try {
-          const r = await fetch(`gestion-qbc-2025.php?action=usuario_badges&id=${uid}`);
+          const r = await fetch('gestion-qbc-2025.php?action=buscar_usuario_correo&q=' + encodeURIComponent(q));
           const d = await r.json();
-          if (!d.ok) { alert('Usuario no encontrado'); return; }
-          badgesUsuarioActual = { uid: parseInt(uid), asignados: d.asignados || [] };
-          badgesCatalogo = d.catalogo || [];
-
-          document.getElementById('badges-usuario-info').innerHTML =
-            `<strong style="color:var(--green)">Usuario #${uid}</strong> — Badges asignados: <strong>${d.asignados.length}</strong>`;
-
-          document.getElementById('badges-usuario-grid').innerHTML = badgesCatalogo.map(b => {
-            const tiene = d.asignados.includes(b.id);
-            return `
-        <div id="badge-card-${b.id}" style="background:var(--bg3);border:2px solid ${tiene ? b.color : 'var(--border)'};border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border .2s">
-          <div style="font-size:28px">${b.emoji}</div>
-          <div style="font-size:12px;font-weight:700;color:${b.color};text-align:center">${esc(b.nombre)}</div>
-          <div style="font-size:10px;color:var(--text3);text-align:center">${esc(b.descripcion || '')}</div>
-          <button onclick="toggleBadge(${uid},${b.id},${tiene ? 0 : 1})" 
-            id="badge-btn-${b.id}"
-            style="width:100%;padding:6px;border-radius:8px;border:1px solid ${tiene ? 'rgba(255,68,68,.3)' : 'rgba(0,230,118,.3)'};background:${tiene ? 'var(--red-bg)' : 'var(--green-bg)'};color:${tiene ? 'var(--red)' : 'var(--green)'};font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">
-            ${tiene ? '❌ Quitar' : '✅ Asignar'}
-          </button>
-        </div>`;
+          if (!d.usuarios || !d.usuarios.length) { sug.innerHTML = '<div style="padding:12px 14px;font-size:13px;color:var(--text3)">Sin resultados</div>'; sug.style.display = 'block'; return; }
+          sug.innerHTML = d.usuarios.map(u => {
+            const tieneRol = u.rol_actual ? `<span style="font-size:10px;color:var(--amber);background:var(--amber-bg);padding:2px 7px;border-radius:8px;margin-left:6px">${u.rol_actual}</span>` : '';
+            return `<div onclick="seleccionarUsuarioRol(${u.id},'${esc(u.nombre + ' ' + (u.apellido || ''))}','${esc(u.correo)}','${esc(u.tipo || '')}','${esc(u.rol_actual || '')}')"
+                  style="padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:2px;transition:background .15s"
+                  onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+                  <div style="font-size:13px;font-weight:600">${esc(u.nombre + ' ' + (u.apellido || ''))}${tieneRol}</div>
+                  <div style="font-size:11px;color:var(--text2)">${esc(u.correo)} · ${esc(u.tipo || '')}</div>
+                </div>`;
           }).join('');
+          sug.style.display = 'block';
+        } catch (e) { sug.style.display = 'none'; }
+      }, 300);
+    }
 
-          document.getElementById('badges-usuario-extra').innerHTML = `          <div style="margin-top:12px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);border-radius:10px;padding:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="font-size:12px;color:rgba(255,255,255,.6);font-weight:600">⚡ Asignar plan de pago:</span>
-            <select id="plan-selector" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:12px">
-              <option value="semilla">🌱 Semilla (gratis)</option>
-              <option value="verde_selva">🌿 Verde Selva</option>
-              <option value="amarillo_oro">⭐ Amarillo Oro</option>
-              <option value="azul_profundo">💎 Azul Profundo</option>
-              <option value="microempresa">🏪 Microempresa</option>
-            </select>
-            <button onclick="asignarPlan(badgesUsuarioActual?.uid, document.getElementById('plan-selector').value)" 
-              class="btn-sm green" style="font-size:12px">Aplicar plan</button>
-          </div>`;
-                    document.getElementById('badges-usuario-panel').style.display = 'block';
-        } catch (e) { console.error(e); }
-      }
-
-      async function toggleBadge(uid, badgeId, asignar) {
-        const btn = document.getElementById('badge-btn-' + badgeId);
-        btn.disabled = true;
-        const fd = new FormData();
-        fd.append('usuario_id', uid);
-        fd.append('badge_id', badgeId);
-        fd.append('asignar', asignar);
-        try {
-          const r = await fetch('gestion-qbc-2025.php?action=badge_toggle', { method: 'POST', body: fd });
-          const d = await r.json();
-          if (d.ok) {
-            // Recargar panel del usuario
-            badgesUsuarioActual.asignados = d.asignados;
-            document.getElementById('badge-uid').value = uid;
-            cargarBadgesUsuario();
-          }
-        } catch (e) { btn.disabled = false; }
-      }
-
-
-      // ── ASIGNAR PLAN (atajo desde panel de badges) ──────────────
-      async function asignarPlan(uid, plan) {
-        if (!uid || !plan) { alert('Selecciona un usuario y un plan.'); return; }
-        if (!confirm(`¿Asignar plan "${plan}" al usuario #${uid}? Se reemplazará el plan anterior.`)) return;
-        const fd = new FormData();
-        fd.append('usuario_id', uid);
-        fd.append('plan', plan);
-        try {
-          const r = await fetch('gestion-qbc-2025.php?action=asignar_plan', { method: 'POST', body: fd });
-          const d = await r.json();
-          if (d.ok) {
-            mostrarToast('✅ ' + d.msg, 'green');
-            document.getElementById('badge-uid').value = uid;
-            cargarBadgesUsuario();
-          } else {
-            mostrarToast('❌ ' + (d.msg || 'Error'), 'red');
-          }
-        } catch (e) { mostrarToast('Error de red', 'red'); }
-      }
-
-      // CREAR badge
-      function abrirCrearBadge() {
-        document.getElementById('badge-edit-id').value = '';
-        document.getElementById('modal-badge-titulo').textContent = '➕ Crear badge';
-        document.getElementById('badge-emoji').value = '🏅';
-        document.getElementById('badge-nombre').value = '';
-        document.getElementById('badge-desc').value = '';
-        document.getElementById('badge-color').value = '#00e676';
-        document.getElementById('badge-color-text').value = '#00e676';
-        document.getElementById('badge-tipo').value = 'manual';
-        document.getElementById('badge-msg').style.display = 'none';
-        actualizarPreviewBadge();
-        document.getElementById('modal-badge').style.display = 'flex';
-      }
-
-      function editarBadge(id) {
-        const b = badgesCatalogo.find(x => x.id == id);
-        if (!b) return;
-        document.getElementById('badge-edit-id').value = id;
-        document.getElementById('modal-badge-titulo').textContent = '✏️ Editar badge';
-        document.getElementById('badge-emoji').value = b.emoji;
-        document.getElementById('badge-nombre').value = b.nombre;
-        document.getElementById('badge-desc').value = b.descripcion || '';
-        document.getElementById('badge-color').value = b.color;
-        document.getElementById('badge-color-text').value = b.color;
-        document.getElementById('badge-tipo').value = b.tipo;
-        document.getElementById('badge-msg').style.display = 'none';
-        actualizarPreviewBadge();
-        document.getElementById('modal-badge').style.display = 'flex';
-      }
-
-      function cerrarModalBadge() { document.getElementById('modal-badge').style.display = 'none'; }
-
-      function actualizarPreviewBadge() {
-        const emoji = document.getElementById('badge-emoji')?.value || '⭐';
-        const nombre = document.getElementById('badge-nombre')?.value || 'Badge';
-        const color = document.getElementById('badge-color')?.value || '#00e676';
-        const prev = document.getElementById('badge-preview');
-        if (prev) {
-          prev.textContent = `${emoji} ${nombre}`;
-          prev.style.color = color;
-          prev.style.background = color + '22';
-          prev.style.borderColor = color + '44';
-        }
-        const ct = document.getElementById('badge-color-text');
-        if (ct) ct.value = color;
-      }
-
-      // Actualizar preview en tiempo real
-      document.addEventListener('input', e => {
-        if (['badge-emoji', 'badge-nombre', 'badge-color', 'badge-color-text'].includes(e.target?.id)) {
-          actualizarPreviewBadge();
+    function seleccionarUsuarioRol(id, nombre, correo, tipo, rolActual) {
+      document.getElementById('rol-uid').value = id;
+      document.getElementById('rol-buscar').value = nombre + ' — ' + correo;
+      document.getElementById('rol-sugerencias').style.display = 'none';
+      const prev = document.getElementById('rol-preview');
+      const info = document.getElementById('rol-preview-info');
+      info.innerHTML = `<strong style="color:var(--green)">${esc(nombre)}</strong> <span style="color:var(--text2);font-size:12px">· ${esc(correo)} · ${esc(tipo)}</span>`
+        + (rolActual ? ` <span style="font-size:11px;color:var(--amber);background:var(--amber-bg);padding:2px 8px;border-radius:8px;margin-left:6px">Ya tiene rol: ${esc(rolActual)}</span>` : '');
+      prev.style.display = 'block';
+      // Click fuera cierra sugerencias
+      document.addEventListener('click', function handler(e) {
+        if (!document.getElementById('rol-buscar')?.contains(e.target)) {
+          document.getElementById('rol-sugerencias').style.display = 'none';
+          document.removeEventListener('click', handler);
         }
       });
+    }
 
-      async function guardarBadge() {
-        const id = document.getElementById('badge-edit-id').value;
-        const nombre = document.getElementById('badge-nombre').value.trim();
-        const emoji = document.getElementById('badge-emoji').value.trim();
-        const desc = document.getElementById('badge-desc').value.trim();
-        const color = document.getElementById('badge-color').value;
-        const tipo = document.getElementById('badge-tipo').value;
-        const msg = document.getElementById('badge-msg');
+    function limpiarSeleccionRol() {
+      document.getElementById('rol-uid').value = '';
+      document.getElementById('rol-buscar').value = '';
+      document.getElementById('rol-preview').style.display = 'none';
+      document.getElementById('rol-sugerencias').style.display = 'none';
+    }
 
-        if (!nombre) { msg.style.display = 'block'; msg.style.color = 'var(--red)'; msg.textContent = '❌ El nombre es obligatorio'; return; }
+    // ── UTILIDADES ──
+    function esc(str) { const d2 = document.createElement('div'); d2.textContent = str || ''; return d2.innerHTML; }
+    function fFecha(f) {
+      if (!f) return '—';
+      const d2 = new Date(f.replace(' ', 'T'));
+      return d2.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
 
-        const fd = new FormData();
-        fd.append('nombre', nombre); fd.append('emoji', emoji);
-        fd.append('descripcion', desc); fd.append('color', color); fd.append('tipo', tipo);
+    function fFechaHora(f) {
+      if (!f) return '—';
+      const d2 = new Date(f.replace(' ', 'T'));
+      return d2.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' }) + ' ' +
+        d2.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+    }
 
-        const action = id ? 'badge_editar' : 'badge_crear';
-        if (id) fd.append('id', id);
+    let debounceTimer = null;
+    function debounce(fn, ms) { return () => { clearTimeout(debounceTimer); debounceTimer = setTimeout(fn, ms); }; }
 
-        const r = await fetch(`gestion-qbc-2025.php?action=${action}`, { method: 'POST', body: fd });
+    // ── MODAL EDITAR USUARIO ──
+    // Toggle switch — data-on stores state, no checkbox needed
+    function toggleSwitch(id) {
+      const sw = document.getElementById(id);
+      const dot = document.getElementById(id + '-dot');
+      const on = sw.dataset.on === '1';
+      sw.dataset.on = on ? '0' : '1';
+      sw.style.background = on ? 'rgba(255,255,255,0.15)' : '#1f9d55';
+      dot.style.transform = on ? 'translateX(0)' : 'translateX(20px)';
+    }
+
+    function setSwitch(id, val) {
+      const sw = document.getElementById(id);
+      const dot = document.getElementById(id + '-dot');
+      sw.dataset.on = val ? '1' : '0';
+      sw.style.background = val ? '#1f9d55' : 'rgba(255,255,255,0.15)';
+      dot.style.transform = val ? 'translateX(20px)' : 'translateX(0)';
+    }
+
+    async function abrirModal(id) {
+      const r = await fetch(`gestion-qbc-2025.php?action=get_usuario&id=${id}`);
+      const d = await r.json();
+      if (!d.ok || !d.usuario) return;
+      const u = d.usuario;
+      document.getElementById('modal-uid').value = u.id;
+      document.getElementById('modal-uid-label').textContent = `#${u.id}`;
+      document.getElementById('modal-nombre').value = u.nombre || '';
+      document.getElementById('modal-apellido').value = u.apellido || '';
+      document.getElementById('modal-correo').value = u.correo || '';
+      document.getElementById('modal-cedula').value = u.cedula || '';
+      document.getElementById('modal-fnac').value = u.tipo === 'empresa' ? (u.fecha_empresa || '') : (u.fecha_nacimiento || '');
+      document.getElementById('modal-ciudad').value = u.ciudad || '';
+      document.getElementById('modal-telefono').value = u.telefono || '';
+      document.getElementById('modal-tipo').value = u.tipo || 'candidato';
+      document.getElementById('modal-ultima-sesion').textContent = u.ultima_sesion ? fFechaHora(u.ultima_sesion) : 'Nunca';
+      document.getElementById('modal-ultima-salida').textContent = u.ultima_salida ? fFechaHora(u.ultima_salida) : '—';
+      // Toggles
+      setSwitch('sw-talentos', parseInt(u.en_talentos));
+      setSwitch('sw-destacado', parseInt(u.destacado));
+      // Permisos: solo superadmin y admin delegado
+      const puedeDestacar = ADMIN_NIVEL === 'superadmin' || ADMIN_NIVEL === 'admin';
+      const togWrapper = document.getElementById('toggles-visibilidad');
+      if (togWrapper) {
+        togWrapper.style.opacity = puedeDestacar ? '1' : '0.45';
+        togWrapper.style.pointerEvents = puedeDestacar ? 'auto' : 'none';
+        togWrapper.title = puedeDestacar ? '' : 'Solo superadmin y admin delegado';
+      }
+      // Cambiar labels según tipo
+      const esEmpresa = u.tipo === 'empresa';
+      document.getElementById('modal-fnac-label').textContent = esEmpresa ? 'Fecha de fundación' : 'Fecha de nacimiento';
+      document.getElementById('modal-cedula-label').textContent = esEmpresa ? 'NIT' : 'Cédula';
+      document.getElementById('modal-nombre-label').textContent = esEmpresa ? 'Nombre empresa' : 'Nombre';
+      document.getElementById('modal-apellido').parentElement.style.display = esEmpresa ? 'none' : 'block';
+      document.getElementById('modal-msg').style.display = 'none';
+      document.getElementById('modal-usuario').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+      document.getElementById('modal-usuario').style.display = 'none';
+    }
+
+    async function guardarUsuario() {
+      const fd = new FormData();
+      fd.append('id', document.getElementById('modal-uid').value);
+      fd.append('nombre', document.getElementById('modal-nombre').value);
+      fd.append('apellido', document.getElementById('modal-apellido').value);
+      fd.append('correo', document.getElementById('modal-correo').value);
+      fd.append('cedula', document.getElementById('modal-cedula').value);
+      fd.append('fecha_nacimiento', document.getElementById('modal-fnac').value);
+      fd.append('ciudad', document.getElementById('modal-ciudad').value);
+      fd.append('telefono', document.getElementById('modal-telefono').value);
+      fd.append('tipo', document.getElementById('modal-tipo').value);
+      fd.append('en_talentos', document.getElementById('sw-talentos').dataset.on === '1' ? '1' : '0');
+      fd.append('destacado', document.getElementById('sw-destacado').dataset.on === '1' ? '1' : '0');
+      const r = await fetch('gestion-qbc-2025.php?action=editar_usuario', { method: 'POST', body: fd });
+      const d = await r.json();
+      const msg = document.getElementById('modal-msg');
+      msg.style.display = 'block';
+      if (d.ok) {
+        msg.style.color = 'var(--green)';
+        msg.textContent = '✅ Guardado correctamente';
+        setTimeout(() => { cerrarModal(); cargarUsuarios(); }, 1200);
+      } else {
+        msg.style.color = 'var(--red)';
+        msg.textContent = '❌ ' + (d.msg || 'Error al guardar');
+      }
+    }
+
+    // ── ESTADÍSTICAS DETALLADAS ──
+    async function cargarEstadisticas() {
+      document.getElementById('stats-content').innerHTML = '<div class="loading"><span class="spin">⚙️</span></div>';
+      try {
+        const r = await fetch('gestion-qbc-2025.php?action=stats_detalladas');
         const d = await r.json();
-        msg.style.display = 'block';
-        if (d.ok) {
-          msg.style.color = 'var(--green)';
-          msg.textContent = id ? '✅ Badge actualizado' : '✅ Badge creado';
-          setTimeout(() => { cerrarModalBadge(); cargarBadgesCatalogo(); }, 1000);
-        } else { msg.style.color = 'var(--red)'; msg.textContent = '❌ ' + (d.msg || 'Error'); }
-      }
+        if (!d.ok) return;
+        const s = d.data;
 
-      async function eliminarBadge(id, nombre) {
-        if (!confirm(`¿Eliminar el badge "${nombre}"?\nSe quitará de todos los usuarios que lo tengan.`)) return;
-        const fd = new FormData(); fd.append('id', id);
-        await fetch('gestion-qbc-2025.php?action=badge_eliminar', { method: 'POST', body: fd });
-        cargarBadgesCatalogo();
-      }
+        // Barras ciudades
+        const maxCiudad = Math.max(...(s.por_ciudad.map(c => parseInt(c.total))), 1);
+        const ciudadBars = s.por_ciudad.map(c => `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <div style="width:100px;font-size:12px;color:var(--text2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.ciudad || 'Sin ciudad')}</div>
+          <div style="flex:1;height:28px;background:var(--bg3);border-radius:6px;overflow:hidden">
+            <div style="height:100%;width:${Math.max(4, (parseInt(c.total) / maxCiudad) * 100)}%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:6px;transition:width .5s"></div>
+          </div>
+          <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--green);width:30px">${c.total}</div>
+        </div>`).join('');
 
-      // ── ACTIVIDAD ──
-      let actFiltro = '';
-      let actPagina = 1;
+        // Barras meses
+        const maxMes = Math.max(...(s.por_mes.map(m => parseInt(m.total))), 1);
+        const mesBars = s.por_mes.map(m => {
+          const h = Math.max(4, (parseInt(m.total) / maxMes) * 80);
+          return `<div class="chart-bar-col">
+          <div class="chart-bar-val">${m.total}</div>
+          <div class="chart-bar" style="height:${h}px;background:linear-gradient(180deg,var(--blue),var(--green))"></div>
+          <div class="chart-bar-label">${m.mes.slice(5)}</div>
+        </div>`;
+        }).join('');
 
-      function filtroActividad(tipo, btn) {
-        actFiltro = tipo;
-        actPagina = 1;
-        document.querySelectorAll('#act-filtros .filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        cargarActividad();
-      }
+        // Verificaciones donut text
+        const verifTexto = s.verif_estado.map(v => `
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+          <span style="color:var(--text2)">${v.estado}</span>
+          <span class="badge ${v.estado === 'aprobado' ? 'green' : v.estado === 'pendiente' ? 'amber' : 'red'}">${v.total}</span>
+        </div>`).join('') || '<p style="color:var(--text3);font-size:13px">Sin datos</p>';
 
-      const ACT_ICONS = {
-        editar_usuario: { ic: '✏️', color: 'var(--amber-bg)' },
-        badge_toggle: { ic: '🏅', color: 'var(--purple-bg)' },
-        badge_crear: { ic: '➕', color: 'var(--green-bg)' },
-        toggle_usuario: { ic: '🔄', color: 'var(--blue-bg)' },
-        cambiar_contrasena: { ic: '🔑', color: 'var(--red-bg)' },
-        ver_contrasena: { ic: '👁', color: 'var(--amber-bg)' },
-        asignar_rol: { ic: '👑', color: 'var(--amber-bg)' },
-        quitar_rol: { ic: '🚫', color: 'var(--red-bg)' },
-        resolver_verificacion: { ic: '✅', color: 'var(--green-bg)' },
-        cambiar_emergency_code: { ic: '🚨', color: 'var(--red-bg)' },
-        actualizar_permisos: { ic: '🔐', color: 'var(--blue-bg)' },
-      };
-
-      async function cargarActividad() {
-        document.getElementById('act-feed').innerHTML = '<div class="loading"><span class="spin">⚙️</span></div>';
-        try {
-          const r = await fetch(`gestion-qbc-2025.php?action=auditoria&page=${actPagina}&filtro=${actFiltro}`);
-          const d = await r.json();
-          if (!d.logs || !d.logs.length) {
-            document.getElementById('act-feed').innerHTML = '<div class="empty-state"><span class="ei">📋</span><p>Sin actividad registrada</p></div>';
-            return;
-          }
-          document.getElementById('act-feed').innerHTML = '<div class="act-feed">' + d.logs.map(l => {
-            const meta = ACT_ICONS[l.accion] || { ic: '⚙️', color: 'var(--bg3)' };
-            return `
-      <div class="act-item">
-        <div class="act-icon" style="background:${meta.color}">${meta.ic}</div>
-        <div class="act-body">
-          <div class="act-admin">${esc(l.admin_nombre || 'Sistema')}</div>
-          <div class="act-desc">${esc(l.detalle || l.accion)}</div>
-          <div class="act-time">${fFechaHora(l.creado_en)}</div>
+        document.getElementById('stats-content').innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="chart-wrap">
+            <h3>🗓️ Registros por mes</h3>
+            <div class="chart-bars" style="height:100px">${mesBars || '<p style="color:var(--text3);font-size:12px">Sin datos</p>'}</div>
+          </div>
+          <div class="chart-wrap">
+            <h3>✅ Estado verificaciones</h3>
+            ${verifTexto}
+          </div>
         </div>
-      </div>`;
-          }).join('') + '</div>';
-          const pages = Math.ceil(d.total / 30);
-          let pags = '';
-          if (pages > 1) {
-            pags += `<button class="page-btn" onclick="cambiarPagAct(${actPagina - 1})" ${actPagina <= 1 ? 'disabled' : ''}>←</button>`;
-            for (let i = 1; i <= Math.min(pages, 7); i++) pags += `<button class="page-btn ${i === actPagina ? 'active' : ''}" onclick="cambiarPagAct(${i})">${i}</button>`;
-            pags += `<button class="page-btn" onclick="cambiarPagAct(${actPagina + 1})" ${actPagina >= pages ? 'disabled' : ''}>→</button>`;
-          }
-          document.getElementById('act-pagination').innerHTML = pags;
-        } catch (e) { console.error(e); }
-      }
-      function cambiarPagAct(p) { actPagina = p; cargarActividad(); }
+        <div class="chart-wrap">
+          <h3>🌍 Usuarios por ciudad</h3>
+          ${ciudadBars || '<p style="color:var(--text3);font-size:13px">Sin datos de ciudad</p>'}
+        </div>`;
+      } catch (e) { console.error(e); }
+    }
 
-      // ── FOTO DE PERFIL ADMIN ──
-      async function subirFotoAdmin(input) {
-        if (!input.files[0]) return;
-        const fd = new FormData();
-        fd.append('foto', input.files[0]);
-        try {
-          const r = await fetch('gestion-qbc-2025.php?action=subir_foto_admin', { method: 'POST', body: fd });
-          const d = await r.json();
-          if (d.ok) {
-            // Recargar página para mostrar foto en sidebar
-            location.reload();
-          } else {
-            alert('Error: ' + (d.msg || 'No se pudo subir la foto'));
-          }
-        } catch (e) { alert('Error de conexión'); }
-      }
-
-      // ── CÓDIGO DE EMERGENCIA ──
-      let emergencyCodeReal = null;
-      let emergencyVisible = false;
-
-      async function toggleVerEmergencia() {
-        const display = document.getElementById('emergency-display');
-        const btn = document.getElementById('btn-ver-emergency');
-        if (!emergencyVisible) {
-          if (!emergencyCodeReal) {
-            try {
-              const r = await fetch('gestion-qbc-2025.php?action=get_emergency_code');
-              const d = await r.json();
-              if (d.ok) emergencyCodeReal = d.code;
-              else { alert('Error al obtener el código'); return; }
-            } catch (e) { alert('Error de conexión'); return; }
-          }
-          display.textContent = emergencyCodeReal;
-          display.style.color = 'var(--green)';
-          btn.textContent = '🙈 Ocultar';
-          emergencyVisible = true;
-        } else {
-          display.textContent = '••••••••••••••••';
-          display.style.color = 'var(--amber)';
-          btn.textContent = '👁 Ver';
-          emergencyVisible = false;
+    // ── AUDITORÍA ──
+    let paginaAuditoria = 1;
+    async function cargarAuditoria() {
+      const tbody = document.getElementById('auditoria-tbody');
+      tbody.innerHTML = '<tr><td colspan="5" class="loading"><span class="spin">⚙️</span></td></tr>';
+      try {
+        const r = await fetch(`gestion-qbc-2025.php?action=auditoria&page=${paginaAuditoria}`);
+        const d = await r.json();
+        if (!d.logs.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><span class="ei">🕵️</span><p>Sin registros de auditoría aún</p></td></tr>';
+          return;
         }
-      }
+        tbody.innerHTML = d.logs.map(l => `
+        <tr>
+          <td style="font-family:'JetBrains Mono',monospace;color:var(--text3);font-size:11px">#${l.id}</td>
+          <td style="font-weight:600;font-size:12px">${esc(l.admin_nombre || 'Sistema')}</td>
+          <td><span class="badge blue">${esc(l.accion)}</span></td>
+          <td style="font-size:12px;color:var(--text2)">${esc(l.detalle || '—')}</td>
+          <td style="font-size:11px;color:var(--text3)">${fFecha(l.creado_en)}</td>
+        </tr>`).join('');
+        const pages = Math.ceil(d.total / 30);
+        let pags = '';
+        if (pages > 1) {
+          pags += `<button class="page-btn" onclick="cambiarPagAudit(${paginaAuditoria - 1})" ${paginaAuditoria <= 1 ? 'disabled' : ''}>←</button>`;
+          for (let i = 1; i <= Math.min(pages, 7); i++) pags += `<button class="page-btn ${i === paginaAuditoria ? 'active' : ''}" onclick="cambiarPagAudit(${i})">${i}</button>`;
+          pags += `<button class="page-btn" onclick="cambiarPagAudit(${paginaAuditoria + 1})" ${paginaAuditoria >= pages ? 'disabled' : ''}>→</button>`;
+        }
+        document.getElementById('auditoria-pagination').innerHTML = pags;
+      } catch (e) { console.error(e); }
+    }
+    function cambiarPagAudit(p) { paginaAuditoria = p; cargarAuditoria(); }
 
-      async function copiarEmergencia() {
+    // ── SISTEMA DE BADGES ──
+    let badgesCatalogo = [];
+    let badgesUsuarioActual = null;
+
+    async function cargarBadgesCatalogo() {
+      document.getElementById('badges-catalogo-wrap').innerHTML = '<div class="loading"><span class="spin">⚙️</span></div>';
+      try {
+        const r = await fetch('gestion-qbc-2025.php?action=badges_catalogo');
+        const d = await r.json();
+        badgesCatalogo = d.badges || [];
+        if (!badgesCatalogo.length) {
+          document.getElementById('badges-catalogo-wrap').innerHTML = '<div class="empty-state"><span class="ei">🏅</span><p>No hay badges en el catálogo</p></div>';
+          return;
+        }
+        // Agrupar por tipo
+        const grupos = { manual: '🏅 Manuales', pago: '💰 De pago', verificacion: '✅ Verificación' };
+        let html = '';
+        for (const [tipo, label] of Object.entries(grupos)) {
+          const del_tipo = badgesCatalogo.filter(b => b.tipo === tipo);
+          if (!del_tipo.length) continue;
+          html += `<h3 style="font-size:13px;font-weight:700;color:var(--text2);margin:0 0 12px;text-transform:uppercase;letter-spacing:.8px">${label}</h3>`;
+          html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:24px">`;
+          html += del_tipo.map(b => `
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:38px;height:38px;border-radius:10px;background:${b.color}22;border:1px solid ${b.color}44;display:flex;align-items:center;justify-content:center;font-size:20px">${b.emoji}</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:${b.color}">${esc(b.nombre)}</div>
+                <div style="font-size:11px;color:var(--text3)">${esc(b.descripcion || '—')}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button onclick="editarBadge(${b.id})" class="btn-sm amber" style="font-size:11px">✏️</button>
+              ${ADMIN_NIVEL === 'superadmin' ? `<button onclick="eliminarBadge(${b.id},'${esc(b.nombre)}')" class="btn-sm red" style="font-size:11px">🗑️</button>` : ''}
+            </div>
+          </div>`).join('');
+          html += '</div>';
+        }
+        document.getElementById('badges-catalogo-wrap').innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:0">${html}</div>`;
+      } catch (e) { console.error(e); }
+    }
+
+    // Cargar badges de un usuario específico
+    async function cargarBadgesUsuario() {
+      const uid = document.getElementById('badge-uid').value;
+      if (!uid) { alert('Escribe el ID del usuario'); return; }
+      try {
+        const r = await fetch(`gestion-qbc-2025.php?action=usuario_badges&id=${uid}`);
+        const d = await r.json();
+        if (!d.ok) { alert('Usuario no encontrado'); return; }
+        badgesUsuarioActual = { uid: parseInt(uid), asignados: d.asignados || [] };
+        badgesCatalogo = d.catalogo || [];
+
+        document.getElementById('badges-usuario-info').innerHTML =
+          `<strong style="color:var(--green)">Usuario #${uid}</strong> — Badges asignados: <strong>${d.asignados.length}</strong>`;
+
+        document.getElementById('badges-usuario-grid').innerHTML = badgesCatalogo.map(b => {
+          const tiene = d.asignados.includes(b.id);
+          return `
+          <div id="badge-card-${b.id}" style="background:var(--bg3);border:2px solid ${tiene ? b.color : 'var(--border)'};border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border .2s">
+            <div style="font-size:28px">${b.emoji}</div>
+            <div style="font-size:12px;font-weight:700;color:${b.color};text-align:center">${esc(b.nombre)}</div>
+            <div style="font-size:10px;color:var(--text3);text-align:center">${esc(b.descripcion || '')}</div>
+            <button onclick="toggleBadge(${uid},${b.id},${tiene ? 0 : 1})" 
+              id="badge-btn-${b.id}"
+              style="width:100%;padding:6px;border-radius:8px;border:1px solid ${tiene ? 'rgba(255,68,68,.3)' : 'rgba(0,230,118,.3)'};background:${tiene ? 'var(--red-bg)' : 'var(--green-bg)'};color:${tiene ? 'var(--red)' : 'var(--green)'};font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">
+              ${tiene ? '❌ Quitar' : '✅ Asignar'}
+            </button>
+          </div>`;
+        }).join('');
+
+        document.getElementById('badges-usuario-extra').innerHTML = `          <div style="margin-top:12px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);border-radius:10px;padding:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <span style="font-size:12px;color:rgba(255,255,255,.6);font-weight:600">⚡ Asignar plan de pago:</span>
+              <select id="plan-selector" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:12px">
+                <option value="semilla">🌱 Semilla (gratis)</option>
+                <option value="verde_selva">🌿 Verde Selva</option>
+                <option value="amarillo_oro">⭐ Amarillo Oro</option>
+                <option value="azul_profundo">💎 Azul Profundo</option>
+                <option value="microempresa">🏪 Microempresa</option>
+              </select>
+              <button onclick="asignarPlan(badgesUsuarioActual?.uid, document.getElementById('plan-selector').value)" 
+                class="btn-sm green" style="font-size:12px">Aplicar plan</button>
+            </div>`;
+        document.getElementById('badges-usuario-panel').style.display = 'block';
+      } catch (e) { console.error(e); }
+    }
+
+    async function toggleBadge(uid, badgeId, asignar) {
+      const btn = document.getElementById('badge-btn-' + badgeId);
+      btn.disabled = true;
+      const fd = new FormData();
+      fd.append('usuario_id', uid);
+      fd.append('badge_id', badgeId);
+      fd.append('asignar', asignar);
+      try {
+        const r = await fetch('gestion-qbc-2025.php?action=badge_toggle', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.ok) {
+          // Recargar panel del usuario
+          badgesUsuarioActual.asignados = d.asignados;
+          document.getElementById('badge-uid').value = uid;
+          cargarBadgesUsuario();
+        }
+      } catch (e) { btn.disabled = false; }
+    }
+
+
+    // ── ASIGNAR PLAN (atajo desde panel de badges) ──────────────
+    async function asignarPlan(uid, plan) {
+      if (!uid || !plan) { alert('Selecciona un usuario y un plan.'); return; }
+      if (!confirm(`¿Asignar plan "${plan}" al usuario #${uid}? Se reemplazará el plan anterior.`)) return;
+      const fd = new FormData();
+      fd.append('usuario_id', uid);
+      fd.append('plan', plan);
+      try {
+        const r = await fetch('gestion-qbc-2025.php?action=asignar_plan', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.ok) {
+          mostrarToast('✅ ' + d.msg, 'green');
+          document.getElementById('badge-uid').value = uid;
+          cargarBadgesUsuario();
+        } else {
+          mostrarToast('❌ ' + (d.msg || 'Error'), 'red');
+        }
+      } catch (e) { mostrarToast('Error de red', 'red'); }
+    }
+
+    // CREAR badge
+    function abrirCrearBadge() {
+      document.getElementById('badge-edit-id').value = '';
+      document.getElementById('modal-badge-titulo').textContent = '➕ Crear badge';
+      document.getElementById('badge-emoji').value = '🏅';
+      document.getElementById('badge-nombre').value = '';
+      document.getElementById('badge-desc').value = '';
+      document.getElementById('badge-color').value = '#00e676';
+      document.getElementById('badge-color-text').value = '#00e676';
+      document.getElementById('badge-tipo').value = 'manual';
+      document.getElementById('badge-msg').style.display = 'none';
+      actualizarPreviewBadge();
+      document.getElementById('modal-badge').style.display = 'flex';
+    }
+
+    function editarBadge(id) {
+      const b = badgesCatalogo.find(x => x.id == id);
+      if (!b) return;
+      document.getElementById('badge-edit-id').value = id;
+      document.getElementById('modal-badge-titulo').textContent = '✏️ Editar badge';
+      document.getElementById('badge-emoji').value = b.emoji;
+      document.getElementById('badge-nombre').value = b.nombre;
+      document.getElementById('badge-desc').value = b.descripcion || '';
+      document.getElementById('badge-color').value = b.color;
+      document.getElementById('badge-color-text').value = b.color;
+      document.getElementById('badge-tipo').value = b.tipo;
+      document.getElementById('badge-msg').style.display = 'none';
+      actualizarPreviewBadge();
+      document.getElementById('modal-badge').style.display = 'flex';
+    }
+
+    function cerrarModalBadge() { document.getElementById('modal-badge').style.display = 'none'; }
+
+    function actualizarPreviewBadge() {
+      const emoji = document.getElementById('badge-emoji')?.value || '⭐';
+      const nombre = document.getElementById('badge-nombre')?.value || 'Badge';
+      const color = document.getElementById('badge-color')?.value || '#00e676';
+      const prev = document.getElementById('badge-preview');
+      if (prev) {
+        prev.textContent = `${emoji} ${nombre}`;
+        prev.style.color = color;
+        prev.style.background = color + '22';
+        prev.style.borderColor = color + '44';
+      }
+      const ct = document.getElementById('badge-color-text');
+      if (ct) ct.value = color;
+    }
+
+    // Actualizar preview en tiempo real
+    document.addEventListener('input', e => {
+      if (['badge-emoji', 'badge-nombre', 'badge-color', 'badge-color-text'].includes(e.target?.id)) {
+        actualizarPreviewBadge();
+      }
+    });
+
+    async function guardarBadge() {
+      const id = document.getElementById('badge-edit-id').value;
+      const nombre = document.getElementById('badge-nombre').value.trim();
+      const emoji = document.getElementById('badge-emoji').value.trim();
+      const desc = document.getElementById('badge-desc').value.trim();
+      const color = document.getElementById('badge-color').value;
+      const tipo = document.getElementById('badge-tipo').value;
+      const msg = document.getElementById('badge-msg');
+
+      if (!nombre) { msg.style.display = 'block'; msg.style.color = 'var(--red)'; msg.textContent = '❌ El nombre es obligatorio'; return; }
+
+      const fd = new FormData();
+      fd.append('nombre', nombre); fd.append('emoji', emoji);
+      fd.append('descripcion', desc); fd.append('color', color); fd.append('tipo', tipo);
+
+      const action = id ? 'badge_editar' : 'badge_crear';
+      if (id) fd.append('id', id);
+
+      const r = await fetch(`gestion-qbc-2025.php?action=${action}`, { method: 'POST', body: fd });
+      const d = await r.json();
+      msg.style.display = 'block';
+      if (d.ok) {
+        msg.style.color = 'var(--green)';
+        msg.textContent = id ? '✅ Badge actualizado' : '✅ Badge creado';
+        setTimeout(() => { cerrarModalBadge(); cargarBadgesCatalogo(); }, 1000);
+      } else { msg.style.color = 'var(--red)'; msg.textContent = '❌ ' + (d.msg || 'Error'); }
+    }
+
+    async function eliminarBadge(id, nombre) {
+      if (!confirm(`¿Eliminar el badge "${nombre}"?\nSe quitará de todos los usuarios que lo tengan.`)) return;
+      const fd = new FormData(); fd.append('id', id);
+      await fetch('gestion-qbc-2025.php?action=badge_eliminar', { method: 'POST', body: fd });
+      cargarBadgesCatalogo();
+    }
+
+    // ── ACTIVIDAD ──
+    let actFiltro = '';
+    let actPagina = 1;
+
+    function filtroActividad(tipo, btn) {
+      actFiltro = tipo;
+      actPagina = 1;
+      document.querySelectorAll('#act-filtros .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      cargarActividad();
+    }
+
+    const ACT_ICONS = {
+      editar_usuario: { ic: '✏️', color: 'var(--amber-bg)' },
+      badge_toggle: { ic: '🏅', color: 'var(--purple-bg)' },
+      badge_crear: { ic: '➕', color: 'var(--green-bg)' },
+      toggle_usuario: { ic: '🔄', color: 'var(--blue-bg)' },
+      cambiar_contrasena: { ic: '🔑', color: 'var(--red-bg)' },
+      ver_contrasena: { ic: '👁', color: 'var(--amber-bg)' },
+      asignar_rol: { ic: '👑', color: 'var(--amber-bg)' },
+      quitar_rol: { ic: '🚫', color: 'var(--red-bg)' },
+      resolver_verificacion: { ic: '✅', color: 'var(--green-bg)' },
+      cambiar_emergency_code: { ic: '🚨', color: 'var(--red-bg)' },
+      actualizar_permisos: { ic: '🔐', color: 'var(--blue-bg)' },
+    };
+
+    async function cargarActividad() {
+      document.getElementById('act-feed').innerHTML = '<div class="loading"><span class="spin">⚙️</span></div>';
+      try {
+        const r = await fetch(`gestion-qbc-2025.php?action=auditoria&page=${actPagina}&filtro=${actFiltro}`);
+        const d = await r.json();
+        if (!d.logs || !d.logs.length) {
+          document.getElementById('act-feed').innerHTML = '<div class="empty-state"><span class="ei">📋</span><p>Sin actividad registrada</p></div>';
+          return;
+        }
+        document.getElementById('act-feed').innerHTML = '<div class="act-feed">' + d.logs.map(l => {
+          const meta = ACT_ICONS[l.accion] || { ic: '⚙️', color: 'var(--bg3)' };
+          return `
+        <div class="act-item">
+          <div class="act-icon" style="background:${meta.color}">${meta.ic}</div>
+          <div class="act-body">
+            <div class="act-admin">${esc(l.admin_nombre || 'Sistema')}</div>
+            <div class="act-desc">${esc(l.detalle || l.accion)}</div>
+            <div class="act-time">${fFechaHora(l.creado_en)}</div>
+          </div>
+        </div>`;
+        }).join('') + '</div>';
+        const pages = Math.ceil(d.total / 30);
+        let pags = '';
+        if (pages > 1) {
+          pags += `<button class="page-btn" onclick="cambiarPagAct(${actPagina - 1})" ${actPagina <= 1 ? 'disabled' : ''}>←</button>`;
+          for (let i = 1; i <= Math.min(pages, 7); i++) pags += `<button class="page-btn ${i === actPagina ? 'active' : ''}" onclick="cambiarPagAct(${i})">${i}</button>`;
+          pags += `<button class="page-btn" onclick="cambiarPagAct(${actPagina + 1})" ${actPagina >= pages ? 'disabled' : ''}>→</button>`;
+        }
+        document.getElementById('act-pagination').innerHTML = pags;
+      } catch (e) { console.error(e); }
+    }
+    function cambiarPagAct(p) { actPagina = p; cargarActividad(); }
+
+    // ── FOTO DE PERFIL ADMIN ──
+    async function subirFotoAdmin(input) {
+      if (!input.files[0]) return;
+      const fd = new FormData();
+      fd.append('foto', input.files[0]);
+      try {
+        const r = await fetch('gestion-qbc-2025.php?action=subir_foto_admin', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.ok) {
+          // Recargar página para mostrar foto en sidebar
+          location.reload();
+        } else {
+          alert('Error: ' + (d.msg || 'No se pudo subir la foto'));
+        }
+      } catch (e) { alert('Error de conexión'); }
+    }
+
+    // ── CÓDIGO DE EMERGENCIA ──
+    let emergencyCodeReal = null;
+    let emergencyVisible = false;
+
+    async function toggleVerEmergencia() {
+      const display = document.getElementById('emergency-display');
+      const btn = document.getElementById('btn-ver-emergency');
+      if (!emergencyVisible) {
         if (!emergencyCodeReal) {
           try {
             const r = await fetch('gestion-qbc-2025.php?action=get_emergency_code');
@@ -6240,438 +6824,463 @@ if ($action) {
             else { alert('Error al obtener el código'); return; }
           } catch (e) { alert('Error de conexión'); return; }
         }
-        try {
-          await navigator.clipboard.writeText(emergencyCodeReal);
-          const msg = document.getElementById('emergency-msg');
-          msg.style.display = 'block';
-          msg.style.color = 'var(--green)';
-          msg.textContent = '✅ Código copiado al portapapeles';
-          setTimeout(() => msg.style.display = 'none', 2000);
-        } catch (e) { alert('No se pudo copiar. Código: ' + emergencyCodeReal); }
+        display.textContent = emergencyCodeReal;
+        display.style.color = 'var(--green)';
+        btn.textContent = '🙈 Ocultar';
+        emergencyVisible = true;
+      } else {
+        display.textContent = '••••••••••••••••';
+        display.style.color = 'var(--amber)';
+        btn.textContent = '👁 Ver';
+        emergencyVisible = false;
       }
+    }
 
-      async function cambiarEmergencia() {
-        const nuevo = document.getElementById('nuevo-emergency').value.trim();
+    async function copiarEmergencia() {
+      if (!emergencyCodeReal) {
+        try {
+          const r = await fetch('gestion-qbc-2025.php?action=get_emergency_code');
+          const d = await r.json();
+          if (d.ok) emergencyCodeReal = d.code;
+          else { alert('Error al obtener el código'); return; }
+        } catch (e) { alert('Error de conexión'); return; }
+      }
+      try {
+        await navigator.clipboard.writeText(emergencyCodeReal);
         const msg = document.getElementById('emergency-msg');
         msg.style.display = 'block';
-        if (nuevo.length < 10) {
-          msg.style.color = 'var(--red)';
-          msg.textContent = '❌ Mínimo 10 caracteres';
-          return;
-        }
-        if (!confirm(`¿Cambiar el código de emergencia a:\n"${nuevo}"\n\nGuarda este código en un lugar seguro antes de confirmar.`)) return;
-        const fd = new FormData();
-        fd.append('codigo', nuevo);
-        try {
-          const r = await fetch('gestion-qbc-2025.php?action=cambiar_emergency_code', { method: 'POST', body: fd });
-          const d = await r.json();
-          if (d.ok) {
-            emergencyCodeReal = nuevo;
-            msg.style.color = 'var(--green)';
-            msg.textContent = '✅ Código actualizado correctamente';
-            document.getElementById('nuevo-emergency').value = '';
-            // Actualizar display si estaba visible
-            if (emergencyVisible) {
-              document.getElementById('emergency-display').textContent = nuevo;
-            }
-          } else {
-            msg.style.color = 'var(--red)';
-            msg.textContent = '❌ ' + (d.msg || 'Error al guardar');
-          }
-        } catch (e) {
-          msg.style.color = 'var(--red)';
-          msg.textContent = '❌ Error de conexión';
-        }
-      }
+        msg.style.color = 'var(--green)';
+        msg.textContent = '✅ Código copiado al portapapeles';
+        setTimeout(() => msg.style.display = 'none', 2000);
+      } catch (e) { alert('No se pudo copiar. Código: ' + emergencyCodeReal); }
+    }
 
-      // ── QUITAR ROL ──
-      async function quitarRol(uid) {
-        if (!confirm('¿Quitar el rol de este usuario?')) return;
-        const fd = new FormData();
-        fd.append('usuario_id', uid);
-        const r = await fetch('gestion-qbc-2025.php?action=quitar_rol', { method: 'POST', body: fd });
+    async function cambiarEmergencia() {
+      const nuevo = document.getElementById('nuevo-emergency').value.trim();
+      const msg = document.getElementById('emergency-msg');
+      msg.style.display = 'block';
+      if (nuevo.length < 10) {
+        msg.style.color = 'var(--red)';
+        msg.textContent = '❌ Mínimo 10 caracteres';
+        return;
+      }
+      if (!confirm(`¿Cambiar el código de emergencia a:\n"${nuevo}"\n\nGuarda este código en un lugar seguro antes de confirmar.`)) return;
+      const fd = new FormData();
+      fd.append('codigo', nuevo);
+      try {
+        const r = await fetch('gestion-qbc-2025.php?action=cambiar_emergency_code', { method: 'POST', body: fd });
         const d = await r.json();
-        if (d.ok) cargarRoles();
-        else alert(d.msg || 'Error al quitar rol');
-      }
-
-      // ── CERRAR MODALES CON ESC ──
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-          cerrarModal?.();
-          cerrarPassUser?.();
-          cerrarPermisos?.();
-          cerrarPass?.();
-        }
-      });
-
-      // ── INICIO ──
-      cargarDashboard();
-      actualizarBadgeSolicitudes();
-
-      // ── HAMBURGUESA / DRAWER ──
-      function toggleSidebar() {
-        const sb = document.getElementById('sidebarEl');
-        const ov = document.getElementById('sbOverlay');
-        const btn = document.getElementById('btnHamburger');
-        const open = sb.classList.toggle('open');
-        ov.classList.toggle('open', open);
-        btn.classList.toggle('open', open);
-        document.body.style.overflow = open ? 'hidden' : '';
-      }
-      function cerrarSidebar() {
-        const sb = document.getElementById('sidebarEl');
-        const ov = document.getElementById('sbOverlay');
-        const btn = document.getElementById('btnHamburger');
-        sb.classList.remove('open');
-        ov.classList.remove('open');
-        btn.classList.remove('open');
-        document.body.style.overflow = '';
-      }
-      // Cerrar con Escape
-      document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarSidebar(); });
-
-      // Mostrar/ocultar hamburguesa según ancho
-      function checkHamburger() {
-        const btn = document.getElementById('btnHamburger');
-        if (!btn) return;
-        btn.style.display = window.innerWidth <= 640 ? 'flex' : 'none';
-        if (window.innerWidth > 640) cerrarSidebar();
-      }
-      window.addEventListener('resize', checkHamburger);
-      checkHamburger();
-
-      // Cerrar drawer al hacer clic en un item del sidebar (solo móvil)
-      document.querySelectorAll('.sb-item, .sb-logout').forEach(el => {
-        el.addEventListener('click', () => {
-          if (window.innerWidth <= 640) cerrarSidebar();
-        });
-      });
-
-      // ══════════════════════════════════════════════════════
-      // MODAL EDITAR TALENTO — solo superadmin y admin delegado
-      // ══════════════════════════════════════════════════════
-      async function abrirModalTalento(uid, nombreUsuario) {
-        // Crear modal si no existe
-        let modal = document.getElementById('modal-talento');
-        if (!modal) {
-          modal = document.createElement('div');
-          modal.id = 'modal-talento';
-          modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
-          modal.innerHTML = `
-            <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:32px;width:100%;max-width:600px;position:relative;margin:auto;max-height:90vh;overflow-y:auto">
-              <button onclick="cerrarModalTalento()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer">✕</button>
-              <h3 style="font-size:18px;font-weight:700;margin-bottom:4px">🌟 Editar perfil de talento</h3>
-              <p id="talento-nombre-label" style="color:var(--text3);font-size:13px;font-family:'JetBrains Mono',monospace;margin-bottom:20px"></p>
-              <input type="hidden" id="talento-uid">
-
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-                <div>
-                  <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Profesión / Título</label>
-                  <input type="text" id="talento-profesion" placeholder="ej: Músico, Desarrollador..."
-                    style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
-                </div>
-                <div>
-                  <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Ciudad</label>
-                  <input type="text" id="talento-ciudad" placeholder="Quibdó, Chocó..."
-                    style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
-                </div>
-              </div>
-
-              <div style="margin-bottom:12px">
-                <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Biografía / Descripción</label>
-                <textarea id="talento-bio" rows="3" placeholder="Descripción del talento..."
-                  style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none;resize:vertical"></textarea>
-              </div>
-
-              <div style="margin-bottom:12px">
-                <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Habilidades / Skills <span style="color:var(--text3);font-weight:400">(separadas por coma)</span></label>
-                <input type="text" id="talento-skills" placeholder="PHP, Diseño, Música, Fotografía..."
-                  style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
-              </div>
-
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-                <div>
-                  <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Géneros / Especialidad</label>
-                  <input type="text" id="talento-generos" placeholder="Salsa, Chirimía, Vallenato..."
-                    style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
-                </div>
-                <div>
-                  <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Precio desde (COP)</label>
-                  <input type="number" id="talento-precio" placeholder="50000"
-                    style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none">
-                </div>
-              </div>
-
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-                <div>
-                  <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Tipo de servicio</label>
-                  <select id="talento-tipo-servicio"
-                    style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
-                    <option value="">Sin especificar</option>
-                    <option value="presencial">Presencial</option>
-                    <option value="remoto">Remoto</option>
-                    <option value="ambos">Presencial y remoto</option>
-                  </select>
-                </div>
-                <div>
-                  <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Color de avatar (hex)</label>
-                  <div style="display:flex;gap:8px;align-items:center">
-                    <input type="color" id="talento-color-picker" value="#10b981"
-                      style="width:40px;height:38px;border:none;background:none;cursor:pointer;border-radius:6px"
-                      oninput="document.getElementById('talento-avatar-color').value=this.value">
-                    <input type="text" id="talento-avatar-color" placeholder="#10b981"
-                      style="flex:1;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none"
-                      oninput="document.getElementById('talento-color-picker').value=this.value||'#10b981'">
-                  </div>
-                </div>
-              </div>
-
-              <!-- Toggles visibilidad y destacado -->
-              <div style="display:flex;gap:10px;margin-bottom:20px">
-                <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none" onclick="toggleSwitch('sw-talento-visible')">
-                  <div>
-                    <div style="font-size:12px;font-weight:700;color:var(--text)">👁 Visible en talentos.php</div>
-                    <div style="font-size:11px;color:var(--text2);margin-top:2px">Aparece en la sección pública</div>
-                  </div>
-                  <div id="sw-talento-visible" data-on="1" style="width:44px;height:24px;border-radius:24px;background:#1f9d55;position:relative;transition:background .25s;flex-shrink:0">
-                    <div id="sw-talento-visible-dot" style="position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transform:translateX(20px);transition:transform .25s;pointer-events:none"></div>
-                  </div>
-                </div>
-                <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none" onclick="toggleSwitch('sw-talento-destacado')">
-                  <div>
-                    <div style="font-size:12px;font-weight:700;color:var(--text)">⭐ Destacado en el inicio</div>
-                    <div style="font-size:11px;color:var(--text2);margin-top:2px">Aparece en "Conoce nuestros talentos" (index)</div>
-                  </div>
-                  <div id="sw-talento-destacado" data-on="0" style="width:44px;height:24px;border-radius:24px;background:rgba(255,255,255,0.15);position:relative;transition:background .25s;flex-shrink:0">
-                    <div id="sw-talento-destacado-dot" style="position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .25s;pointer-events:none"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div style="display:flex;gap:10px">
-                <button onclick="guardarTalento()"
-                  style="flex:1;padding:12px;background:linear-gradient(135deg,#1f9d55,var(--green));border:none;border-radius:10px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">💾 Guardar perfil de talento</button>
-                <button onclick="cerrarModalTalento()"
-                  style="padding:12px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;font-family:'Space Grotesk',sans-serif">Cancelar</button>
-              </div>
-              <p id="talento-msg" style="font-size:12px;margin-top:10px;text-align:center;display:none"></p>
-            </div>`;
-          document.body.appendChild(modal);
-
-          // Cerrar al click fuera
-          modal.addEventListener('click', e => { if (e.target === modal) cerrarModalTalento(); });
-        }
-
-        // Cargar datos del talento
-        document.getElementById('talento-uid').value = uid;
-        document.getElementById('talento-nombre-label').textContent = `${nombreUsuario} · #${uid}`;
-        document.getElementById('talento-msg').style.display = 'none';
-
-        // Limpiar campos mientras carga
-        ['talento-profesion', 'talento-ciudad', 'talento-bio', 'talento-skills',
-          'talento-generos', 'talento-precio', 'talento-tipo-servicio', 'talento-avatar-color'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = '';
-          });
-
-        modal.style.display = 'flex';
-
-        try {
-          const r = await fetch(`gestion-qbc-2025.php?action=get_talento&id=${uid}`);
-          const d = await r.json();
-          if (d.ok && d.talento) {
-            const t = d.talento;
-            document.getElementById('talento-profesion').value = t.profesion || '';
-            document.getElementById('talento-ciudad').value = t.ciudad || '';
-            document.getElementById('talento-bio').value = t.bio || '';
-            document.getElementById('talento-skills').value = t.skills || '';
-            document.getElementById('talento-generos').value = t.generos || '';
-            document.getElementById('talento-precio').value = t.precio_desde || '';
-            document.getElementById('talento-tipo-servicio').value = t.tipo_servicio || '';
-            const color = t.avatar_color || '#10b981';
-            document.getElementById('talento-avatar-color').value = color;
-            document.getElementById('talento-color-picker').value = color;
-            setSwitch('sw-talento-visible', parseInt(t.visible_admin ?? 1));
-            setSwitch('sw-talento-destacado', parseInt(t.destacado || 0));
-          } else {
-            // Sin perfil aún — valores por defecto
-            setSwitch('sw-talento-visible', 1);
-            setSwitch('sw-talento-destacado', 0);
+        if (d.ok) {
+          emergencyCodeReal = nuevo;
+          msg.style.color = 'var(--green)';
+          msg.textContent = '✅ Código actualizado correctamente';
+          document.getElementById('nuevo-emergency').value = '';
+          // Actualizar display si estaba visible
+          if (emergencyVisible) {
+            document.getElementById('emergency-display').textContent = nuevo;
           }
-        } catch (e) {
-          document.getElementById('talento-msg').style.display = 'block';
-          document.getElementById('talento-msg').style.color = 'var(--red)';
-          document.getElementById('talento-msg').textContent = '⚠️ Error al cargar datos: ' + e.message;
-        }
-      }
-
-      function cerrarModalTalento() {
-        const modal = document.getElementById('modal-talento');
-        if (modal) modal.style.display = 'none';
-      }
-
-      async function guardarTalento() {
-        const uid = document.getElementById('talento-uid').value;
-        const msg = document.getElementById('talento-msg');
-        msg.style.display = 'none';
-
-        const fd = new FormData();
-        fd.append('id', uid);
-        fd.append('profesion', document.getElementById('talento-profesion').value.trim());
-        fd.append('bio', document.getElementById('talento-bio').value.trim());
-        fd.append('skills', document.getElementById('talento-skills').value.trim());
-        fd.append('ciudad', document.getElementById('talento-ciudad').value.trim());
-        fd.append('visible_admin', document.getElementById('sw-talento-visible').dataset.on === '1' ? '1' : '0');
-        fd.append('destacado', document.getElementById('sw-talento-destacado').dataset.on === '1' ? '1' : '0');
-        fd.append('avatar_color', document.getElementById('talento-avatar-color').value.trim());
-        fd.append('generos', document.getElementById('talento-generos').value.trim());
-        fd.append('precio_desde', document.getElementById('talento-precio').value.trim());
-        fd.append('tipo_servicio', document.getElementById('talento-tipo-servicio').value.trim());
-
-        try {
-          const r = await fetch('gestion-qbc-2025.php?action=editar_talento', { method: 'POST', body: fd });
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          const text = await r.text();
-          let d;
-          try { d = JSON.parse(text); } catch (e) { throw new Error('Sesión expirada — recarga la página'); }
-
-          msg.style.display = 'block';
-          if (d.ok) {
-            msg.style.color = 'var(--green)';
-            msg.textContent = '✅ Perfil de talento guardado correctamente';
-            setTimeout(() => { cerrarModalTalento(); cargarUsuarios(); }, 1200);
-          } else {
-            msg.style.color = 'var(--red)';
-            msg.textContent = '❌ ' + (d.msg || 'Error al guardar');
-          }
-        } catch (e) {
-          msg.style.display = 'block';
+        } else {
           msg.style.color = 'var(--red)';
-          msg.textContent = '❌ ' + e.message;
+          msg.textContent = '❌ ' + (d.msg || 'Error al guardar');
         }
+      } catch (e) {
+        msg.style.color = 'var(--red)';
+        msg.textContent = '❌ Error de conexión';
+      }
+    }
+
+    // ── QUITAR ROL ──
+    async function quitarRol(uid) {
+      if (!confirm('¿Quitar el rol de este usuario?\n\nPerderá el acceso al panel de administración.')) return;
+      const fd = new FormData();
+      fd.append('usuario_id', uid);
+      const r = await fetch('gestion-qbc-2025.php?action=quitar_rol', { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.ok) {
+        mostrarToast('✅ Rol eliminado correctamente', 'green');
+        cargarRoles();
+      } else {
+        mostrarToast('❌ ' + (d.msg || 'Error al quitar rol'), 'red');
+      }
+    }
+
+    // ── CERRAR MODALES CON ESC ──
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        cerrarModal?.();
+        cerrarPassUser?.();
+        cerrarPermisos?.();
+        cerrarPass?.();
+      }
+    });
+
+    // ── INICIO ──
+    cargarDashboard();
+    actualizarBadgeSolicitudes();
+
+    // ── HAMBURGUESA / DRAWER ──
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebarEl');
+      const ov = document.getElementById('sbOverlay');
+      const btn = document.getElementById('btnHamburger');
+      const open = sb.classList.toggle('open');
+      ov.classList.toggle('open', open);
+      btn.classList.toggle('open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+    function cerrarSidebar() {
+      const sb = document.getElementById('sidebarEl');
+      const ov = document.getElementById('sbOverlay');
+      const btn = document.getElementById('btnHamburger');
+      sb.classList.remove('open');
+      ov.classList.remove('open');
+      btn.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    // Cerrar con Escape
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarSidebar(); });
+
+    // Mostrar/ocultar hamburguesa según ancho
+    function checkHamburger() {
+      const btn = document.getElementById('btnHamburger');
+      if (!btn) return;
+      btn.style.display = window.innerWidth <= 640 ? 'flex' : 'none';
+      if (window.innerWidth > 640) cerrarSidebar();
+    }
+    window.addEventListener('resize', checkHamburger);
+    checkHamburger();
+
+    // Cerrar drawer al hacer clic en un item del sidebar (solo móvil)
+    document.querySelectorAll('.sb-item, .sb-logout').forEach(el => {
+      el.addEventListener('click', () => {
+        if (window.innerWidth <= 640) cerrarSidebar();
+      });
+    });
+
+    // ══════════════════════════════════════════════════════
+    // MODAL EDITAR TALENTO — solo superadmin y admin delegado
+    // ══════════════════════════════════════════════════════
+    async function abrirModalTalento(uid, nombreUsuario) {
+      // Crear modal si no existe
+      let modal = document.getElementById('modal-talento');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-talento';
+        modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
+        modal.innerHTML = `
+              <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:32px;width:100%;max-width:600px;position:relative;margin:auto;max-height:90vh;overflow-y:auto">
+                <button onclick="cerrarModalTalento()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer">✕</button>
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px">🌟 Editar perfil de talento</h3>
+                <p id="talento-nombre-label" style="color:var(--text3);font-size:13px;font-family:'JetBrains Mono',monospace;margin-bottom:20px"></p>
+                <input type="hidden" id="talento-uid">
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                  <div>
+                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Profesión / Título</label>
+                    <input type="text" id="talento-profesion" placeholder="ej: Músico, Desarrollador..."
+                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
+                  </div>
+                  <div>
+                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Ciudad</label>
+                    <input type="text" id="talento-ciudad" placeholder="Quibdó, Chocó..."
+                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
+                  </div>
+                </div>
+
+                <div style="margin-bottom:12px">
+                  <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Biografía / Descripción</label>
+                  <textarea id="talento-bio" rows="3" placeholder="Descripción del talento..."
+                    style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none;resize:vertical"></textarea>
+                </div>
+
+                <div style="margin-bottom:12px">
+                  <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Habilidades / Skills <span style="color:var(--text3);font-weight:400">(separadas por coma)</span></label>
+                  <input type="text" id="talento-skills" placeholder="PHP, Diseño, Música, Fotografía..."
+                    style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                  <div>
+                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Géneros / Especialidad</label>
+                    <input type="text" id="talento-generos" placeholder="Salsa, Chirimía, Vallenato..."
+                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
+                  </div>
+                  <div>
+                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Precio desde (COP)</label>
+                    <input type="number" id="talento-precio" placeholder="50000"
+                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none">
+                  </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                  <div>
+                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Tipo de servicio</label>
+                    <select id="talento-tipo-servicio"
+                      style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none">
+                      <option value="">Sin especificar</option>
+                      <option value="presencial">Presencial</option>
+                      <option value="remoto">Remoto</option>
+                      <option value="ambos">Presencial y remoto</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">Color de avatar (hex)</label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <input type="color" id="talento-color-picker" value="#10b981"
+                        style="width:40px;height:38px;border:none;background:none;cursor:pointer;border-radius:6px"
+                        oninput="document.getElementById('talento-avatar-color').value=this.value">
+                      <input type="text" id="talento-avatar-color" placeholder="#10b981"
+                        style="flex:1;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none"
+                        oninput="document.getElementById('talento-color-picker').value=this.value||'#10b981'">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Toggles visibilidad y destacado -->
+                <div style="display:flex;gap:10px;margin-bottom:20px">
+                  <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none" onclick="toggleSwitch('sw-talento-visible')">
+                    <div>
+                      <div style="font-size:12px;font-weight:700;color:var(--text)">👁 Visible en talentos.php</div>
+                      <div style="font-size:11px;color:var(--text2);margin-top:2px">Aparece en la sección pública</div>
+                    </div>
+                    <div id="sw-talento-visible" data-on="1" style="width:44px;height:24px;border-radius:24px;background:#1f9d55;position:relative;transition:background .25s;flex-shrink:0">
+                      <div id="sw-talento-visible-dot" style="position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transform:translateX(20px);transition:transform .25s;pointer-events:none"></div>
+                    </div>
+                  </div>
+                  <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none" onclick="toggleSwitch('sw-talento-destacado')">
+                    <div>
+                      <div style="font-size:12px;font-weight:700;color:var(--text)">⭐ Destacado en el inicio</div>
+                      <div style="font-size:11px;color:var(--text2);margin-top:2px">Aparece en "Conoce nuestros talentos" (index)</div>
+                    </div>
+                    <div id="sw-talento-destacado" data-on="0" style="width:44px;height:24px;border-radius:24px;background:rgba(255,255,255,0.15);position:relative;transition:background .25s;flex-shrink:0">
+                      <div id="sw-talento-destacado-dot" style="position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .25s;pointer-events:none"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:10px">
+                  <button onclick="guardarTalento()"
+                    style="flex:1;padding:12px;background:linear-gradient(135deg,#1f9d55,var(--green));border:none;border-radius:10px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">💾 Guardar perfil de talento</button>
+                  <button onclick="cerrarModalTalento()"
+                    style="padding:12px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;font-family:'Space Grotesk',sans-serif">Cancelar</button>
+                </div>
+                <p id="talento-msg" style="font-size:12px;margin-top:10px;text-align:center;display:none"></p>
+              </div>`;
+        document.body.appendChild(modal);
+
+        // Cerrar al click fuera
+        modal.addEventListener('click', e => { if (e.target === modal) cerrarModalTalento(); });
       }
 
-      // ══════════════════════════════════════════════════════════════════
-      // HELPERS COMPARTIDOS — tablas de directorios
-      // ══════════════════════════════════════════════════════════════════
-      function avatarHtml(foto, nombre, color) {
-        if (foto) return `<img src="${foto}" style="width:36px;height:36px;border-radius:50%;object-fit:cover">`;
-        const letra = (nombre||'?')[0].toUpperCase();
-        const bg = color || '#1e3a5f';
-        return `<div style="width:36px;height:36px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;flex-shrink:0">${letra}</div>`;
-      }
+      // Cargar datos del talento
+      document.getElementById('talento-uid').value = uid;
+      document.getElementById('talento-nombre-label').textContent = `${nombreUsuario} · #${uid}`;
+      document.getElementById('talento-msg').style.display = 'none';
 
-      function toggleChip(val, label1, label0) {
-        const on = parseInt(val) === 1;
-        return `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${on?'rgba(16,185,129,.18)':'rgba(255,68,68,.15)'};color:${on?'var(--green)':'var(--red)'}">
-          ${on ? '✅ '+(label1||'Visible') : '🚫 '+(label0||'Oculto')}
-        </span>`;
-      }
+      // Limpiar campos mientras carga
+      ['talento-profesion', 'talento-ciudad', 'talento-bio', 'talento-skills',
+        'talento-generos', 'talento-precio', 'talento-tipo-servicio', 'talento-avatar-color'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
 
-      function btnToggle(uid, tabla, campo, valorActual, label) {
-        const nuevoValor = parseInt(valorActual) === 1 ? 0 : 1;
-        return `<button onclick="toggleDirCampo(${uid},'${tabla}','${campo}',${nuevoValor},this)"
-          style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:11px;font-family:'Space Grotesk',sans-serif;cursor:pointer;white-space:nowrap"
-          title="Cambiar ${label}">${parseInt(valorActual)?'🔒 Ocultar':'👁 Mostrar'}</button>`;
-      }
+      modal.style.display = 'flex';
 
-      function btnDestacado(uid, tabla, valorActual) {
-        const nuevoValor = parseInt(valorActual) === 1 ? 0 : 1;
-        return `<button onclick="toggleDirCampo(${uid},'${tabla}','destacado',${nuevoValor},this)"
-          style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:${parseInt(valorActual)?'var(--amber)':'var(--text2)'};font-size:11px;font-family:'Space Grotesk',sans-serif;cursor:pointer"
-          title="${parseInt(valorActual)?'Quitar del inicio (index)':'Mostrar en inicio (index)'}">${parseInt(valorActual)?'⭐ Quitar index':'☆ Poner en index'}</button>`;
+      try {
+        const r = await fetch(`gestion-qbc-2025.php?action=get_talento&id=${uid}`);
+        const d = await r.json();
+        if (d.ok && d.talento) {
+          const t = d.talento;
+          document.getElementById('talento-profesion').value = t.profesion || '';
+          document.getElementById('talento-ciudad').value = t.ciudad || '';
+          document.getElementById('talento-bio').value = t.bio || '';
+          document.getElementById('talento-skills').value = t.skills || '';
+          document.getElementById('talento-generos').value = t.generos || '';
+          document.getElementById('talento-precio').value = t.precio_desde || '';
+          document.getElementById('talento-tipo-servicio').value = t.tipo_servicio || '';
+          const color = t.avatar_color || '#10b981';
+          document.getElementById('talento-avatar-color').value = color;
+          document.getElementById('talento-color-picker').value = color;
+          setSwitch('sw-talento-visible', parseInt(t.visible_admin ?? 1));
+          setSwitch('sw-talento-destacado', parseInt(t.destacado || 0));
+        } else {
+          // Sin perfil aún — valores por defecto
+          setSwitch('sw-talento-visible', 1);
+          setSwitch('sw-talento-destacado', 0);
+        }
+      } catch (e) {
+        document.getElementById('talento-msg').style.display = 'block';
+        document.getElementById('talento-msg').style.color = 'var(--red)';
+        document.getElementById('talento-msg').textContent = '⚠️ Error al cargar datos: ' + e.message;
       }
+    }
 
-      async function toggleDirCampo(uid, tabla, campo, valor, btn) {
-        btn.disabled = true;
-        btn.textContent = '…';
-        try {
-          const fd = new FormData();
-          fd.append('id', uid); fd.append('tabla', tabla);
-          fd.append('campo', campo); fd.append('valor', valor);
-          const r = await fetch('gestion-qbc-2025.php?action=toggle_dir_campo', {method:'POST',body:fd});
-          const d = await r.json();
-          if (d.ok) {
-            mostrarToast('✅ Actualizado', 'green');
-            recargarSeccion();
-          } else {
-            mostrarToast('❌ ' + (d.msg||'Error'), 'red');
-            btn.disabled = false; btn.textContent = '?';
-          }
-        } catch(e) {
-          mostrarToast('❌ Error de red', 'red');
+    function cerrarModalTalento() {
+      const modal = document.getElementById('modal-talento');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function guardarTalento() {
+      const uid = document.getElementById('talento-uid').value;
+      const msg = document.getElementById('talento-msg');
+      msg.style.display = 'none';
+
+      const fd = new FormData();
+      fd.append('id', uid);
+      fd.append('profesion', document.getElementById('talento-profesion').value.trim());
+      fd.append('bio', document.getElementById('talento-bio').value.trim());
+      fd.append('skills', document.getElementById('talento-skills').value.trim());
+      fd.append('ciudad', document.getElementById('talento-ciudad').value.trim());
+      fd.append('visible_admin', document.getElementById('sw-talento-visible').dataset.on === '1' ? '1' : '0');
+      fd.append('destacado', document.getElementById('sw-talento-destacado').dataset.on === '1' ? '1' : '0');
+      fd.append('avatar_color', document.getElementById('talento-avatar-color').value.trim());
+      fd.append('generos', document.getElementById('talento-generos').value.trim());
+      fd.append('precio_desde', document.getElementById('talento-precio').value.trim());
+      fd.append('tipo_servicio', document.getElementById('talento-tipo-servicio').value.trim());
+
+      try {
+        const r = await fetch('gestion-qbc-2025.php?action=editar_talento', { method: 'POST', body: fd });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const text = await r.text();
+        let d;
+        try { d = JSON.parse(text); } catch (e) { throw new Error('Sesión expirada — recarga la página'); }
+
+        msg.style.display = 'block';
+        if (d.ok) {
+          msg.style.color = 'var(--green)';
+          msg.textContent = '✅ Perfil de talento guardado correctamente';
+          setTimeout(() => { cerrarModalTalento(); cargarUsuarios(); }, 1200);
+        } else {
+          msg.style.color = 'var(--red)';
+          msg.textContent = '❌ ' + (d.msg || 'Error al guardar');
+        }
+      } catch (e) {
+        msg.style.display = 'block';
+        msg.style.color = 'var(--red)';
+        msg.textContent = '❌ ' + e.message;
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // HELPERS COMPARTIDOS — tablas de directorios
+    // ══════════════════════════════════════════════════════════════════
+    function avatarHtml(foto, nombre, color) {
+      if (foto) return `<img src="${foto}" style="width:36px;height:36px;border-radius:50%;object-fit:cover">`;
+      const letra = (nombre || '?')[0].toUpperCase();
+      const bg = color || '#1e3a5f';
+      return `<div style="width:36px;height:36px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;flex-shrink:0">${letra}</div>`;
+    }
+
+    function toggleChip(val, label1, label0) {
+      const on = parseInt(val) === 1;
+      return `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${on ? 'rgba(16,185,129,.18)' : 'rgba(255,68,68,.15)'};color:${on ? 'var(--green)' : 'var(--red)'}">
+            ${on ? '✅ ' + (label1 || 'Visible') : '🚫 ' + (label0 || 'Oculto')}
+          </span>`;
+    }
+
+    function btnToggle(uid, tabla, campo, valorActual, label) {
+      const nuevoValor = parseInt(valorActual) === 1 ? 0 : 1;
+      return `<button onclick="toggleDirCampo(${uid},'${tabla}','${campo}',${nuevoValor},this)"
+            style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:11px;font-family:'Space Grotesk',sans-serif;cursor:pointer;white-space:nowrap"
+            title="Cambiar ${label}">${parseInt(valorActual) ? '🔒 Ocultar' : '👁 Mostrar'}</button>`;
+    }
+
+    function btnDestacado(uid, tabla, valorActual) {
+      const nuevoValor = parseInt(valorActual) === 1 ? 0 : 1;
+      return `<button onclick="toggleDirCampo(${uid},'${tabla}','destacado',${nuevoValor},this)"
+            style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:${parseInt(valorActual) ? 'var(--amber)' : 'var(--text2)'};font-size:11px;font-family:'Space Grotesk',sans-serif;cursor:pointer"
+            title="${parseInt(valorActual) ? 'Quitar del inicio (index)' : 'Mostrar en inicio (index)'}">${parseInt(valorActual) ? '⭐ Quitar index' : '☆ Poner en index'}</button>`;
+    }
+
+    async function toggleDirCampo(uid, tabla, campo, valor, btn) {
+      btn.disabled = true;
+      btn.textContent = '…';
+      try {
+        const fd = new FormData();
+        fd.append('id', uid); fd.append('tabla', tabla);
+        fd.append('campo', campo); fd.append('valor', valor);
+        const r = await fetch('gestion-qbc-2025.php?action=toggle_dir_campo', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.ok) {
+          mostrarToast('✅ Actualizado', 'green');
+          recargarSeccion();
+        } else {
+          mostrarToast('❌ ' + (d.msg || 'Error'), 'red');
           btn.disabled = false; btn.textContent = '?';
         }
+      } catch (e) {
+        mostrarToast('❌ Error de red', 'red');
+        btn.disabled = false; btn.textContent = '?';
       }
+    }
 
-      function paginacionHtml(total, page, limit, fnName) {
-        const pages = Math.ceil(total / limit);
-        if (pages <= 1) return '';
-        let html = '';
-        const btnStyle = 'padding:6px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:13px;cursor:pointer;font-family:\'Space Grotesk\',sans-serif';
-        const btnActiveStyle = btnStyle + ';background:var(--green2);color:#000;font-weight:700;border-color:var(--green)';
-        for (let i = 1; i <= pages; i++) {
-          html += `<button onclick="${fnName}(${i})" style="${i===page?btnActiveStyle:btnStyle}">${i}</button>`;
-        }
-        return `<div style="font-size:12px;color:var(--text3);text-align:center;width:100%;margin-bottom:4px">${total} registros · pág. ${page}/${pages}</div>` + html;
+    function paginacionHtml(total, page, limit, fnName) {
+      const pages = Math.ceil(total / limit);
+      if (pages <= 1) return '';
+      let html = '';
+      const btnStyle = 'padding:6px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:13px;cursor:pointer;font-family:\'Space Grotesk\',sans-serif';
+      const btnActiveStyle = btnStyle + ';background:var(--green2);color:#000;font-weight:700;border-color:var(--green)';
+      for (let i = 1; i <= pages; i++) {
+        html += `<button onclick="${fnName}(${i})" style="${i === page ? btnActiveStyle : btnStyle}">${i}</button>`;
       }
+      return `<div style="font-size:12px;color:var(--text3);text-align:center;width:100%;margin-bottom:4px">${total} registros · pág. ${page}/${pages}</div>` + html;
+    }
 
-      function tableWrap(inner) {
-        return `<div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
-          <table style="width:100%;border-collapse:collapse;font-size:13px;font-family:'Space Grotesk',sans-serif">
-            ${inner}
-          </table></div>`;
-      }
+    function tableWrap(inner) {
+      return `<div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;font-family:'Space Grotesk',sans-serif">
+              ${inner}
+            </table></div>`;
+    }
 
-      function th(label) {
-        return `<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);background:var(--bg2);border-bottom:1px solid var(--border)">${label}</th>`;
-      }
+    function th(label) {
+      return `<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);background:var(--bg2);border-bottom:1px solid var(--border)">${label}</th>`;
+    }
 
-      function td(content, extra) {
-        return `<td style="padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;${extra||''}">${content}</td>`;
-      }
+    function td(content, extra) {
+      return `<td style="padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;${extra || ''}">${content}</td>`;
+    }
 
-      // ══════════════════════════════════════════════════════════════════
-      // CANDIDATOS
-      // ══════════════════════════════════════════════════════════════════
-      let candPage = 1;
-      async function cargarCandidatos(page) {
-        if (page) candPage = page;
-        const q   = document.getElementById('cand-buscar')?.value || '';
-        const vis = document.getElementById('cand-visible')?.value ?? '-1';
-        const loading = document.getElementById('cand-loading');
-        const tableEl = document.getElementById('cand-table');
-        const pagEl   = document.getElementById('cand-pagination');
-        loading.style.display = 'block'; tableEl.innerHTML = ''; pagEl.innerHTML = '';
-        try {
-          const r = await fetch(`gestion-qbc-2025.php?action=candidatos&page=${candPage}&q=${encodeURIComponent(q)}&visible=${vis}`);
-          const d = await r.json();
-          loading.style.display = 'none';
-          if (!d.ok) { tableEl.innerHTML = `<p style="color:var(--red);padding:16px">${d.msg}</p>`; return; }
-          if (!d.candidatos.length) { tableEl.innerHTML = '<p style="color:var(--text3);padding:20px;text-align:center">Sin resultados</p>'; return; }
+    // ══════════════════════════════════════════════════════════════════
+    // CANDIDATOS
+    // ══════════════════════════════════════════════════════════════════
+    let candPage = 1;
+    async function cargarCandidatos(page) {
+      if (page) candPage = page;
+      const q = document.getElementById('cand-buscar')?.value || '';
+      const vis = document.getElementById('cand-visible')?.value ?? '-1';
+      const loading = document.getElementById('cand-loading');
+      const tableEl = document.getElementById('cand-table');
+      const pagEl = document.getElementById('cand-pagination');
+      loading.style.display = 'block'; tableEl.innerHTML = ''; pagEl.innerHTML = '';
+      try {
+        const r = await fetch(`gestion-qbc-2025.php?action=candidatos&page=${candPage}&q=${encodeURIComponent(q)}&visible=${vis}`);
+        const d = await r.json();
+        loading.style.display = 'none';
+        if (!d.ok) { tableEl.innerHTML = `<p style="color:var(--red);padding:16px">${d.msg}</p>`; return; }
+        if (!d.candidatos.length) { tableEl.innerHTML = '<p style="color:var(--text3);padding:20px;text-align:center">Sin resultados</p>'; return; }
 
-          let rows = '';
-          for (const c of d.candidatos) {
-            const nombre = (c.nombre||'') + ' ' + (c.apellido||'');
-            rows += `<tr>
-              ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(c.foto,nombre,c.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
-              ${td(c.ciudad||'—')}
-              ${td(c.profesion||'—')}
-              ${td(c.skills ? `<span style="font-size:11px;color:var(--text2)">${c.skills.substring(0,60)}${c.skills.length>60?'…':''}</span>` : '—')}
-              ${td(toggleChip(c.visible_admin??1))}
-              ${td(toggleChip(c.destacado??0,'Destacado','Normal'))}
-              ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
-                ${btnToggle(c.id,'talento_perfil','visible_admin',c.visible_admin??1,'visibilidad')}
-                ${btnDestacado(c.id,'talento_perfil',c.destacado??0)}
-                <button onclick="abrirModalTalento(${c.id},'${(nombre).replace(/'/g,"\\'")}',false)"
+        let rows = '';
+        for (const c of d.candidatos) {
+          const nombre = (c.nombre || '') + ' ' + (c.apellido || '');
+          rows += `<tr>
+                ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(c.foto, nombre, c.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
+                ${td(c.ciudad || '—')}
+                ${td(c.profesion || '—')}
+                ${td(c.skills ? `<span style="font-size:11px;color:var(--text2)">${c.skills.substring(0, 60)}${c.skills.length > 60 ? '…' : ''}</span>` : '—')}
+                ${td(toggleChip(c.visible_admin ?? 1))}
+                ${td(toggleChip(c.destacado ?? 0, 'Destacado', 'Normal'))}
+                ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
+                ${btnToggle(c.id, 'talento_perfil', 'visible_admin', c.visible_admin ?? 1, 'visibilidad')}
+                ${btnDestacado(c.id, 'talento_perfil', c.destacado ?? 0)}
+                <button onclick="abrirModalTalento(${c.id},'${(nombre).replace(/'/g, "\\'")}',false)"
                   style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:11px;cursor:pointer">✏️ Editar</button>
               </div>`)}
             </tr>`;
           }
           tableEl.innerHTML = tableWrap(`<thead><tr>${th('Candidato')}${th('Ciudad')}${th('Profesión')}${th('Skills')}${th('Visible')}${th('En index')}${th('Acciones')}</tr></thead><tbody>${rows}</tbody>`);
           pagEl.innerHTML = paginacionHtml(d.total, candPage, 20, 'cargarCandidatos');
-        } catch(e) {
+        } catch (e) {
           loading.style.display = 'none';
           tableEl.innerHTML = `<p style="color:var(--red);padding:16px">❌ ${e.message}</p>`;
         }
@@ -6683,11 +7292,11 @@ if ($action) {
       let empdirPage = 1;
       async function cargarEmpresasDir(page) {
         if (page) empdirPage = page;
-        const q   = document.getElementById('empdir-buscar')?.value || '';
+        const q = document.getElementById('empdir-buscar')?.value || '';
         const vis = document.getElementById('empdir-visible')?.value ?? '-1';
         const loading = document.getElementById('empdir-loading');
         const tableEl = document.getElementById('empdir-table');
-        const pagEl   = document.getElementById('empdir-pagination');
+        const pagEl = document.getElementById('empdir-pagination');
         loading.style.display = 'block'; tableEl.innerHTML = ''; pagEl.innerHTML = '';
         try {
           const r = await fetch(`gestion-qbc-2025.php?action=empresas_dir&page=${empdirPage}&q=${encodeURIComponent(q)}&visible=${vis}`);
@@ -6700,23 +7309,23 @@ if ($action) {
           for (const e of d.empresas) {
             const nombre = e.nombre_empresa || e.nombre || '—';
             rows += `<tr>
-              ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(e.logo,nombre,e.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
-              ${td(e.sector||'—')}
-              ${td(e.nit||'—')}
-              ${td(e.ciudad||'—')}
-              ${td(toggleChip(e.visible_admin??1))}
-              ${td(toggleChip(e.destacado??0,'Destacado','Normal'))}
+              ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(e.logo, nombre, e.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
+              ${td(e.sector || '—')}
+              ${td(e.nit || '—')}
+              ${td(e.ciudad || '—')}
+              ${td(toggleChip(e.visible_admin ?? 1))}
+              ${td(toggleChip(e.destacado ?? 0, 'Destacado', 'Normal'))}
               ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
-                ${btnToggle(e.id,'perfiles_empresa','visible_admin',e.visible_admin??1,'visibilidad')}
-                ${btnDestacado(e.id,'perfiles_empresa',e.destacado??0)}
-                <button onclick="abrirModalEmpresa(${e.id},'${nombre.replace(/'/g,"\\'")}') "
-                  style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:11px;cursor:pointer">✏️ Editar</button>
-              </div>`)}
-            </tr>`;
+                ${btnToggle(e.id, 'perfiles_empresa', 'visible_admin', e.visible_admin ?? 1, 'visibilidad')}
+                ${btnDestacado(e.id, 'perfiles_empresa', e.destacado ?? 0)}
+                <button onclick="abrirModalEmpresa(${e.id},'${nombre.replace(/'/g, "\\'")}') "
+                    style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:11px;cursor:pointer">✏️ Editar</button>
+                </div>`)}
+              </tr>`;
           }
           tableEl.innerHTML = tableWrap(`<thead><tr>${th('Empresa')}${th('Sector')}${th('NIT')}${th('Ciudad')}${th('Visible')}${th('Destacado')}${th('Acciones')}</tr></thead><tbody>${rows}</tbody>`);
           pagEl.innerHTML = paginacionHtml(d.total, empdirPage, 20, 'cargarEmpresasDir');
-        } catch(e) {
+        } catch (e) {
           loading.style.display = 'none';
           tableEl.innerHTML = `<p style="color:var(--red);padding:16px">❌ ${e.message}</p>`;
         }
@@ -6728,11 +7337,11 @@ if ($action) {
       let srvdirPage = 1;
       async function cargarServiciosDir(page) {
         if (page) srvdirPage = page;
-        const q   = document.getElementById('srvdir-buscar')?.value || '';
+        const q = document.getElementById('srvdir-buscar')?.value || '';
         const vis = document.getElementById('srvdir-visible')?.value ?? '-1';
         const loading = document.getElementById('srvdir-loading');
         const tableEl = document.getElementById('srvdir-table');
-        const pagEl   = document.getElementById('srvdir-pagination');
+        const pagEl = document.getElementById('srvdir-pagination');
         loading.style.display = 'block'; tableEl.innerHTML = ''; pagEl.innerHTML = '';
         try {
           const r = await fetch(`gestion-qbc-2025.php?action=servicios_dir&page=${srvdirPage}&q=${encodeURIComponent(q)}&visible=${vis}`);
@@ -6743,74 +7352,74 @@ if ($action) {
 
           let rows = '';
           for (const s of d.servicios) {
-            const nombre = (s.nombre||'') + ' ' + (s.apellido||'');
+            const nombre = (s.nombre || '') + ' ' + (s.apellido || '');
             rows += `<tr>
-              ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(s.foto,nombre,s.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
-              ${td(s.tipo_servicio||'—')}
-              ${td(s.generos||'—')}
-              ${td(s.precio_desde ? `<span style="color:var(--green);font-weight:700">$${s.precio_desde}</span>` : '—')}
-              ${td(toggleChip(s.visible_admin??1))}
-              ${td(toggleChip(s.destacado??0,'Destacado','Normal'))}
-              ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
-                ${btnToggle(s.id,'talento_perfil','visible_admin',s.visible_admin??1,'visibilidad')}
-                ${btnDestacado(s.id,'talento_perfil',s.destacado??0)}
-                <button onclick="abrirModalTalento(${s.id},'${nombre.replace(/'/g,"\\'")}',false)"
+                ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(s.foto, nombre, s.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
+                ${td(s.tipo_servicio || '—')}
+                ${td(s.generos || '—')}
+                ${td(s.precio_desde ? `<span style="color:var(--green);font-weight:700">$${s.precio_desde}</span>` : '—')}
+                ${td(toggleChip(s.visible_admin ?? 1))}
+                ${td(toggleChip(s.destacado ?? 0, 'Destacado', 'Normal'))}
+                ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
+                  ${btnToggle(s.id, 'talento_perfil', 'visible_admin', s.visible_admin ?? 1, 'visibilidad')}
+                  ${btnDestacado(s.id, 'talento_perfil', s.destacado ?? 0)}
+                  <button onclick="abrirModalTalento(${s.id},'${nombre.replace(/'/g, "\\'")}',false)"
                   style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:11px;cursor:pointer">✏️ Editar</button>
               </div>`)}
-            </tr>`;
-          }
-          tableEl.innerHTML = tableWrap(`<thead><tr>${th('Prestador')}${th('Tipo servicio')}${th('Géneros')}${th('Precio desde')}${th('Visible')}${th('Destacado')}${th('Acciones')}</tr></thead><tbody>${rows}</tbody>`);
-          pagEl.innerHTML = paginacionHtml(d.total, srvdirPage, 20, 'cargarServiciosDir');
-        } catch(e) {
-          loading.style.display = 'none';
-          tableEl.innerHTML = `<p style="color:var(--red);padding:16px">❌ ${e.message}</p>`;
+              </tr>`;
         }
+        tableEl.innerHTML = tableWrap(`<thead><tr>${th('Prestador')}${th('Tipo servicio')}${th('Géneros')}${th('Precio desde')}${th('Visible')}${th('Destacado')}${th('Acciones')}</tr></thead><tbody>${rows}</tbody>`);
+        pagEl.innerHTML = paginacionHtml(d.total, srvdirPage, 20, 'cargarServiciosDir');
+      } catch (e) {
+        loading.style.display = 'none';
+        tableEl.innerHTML = `<p style="color:var(--red);padding:16px">❌ ${e.message}</p>`;
       }
+    }
 
-      // ══════════════════════════════════════════════════════════════════
-      // NEGOCIOS DIRECTORIO
-      // ══════════════════════════════════════════════════════════════════
-      let negdirPage = 1;
-      async function cargarNegociosDir(page) {
-        if (page) negdirPage = page;
-        const q    = document.getElementById('negdir-buscar')?.value || '';
-        const tipo = document.getElementById('negdir-tipo')?.value || '';
-        const vis  = document.getElementById('negdir-visible')?.value ?? '-1';
-        const loading = document.getElementById('negdir-loading');
-        const tableEl = document.getElementById('negdir-table');
-        const pagEl   = document.getElementById('negdir-pagination');
-        loading.style.display = 'block'; tableEl.innerHTML = ''; pagEl.innerHTML = '';
-        try {
-          const r = await fetch(`gestion-qbc-2025.php?action=negocios_dir&page=${negdirPage}&q=${encodeURIComponent(q)}&tipo=${tipo}&visible=${vis}`);
-          const d = await r.json();
-          loading.style.display = 'none';
-          if (!d.ok) { tableEl.innerHTML = `<p style="color:var(--red);padding:16px">${d.msg}</p>`; return; }
-          if (!d.negocios.length) { tableEl.innerHTML = '<p style="color:var(--text3);padding:20px;text-align:center">Sin resultados</p>'; return; }
+    // ══════════════════════════════════════════════════════════════════
+    // NEGOCIOS DIRECTORIO
+    // ══════════════════════════════════════════════════════════════════
+    let negdirPage = 1;
+    async function cargarNegociosDir(page) {
+      if (page) negdirPage = page;
+      const q = document.getElementById('negdir-buscar')?.value || '';
+      const tipo = document.getElementById('negdir-tipo')?.value || '';
+      const vis = document.getElementById('negdir-visible')?.value ?? '-1';
+      const loading = document.getElementById('negdir-loading');
+      const tableEl = document.getElementById('negdir-table');
+      const pagEl = document.getElementById('negdir-pagination');
+      loading.style.display = 'block'; tableEl.innerHTML = ''; pagEl.innerHTML = '';
+      try {
+        const r = await fetch(`gestion-qbc-2025.php?action=negocios_dir&page=${negdirPage}&q=${encodeURIComponent(q)}&tipo=${tipo}&visible=${vis}`);
+        const d = await r.json();
+        loading.style.display = 'none';
+        if (!d.ok) { tableEl.innerHTML = `<p style="color:var(--red);padding:16px">${d.msg}</p>`; return; }
+        if (!d.negocios.length) { tableEl.innerHTML = '<p style="color:var(--text3);padding:20px;text-align:center">Sin resultados</p>'; return; }
 
-          let rows = '';
-          for (const n of d.negocios) {
-            const nombre = n.nombre_negocio || n.nombre || '—';
-            const tipoBadge = n.tipo_negocio === 'cc'
-              ? `<span style="padding:2px 8px;border-radius:10px;background:rgba(59,130,246,.18);color:#60a5fa;font-size:10px;font-weight:700">CC</span>`
-              : `<span style="padding:2px 8px;border-radius:10px;background:rgba(16,185,129,.18);color:var(--green);font-size:10px;font-weight:700">EMP</span>`;
-            rows += `<tr>
-              ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(n.logo,nombre,n.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
-              ${td(n.categoria||'—')}
-              ${td(n.whatsapp ? `<a href="https://wa.me/${n.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">📱 ${n.whatsapp}</a>` : '—')}
-              ${td(tipoBadge)}
-              ${td(toggleChip(n.visible_admin??1))}
-              ${td(toggleChip(n.destacado??0,'Destacado','Normal'))}
-              ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
-                ${btnToggle(n.id,'negocios_locales','visible_admin',n.visible_admin??1,'visibilidad')}
-                ${btnDestacado(n.id,'negocios_locales',n.destacado??0)}
-                <button onclick="abrirModalNegocio(${n.id},'${nombre.replace(/'/g,"\\'")}') "
+        let rows = '';
+        for (const n of d.negocios) {
+          const nombre = n.nombre_negocio || n.nombre || '—';
+          const tipoBadge = n.tipo_negocio === 'cc'
+            ? `<span style="padding:2px 8px;border-radius:10px;background:rgba(59,130,246,.18);color:#60a5fa;font-size:10px;font-weight:700">CC</span>`
+            : `<span style="padding:2px 8px;border-radius:10px;background:rgba(16,185,129,.18);color:var(--green);font-size:10px;font-weight:700">EMP</span>`;
+          rows += `<tr>
+                ${td(`<div style="display:flex;align-items:center;gap:10px">${avatarHtml(n.logo, nombre, n.avatar_color)}<span style="font-weight:600">${nombre}</span></div>`)}
+                ${td(n.categoria || '—')}
+                ${td(n.whatsapp ? `<a href="https://wa.me/${n.whatsapp.replace(/\D/g, '')}" target="_blank" style="color:var(--green);text-decoration:none">📱 ${n.whatsapp}</a>` : '—')}
+                ${td(tipoBadge)}
+                ${td(toggleChip(n.visible_admin ?? 1))}
+                ${td(toggleChip(n.destacado ?? 0, 'Destacado', 'Normal'))}
+                ${td(`<div style="display:flex;gap:6px;flex-wrap:wrap">
+                ${btnToggle(n.id, 'negocios_locales', 'visible_admin', n.visible_admin ?? 1, 'visibilidad')}
+                ${btnDestacado(n.id, 'negocios_locales', n.destacado ?? 0)}
+                <button onclick="abrirModalNegocio(${n.id},'${nombre.replace(/'/g, "\\'")}') "
                   style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:11px;cursor:pointer">✏️ Editar</button>
               </div>`)}
             </tr>`;
           }
           tableEl.innerHTML = tableWrap(`<thead><tr>${th('Negocio')}${th('Categoría')}${th('WhatsApp')}${th('Tipo')}${th('Visible')}${th('Destacado')}${th('Acciones')}</tr></thead><tbody>${rows}</tbody>`);
           pagEl.innerHTML = paginacionHtml(d.total, negdirPage, 20, 'cargarNegociosDir');
-        } catch(e) {
+        } catch (e) {
           loading.style.display = 'none';
           tableEl.innerHTML = `<p style="color:var(--red);padding:16px">❌ ${e.message}</p>`;
         }
@@ -6915,21 +7524,21 @@ if ($action) {
           const d = await r.json();
           if (!d.ok) { mostrarToast('❌ ' + d.msg, 'red'); cerrarModalNegocio(); return; }
           const n = d.negocio;
-          document.getElementById('negocio-uid').value         = uid;
+          document.getElementById('negocio-uid').value = uid;
           document.getElementById('negocio-nombre-label').textContent = nombreUsuario + ' #' + uid;
-          document.getElementById('negocio-nombre').value      = n.nombre_negocio || '';
-          document.getElementById('negocio-whatsapp').value    = n.whatsapp || '';
+          document.getElementById('negocio-nombre').value = n.nombre_negocio || '';
+          document.getElementById('negocio-whatsapp').value = n.whatsapp || '';
           document.getElementById('negocio-descripcion').value = n.descripcion || '';
-          document.getElementById('negocio-ubicacion').value   = n.ubicacion || '';
-          document.getElementById('negocio-tipo').value        = n.tipo_negocio || 'emp';
-          document.getElementById('negocio-visible').checked   = parseInt(n.visible_admin) !== 0;
+          document.getElementById('negocio-ubicacion').value = n.ubicacion || '';
+          document.getElementById('negocio-tipo').value = n.tipo_negocio || 'emp';
+          document.getElementById('negocio-visible').checked = parseInt(n.visible_admin) !== 0;
           document.getElementById('negocio-destacado').checked = parseInt(n.destacado) === 1;
           // Seleccionar categoría
           const catSel = document.getElementById('negocio-categoria');
           for (let opt of catSel.options) {
             if (opt.value === n.categoria) { opt.selected = true; break; }
           }
-        } catch(e) {
+        } catch (e) {
           mostrarToast('❌ Error cargando negocio', 'red');
           cerrarModalNegocio();
         }
@@ -6941,31 +7550,31 @@ if ($action) {
       }
 
       async function guardarNegocio() {
-        const uid         = document.getElementById('negocio-uid').value;
-        const msg         = document.getElementById('negocio-msg');
+        const uid = document.getElementById('negocio-uid').value;
+        const msg = document.getElementById('negocio-msg');
         const fd = new FormData();
-        fd.append('id',             uid);
+        fd.append('id', uid);
         fd.append('nombre_negocio', document.getElementById('negocio-nombre').value);
-        fd.append('categoria',      document.getElementById('negocio-categoria').value);
-        fd.append('whatsapp',       document.getElementById('negocio-whatsapp').value);
-        fd.append('descripcion',    document.getElementById('negocio-descripcion').value);
-        fd.append('ubicacion',      document.getElementById('negocio-ubicacion').value);
-        fd.append('tipo_negocio',   document.getElementById('negocio-tipo').value);
-        fd.append('visible_admin',  document.getElementById('negocio-visible').checked ? 1 : 0);
-        fd.append('destacado',      document.getElementById('negocio-destacado').checked ? 1 : 0);
+        fd.append('categoria', document.getElementById('negocio-categoria').value);
+        fd.append('whatsapp', document.getElementById('negocio-whatsapp').value);
+        fd.append('descripcion', document.getElementById('negocio-descripcion').value);
+        fd.append('ubicacion', document.getElementById('negocio-ubicacion').value);
+        fd.append('tipo_negocio', document.getElementById('negocio-tipo').value);
+        fd.append('visible_admin', document.getElementById('negocio-visible').checked ? 1 : 0);
+        fd.append('destacado', document.getElementById('negocio-destacado').checked ? 1 : 0);
         msg.style.display = 'none';
         try {
-          const r = await fetch('gestion-qbc-2025.php?action=editar_negocio', {method:'POST',body:fd});
+          const r = await fetch('gestion-qbc-2025.php?action=editar_negocio', { method: 'POST', body: fd });
           const d = await r.json();
           if (d.ok) {
             mostrarToast('✅ Negocio guardado', 'green');
             cerrarModalNegocio();
             if (seccionActual === 'negocios_dir') cargarNegociosDir(negdirPage);
           } else {
-            msg.textContent = '❌ ' + (d.msg||'Error al guardar');
+            msg.textContent = '❌ ' + (d.msg || 'Error al guardar');
             msg.style.color = 'var(--red)'; msg.style.display = 'block';
           }
-        } catch(e) {
+        } catch (e) {
           msg.textContent = '❌ ' + e.message;
           msg.style.color = 'var(--red)'; msg.style.display = 'block';
         }
@@ -6975,129 +7584,133 @@ if ($action) {
 
     <!-- Simulador JS -->
     <?php if ($perms['simulador']): ?>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <style>
-      @media(max-width:900px) { .sim-two-cols-admin { grid-template-columns: 1fr !important; } }
-    </style>
-    <script>
-    let admSimEtapa = 1;
-    let admSimChart = null;
-    let admSimInited = false;
-
-    const admSimEtapas = {
-      1: { selva: 15000, oro: 35000, azul: 55000, info: 'Etapa 1 (meses 1-6): Lanzamiento. Precios de arranque para captar los primeros usuarios y empresas.' },
-      2: { selva: 20000, oro: 45000, azul: 70000, info: 'Etapa 2 (meses 7-9): Crecimiento. Precios ligeramente más altos con mayor base de usuarios establecida.' },
-      3: { selva: 25000, oro: 55000, azul: 85000, info: 'Etapa 3 (meses 10-12): Consolidación. Precios plenos con plataforma validada y reputación en el Chocó.' },
-    };
-
-    function admFmt(n) {
-      return '$' + Math.round(n).toLocaleString('es-CO');
-    }
-
-    function simSetEtapa(n, btn) {
-      admSimEtapa = n;
-      [1,2,3].forEach(i => {
-        const b = document.getElementById('sim-e'+i);
-        if (!b) return;
-        const colors = {1:'#1D9E75', 2:'#BA7517', 3:'#1a3f6f'};
-        if (i === n) {
-          b.style.background = colors[i];
-          b.style.borderColor = colors[i];
-          b.style.color = 'white';
-        } else {
-          b.style.background = 'transparent';
-          b.style.borderColor = 'rgba(255,255,255,.15)';
-          b.style.color = 'rgba(255,255,255,.5)';
+      <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+      <style>
+        @media(max-width:900px) {
+          .sim-two-cols-admin {
+            grid-template-columns: 1fr !important;
+          }
         }
-      });
-      admSimCalc();
-    }
+      </style>
+      <script>
+        let admSimEtapa = 1;
+        let admSimChart = null;
+        let admSimInited = false;
 
-    function admCalcMes(i, emp, pS, pO, pA, serv, valS, dest, ali) {
-      const factor = 1 + (i * 0.05);
-      const e = i < 6 ? admSimEtapas[1] : i < 9 ? admSimEtapas[2] : admSimEtapas[3];
-      return Math.round(
-        Math.round(emp * factor * pS) * e.selva +
-        Math.round(emp * factor * pO) * e.oro +
-        Math.round(emp * factor * pA) * e.azul +
-        serv * valS * 0.075 * factor +
-        dest * 30000 * factor +
-        ali * 500000
-      );
-    }
+        const admSimEtapas = {
+          1: { selva: 15000, oro: 35000, azul: 55000, info: 'Etapa 1 (meses 1-6): Lanzamiento. Precios de arranque para captar los primeros usuarios y empresas.' },
+          2: { selva: 20000, oro: 45000, azul: 70000, info: 'Etapa 2 (meses 7-9): Crecimiento. Precios ligeramente más altos con mayor base de usuarios establecida.' },
+          3: { selva: 25000, oro: 55000, azul: 85000, info: 'Etapa 3 (meses 10-12): Consolidación. Precios plenos con plataforma validada y reputación en el Chocó.' },
+        };
 
-    function admSimCalc() {
-      const e        = admSimEtapas[admSimEtapa];
-      const visitas  = +document.getElementById('adm-ss-visitas').value;
-      const empresas = +document.getElementById('adm-ss-empresas').value;
-      const semilla  = +document.getElementById('adm-ss-semilla').value;
-      const pS       = +document.getElementById('adm-ss-pctselva').value / 100;
-      const pO       = +document.getElementById('adm-ss-pctoro').value / 100;
-      const pA       = +document.getElementById('adm-ss-pctazul').value / 100;
-      const serv     = +document.getElementById('adm-ss-comision').value;
-      const valS     = +document.getElementById('adm-ss-valorserv').value;
-      const dest     = +document.getElementById('adm-ss-destacados').value;
-      const ali      = +document.getElementById('adm-ss-alianzas').value;
+        function admFmt(n) {
+          return '$' + Math.round(n).toLocaleString('es-CO');
+        }
 
-      // Labels
-      document.getElementById('adm-sv-visitas').textContent    = visitas + '/día';
-      document.getElementById('adm-sv-empresas').textContent   = empresas;
-      document.getElementById('adm-sv-semilla').textContent    = semilla;
-      document.getElementById('adm-sv-pctselva').textContent   = (pS*100) + '%';
-      document.getElementById('adm-sv-pctoro').textContent     = (pO*100) + '%';
-      document.getElementById('adm-sv-pctazul').textContent    = (pA*100) + '%';
-      document.getElementById('adm-sv-comision').textContent   = serv;
-      document.getElementById('adm-sv-valorserv').textContent  = admFmt(valS);
-      document.getElementById('adm-sv-destacados').textContent = dest;
-      document.getElementById('adm-sv-alianzas').textContent   = ali;
+        function simSetEtapa(n, btn) {
+          admSimEtapa = n;
+          [1, 2, 3].forEach(i => {
+            const b = document.getElementById('sim-e' + i);
+            if (!b) return;
+            const colors = { 1: '#1D9E75', 2: '#BA7517', 3: '#1a3f6f' };
+            if (i === n) {
+              b.style.background = colors[i];
+              b.style.borderColor = colors[i];
+              b.style.color = 'white';
+            } else {
+              b.style.background = 'transparent';
+              b.style.borderColor = 'rgba(255,255,255,.15)';
+              b.style.color = 'rgba(255,255,255,.5)';
+            }
+          });
+          admSimCalc();
+        }
 
-      document.getElementById('adm-sp-selva').textContent = admFmt(e.selva);
-      document.getElementById('adm-sp-oro').textContent   = admFmt(e.oro);
-      document.getElementById('adm-sp-azul').textContent  = admFmt(e.azul);
-      const infoEl = document.getElementById('sim-etapa-info-admin');
-      if (infoEl) infoEl.textContent = e.info;
+        function admCalcMes(i, emp, pS, pO, pA, serv, valS, dest, ali) {
+          const factor = 1 + (i * 0.05);
+          const e = i < 6 ? admSimEtapas[1] : i < 9 ? admSimEtapas[2] : admSimEtapas[3];
+          return Math.round(
+            Math.round(emp * factor * pS) * e.selva +
+            Math.round(emp * factor * pO) * e.oro +
+            Math.round(emp * factor * pA) * e.azul +
+            serv * valS * 0.075 * factor +
+            dest * 30000 * factor +
+            ali * 500000
+          );
+        }
 
-      const nS = Math.round(empresas * pS);
-      const nO = Math.round(empresas * pO);
-      const nA = Math.round(empresas * pA);
-      const nPago = nS + nO + nA;
-      const conv  = semilla > 0 ? ((nPago / semilla) * 100).toFixed(1) : 0;
+        function admSimCalc() {
+          const e = admSimEtapas[admSimEtapa];
+          const visitas = +document.getElementById('adm-ss-visitas').value;
+          const empresas = +document.getElementById('adm-ss-empresas').value;
+          const semilla = +document.getElementById('adm-ss-semilla').value;
+          const pS = +document.getElementById('adm-ss-pctselva').value / 100;
+          const pO = +document.getElementById('adm-ss-pctoro').value / 100;
+          const pA = +document.getElementById('adm-ss-pctazul').value / 100;
+          const serv = +document.getElementById('adm-ss-comision').value;
+          const valS = +document.getElementById('adm-ss-valorserv').value;
+          const dest = +document.getElementById('adm-ss-destacados').value;
+          const ali = +document.getElementById('adm-ss-alianzas').value;
 
-      const subS = nS * e.selva, subO = nO * e.oro, subA = nA * e.azul;
-      const com  = serv * valS * 0.075;
-      const dp   = dest * 30000;
-      const al   = ali * 500000;
-      const pub  = Math.round(visitas * 30 * 0.001) * 20000;
-      const totalMes = subS + subO + subA + com + dp + al + pub;
+          // Labels
+          document.getElementById('adm-sv-visitas').textContent = visitas + '/día';
+          document.getElementById('adm-sv-empresas').textContent = empresas;
+          document.getElementById('adm-sv-semilla').textContent = semilla;
+          document.getElementById('adm-sv-pctselva').textContent = (pS * 100) + '%';
+          document.getElementById('adm-sv-pctoro').textContent = (pO * 100) + '%';
+          document.getElementById('adm-sv-pctazul').textContent = (pA * 100) + '%';
+          document.getElementById('adm-sv-comision').textContent = serv;
+          document.getElementById('adm-sv-valorserv').textContent = admFmt(valS);
+          document.getElementById('adm-sv-destacados').textContent = dest;
+          document.getElementById('adm-sv-alianzas').textContent = ali;
 
-      const mensuales = [], acumulados = [];
-      let acum = 0;
-      for (let i = 0; i < 12; i++) {
-        const m = admCalcMes(i, empresas, pS, pO, pA, serv, valS, dest, ali);
-        mensuales.push(m); acum += m; acumulados.push(acum);
-      }
+          document.getElementById('adm-sp-selva').textContent = admFmt(e.selva);
+          document.getElementById('adm-sp-oro').textContent = admFmt(e.oro);
+          document.getElementById('adm-sp-azul').textContent = admFmt(e.azul);
+          const infoEl = document.getElementById('sim-etapa-info-admin');
+          if (infoEl) infoEl.textContent = e.info;
 
-      document.getElementById('adm-sm-anual').textContent   = admFmt(acumulados[11]);
-      document.getElementById('adm-sm-mensual').textContent = admFmt(Math.round(acumulados[11]/12));
-      document.getElementById('adm-sm-mejor').textContent   = admFmt(mensuales[11]);
-      document.getElementById('adm-sm-dia').textContent     = admFmt(Math.round(acumulados[11]/12/30));
-      document.getElementById('adm-sm-semilla-n').textContent = semilla;
-      document.getElementById('adm-sm-pago-n').textContent    = nPago;
-      document.getElementById('adm-sm-conv').textContent      = conv + '%';
+          const nS = Math.round(empresas * pS);
+          const nO = Math.round(empresas * pO);
+          const nA = Math.round(empresas * pA);
+          const nPago = nS + nO + nA;
+          const conv = semilla > 0 ? ((nPago / semilla) * 100).toFixed(1) : 0;
 
-      const fuentes = [
-        { label: 'Verde Selva ('+nS+' emp.)',   valor: subS, color: '#1D9E75' },
-        { label: 'Amarillo Oro ('+nO+' emp.)',  valor: subO, color: '#BA7517' },
-        { label: 'Azul Profundo ('+nA+' emp.)', valor: subA, color: '#1a3f6f' },
-        { label: 'Comisiones por servicios',    valor: com,  color: '#534AB7' },
-        { label: 'Perfiles destacados',         valor: dp,   color: '#854F0B' },
-        { label: 'Alianzas institucionales',    valor: al,   color: '#4a7c59' },
-        { label: 'Publicidad local',            valor: pub,  color: '#607060' },
-      ];
+          const subS = nS * e.selva, subO = nO * e.oro, subA = nA * e.azul;
+          const com = serv * valS * 0.075;
+          const dp = dest * 30000;
+          const al = ali * 500000;
+          const pub = Math.round(visitas * 30 * 0.001) * 20000;
+          const totalMes = subS + subO + subA + com + dp + al + pub;
 
-      document.getElementById('adm-sim-fuentes').innerHTML = fuentes.map(f => {
-        const pct = totalMes > 0 ? Math.round(f.valor/totalMes*100) : 0;
-        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px">
+          const mensuales = [], acumulados = [];
+          let acum = 0;
+          for (let i = 0; i < 12; i++) {
+            const m = admCalcMes(i, empresas, pS, pO, pA, serv, valS, dest, ali);
+            mensuales.push(m); acum += m; acumulados.push(acum);
+          }
+
+          document.getElementById('adm-sm-anual').textContent = admFmt(acumulados[11]);
+          document.getElementById('adm-sm-mensual').textContent = admFmt(Math.round(acumulados[11] / 12));
+          document.getElementById('adm-sm-mejor').textContent = admFmt(mensuales[11]);
+          document.getElementById('adm-sm-dia').textContent = admFmt(Math.round(acumulados[11] / 12 / 30));
+          document.getElementById('adm-sm-semilla-n').textContent = semilla;
+          document.getElementById('adm-sm-pago-n').textContent = nPago;
+          document.getElementById('adm-sm-conv').textContent = conv + '%';
+
+          const fuentes = [
+            { label: 'Verde Selva (' + nS + ' emp.)', valor: subS, color: '#1D9E75' },
+            { label: 'Amarillo Oro (' + nO + ' emp.)', valor: subO, color: '#BA7517' },
+            { label: 'Azul Profundo (' + nA + ' emp.)', valor: subA, color: '#1a3f6f' },
+            { label: 'Comisiones por servicios', valor: com, color: '#534AB7' },
+            { label: 'Perfiles destacados', valor: dp, color: '#854F0B' },
+            { label: 'Alianzas institucionales', valor: al, color: '#4a7c59' },
+            { label: 'Publicidad local', valor: pub, color: '#607060' },
+          ];
+
+          document.getElementById('adm-sim-fuentes').innerHTML = fuentes.map(f => {
+            const pct = totalMes > 0 ? Math.round(f.valor / totalMes * 100) : 0;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px">
           <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.75)">
             <span style="width:10px;height:10px;border-radius:3px;background:${f.color};flex-shrink:0;display:inline-block"></span>${f.label}
           </div>
@@ -7106,40 +7719,40 @@ if ($action) {
             <span style="color:rgba(255,255,255,.4);font-size:11px;margin-left:8px">${pct}%</span>
           </div>
         </div>`;
-      }).join('');
+          }).join('');
 
-      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-      const barColors = mensuales.map((_, i) => i < 6 ? '#1D9E75' : i < 9 ? '#BA7517' : '#1a3f6f');
+          const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+          const barColors = mensuales.map((_, i) => i < 6 ? '#1D9E75' : i < 9 ? '#BA7517' : '#1a3f6f');
 
-      if (admSimChart) admSimChart.destroy();
-      const ctx = document.getElementById('adm-simChart');
-      if (!ctx) return;
-      admSimChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: meses,
-          datasets: [
-            { label: 'Ingreso mensual', data: mensuales, backgroundColor: barColors, borderRadius: 8, yAxisID: 'y', order: 2 },
-            { label: 'Acumulado', data: acumulados, type: 'line', borderColor: '#534AB7', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#534AB7', pointBorderColor: '#0d1a0d', pointBorderWidth: 2, yAxisID: 'y2', order: 1 }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.dataset.label+': '+admFmt(c.raw) } } },
-          scales: {
-            x: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: 'rgba(255,255,255,.5)', font: { size: 12 } } },
-            y: { position: 'left', grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: 'rgba(255,255,255,.5)', font: { size: 11 }, callback: v => '$'+(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v) } },
-            y2: { position: 'right', grid: { display: false }, ticks: { color: '#534AB7', font: { size: 11 }, callback: v => '$'+(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v) } }
-          }
+          if (admSimChart) admSimChart.destroy();
+          const ctx = document.getElementById('adm-simChart');
+          if (!ctx) return;
+          admSimChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: meses,
+              datasets: [
+                { label: 'Ingreso mensual', data: mensuales, backgroundColor: barColors, borderRadius: 8, yAxisID: 'y', order: 2 },
+                { label: 'Acumulado', data: acumulados, type: 'line', borderColor: '#534AB7', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#534AB7', pointBorderColor: '#0d1a0d', pointBorderWidth: 2, yAxisID: 'y2', order: 1 }
+              ]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              interaction: { mode: 'index', intersect: false },
+              plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.dataset.label + ': ' + admFmt(c.raw) } } },
+              scales: {
+                x: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: 'rgba(255,255,255,.5)', font: { size: 12 } } },
+                y: { position: 'left', grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: 'rgba(255,255,255,.5)', font: { size: 11 }, callback: v => '$' + (v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(0) + 'K' : v) } },
+                y2: { position: 'right', grid: { display: false }, ticks: { color: '#534AB7', font: { size: 11 }, callback: v => '$' + (v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(0) + 'K' : v) } }
+              }
+            }
+          });
         }
-      });
-    }
 
-    function iniciarSimulador() {
-      if (!admSimInited) { admSimInited = true; setTimeout(admSimCalc, 50); }
-    }
-    </script>
+        function iniciarSimulador() {
+          if (!admSimInited) { admSimInited = true; setTimeout(admSimCalc, 50); }
+        }
+      </script>
     <?php endif; // fin simulador JS ?>
 
   <?php endif; ?>
