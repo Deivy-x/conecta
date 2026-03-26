@@ -791,6 +791,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <input type="text" id="cedula_neg" placeholder="Número de documento">
         </div>
       </div>
+      <div class="grupo full">
+        <label>Foto o PDF del documento <span class="req">*</span></label>
+        <div class="upload-doc-area" id="uploadDocAreaNeg" onclick="document.getElementById('doc_cedula_neg').click()">
+          <div id="uploadDocPlaceholderNeg">
+            <div style="font-size:36px;margin-bottom:8px">🪪</div>
+            <div style="font-weight:600;font-size:14px">Sube tu documento</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">JPG, PNG o PDF · máx 5MB</div>
+          </div>
+          <div id="uploadDocPreviewNeg" style="display:none;align-items:center;gap:10px">
+            <span style="font-size:24px" id="docIconNeg">📄</span>
+            <div><div style="font-weight:600;font-size:13px" id="docNombreNeg"></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4)" id="docTamanioNeg"></div></div>
+            <button type="button" onclick="quitarDocNeg(event)" style="margin-left:auto;background:rgba(255,68,68,.2);border:none;color:#ff4444;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px">✕</button>
+          </div>
+        </div>
+        <input type="file" id="doc_cedula_neg" accept="image/jpeg,image/png,image/webp,application/pdf" style="display:none" onchange="previsualizarDocNeg(this)">
+      </div>
     </div>
 
     <!-- ══════════════════════════════════════════
@@ -888,6 +905,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="grupo full">
         <label>Fecha de nacimiento <span class="req">*</span></label>
         <input type="date" id="fecha_nac_serv" max="2009-03-23" style="color-scheme:dark">
+      </div>
+      <div class="grupo full">
+        <label>Foto o PDF del documento <span class="req">*</span></label>
+        <div class="upload-doc-area" id="uploadDocAreaServ" onclick="document.getElementById('doc_cedula_serv').click()">
+          <div id="uploadDocPlaceholderServ">
+            <div style="font-size:36px;margin-bottom:8px">🪪</div>
+            <div style="font-weight:600;font-size:14px">Sube tu documento</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">JPG, PNG o PDF · máx 5MB</div>
+          </div>
+          <div id="uploadDocPreviewServ" style="display:none;align-items:center;gap:10px">
+            <span style="font-size:24px" id="docIconServ">📄</span>
+            <div><div style="font-weight:600;font-size:13px" id="docNombreServ"></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4)" id="docTamanioServ"></div></div>
+            <button type="button" onclick="quitarDocServ(event)" style="margin-left:auto;background:rgba(255,68,68,.2);border:none;color:#ff4444;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px">✕</button>
+          </div>
+        </div>
+        <input type="file" id="doc_cedula_serv" accept="image/jpeg,image/png,image/webp,application/pdf" style="display:none" onchange="previsualizarDocServ(this)">
       </div>
       <div class="info-box">
         🎧 <strong>¿Cómo funciona?</strong> Regístrate, el administrador revisará tu perfil y activará tu tarjeta en la sección "Servicios para Eventos" con tu precio y géneros.
@@ -1028,6 +1062,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const cfg = docConfig[t];
     if(cfg && cfg.soloNum) input.value = input.value.replace(/[^0-9]/g,'');
   }
+  function previsualizarDocNeg(input) {
+    const file = input.files[0]; if(!file) return;
+    if(file.size > 5*1024*1024){ showMsg('El archivo no debe superar 5MB.','error'); input.value=''; return; }
+    document.getElementById('uploadDocPlaceholderNeg').style.display='none';
+    document.getElementById('uploadDocPreviewNeg').style.display='flex';
+    document.getElementById('docNombreNeg').textContent=file.name;
+    document.getElementById('docTamanioNeg').textContent=(file.size/1024).toFixed(0)+' KB';
+    document.getElementById('docIconNeg').textContent=file.name.split('.').pop().toLowerCase()==='pdf'?'📄':'🖼️';
+    document.getElementById('uploadDocAreaNeg').classList.add('tiene-archivo');
+  }
+  function quitarDocNeg(e) {
+    e.stopPropagation();
+    document.getElementById('doc_cedula_neg').value='';
+    document.getElementById('uploadDocPlaceholderNeg').style.display='block';
+    document.getElementById('uploadDocPreviewNeg').style.display='none';
+    document.getElementById('uploadDocAreaNeg').classList.remove('tiene-archivo');
+  }
+  function previsualizarDocServ(input) {
+    const file = input.files[0]; if(!file) return;
+    if(file.size > 5*1024*1024){ showMsg('El archivo no debe superar 5MB.','error'); input.value=''; return; }
+    document.getElementById('uploadDocPlaceholderServ').style.display='none';
+    document.getElementById('uploadDocPreviewServ').style.display='flex';
+    document.getElementById('docNombreServ').textContent=file.name;
+    document.getElementById('docTamanioServ').textContent=(file.size/1024).toFixed(0)+' KB';
+    document.getElementById('docIconServ').textContent=file.name.split('.').pop().toLowerCase()==='pdf'?'📄':'🖼️';
+    document.getElementById('uploadDocAreaServ').classList.add('tiene-archivo');
+  }
+  function quitarDocServ(e) {
+    e.stopPropagation();
+    document.getElementById('doc_cedula_serv').value='';
+    document.getElementById('uploadDocPlaceholderServ').style.display='block';
+    document.getElementById('uploadDocPreviewServ').style.display='none';
+    document.getElementById('uploadDocAreaServ').classList.remove('tiene-archivo');
+  }
   function previsualizarDoc(input) {
     const file = input.files[0]; if(!file) return;
     if(file.size > 5*1024*1024){ showMsg('El archivo no debe superar 5MB.','error'); input.value=''; return; }
@@ -1063,6 +1131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if(!document.getElementById('tipo_doc_serv').value){showMsg('Selecciona el tipo de documento.','error');return;}
       if(!document.getElementById('cedula_serv').value.trim()){showMsg('El número de documento es obligatorio.','error');return;}
       if(!document.getElementById('fecha_nac_serv').value){showMsg('La fecha de nacimiento es obligatoria.','error');return;}
+      if(!document.getElementById('doc_cedula_serv').files[0]){showMsg('Debes subir la foto o PDF de tu documento.','error');return;}
     }
     if(tipoReal==='candidato' && tipoUI!=='servicio'){
       if(!document.getElementById('tipo_documento').value){showMsg('Selecciona el tipo de documento.','error');return;}
@@ -1083,6 +1152,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       } else {
         if(!document.getElementById('link_neg_virtual').value.trim()){showMsg('El link del negocio virtual es obligatorio.','error');return;}
       }
+      if(!document.getElementById('tipo_documento_neg').value){showMsg('Selecciona el tipo de documento del propietario.','error');return;}
+      if(!document.getElementById('cedula_neg').value.trim()){showMsg('El número de documento del propietario es obligatorio.','error');return;}
+      if(!document.getElementById('doc_cedula_neg').files[0]){showMsg('Debes subir la foto o PDF del documento del propietario.','error');return;}
     }
     if(tipoReal==='empresa'){
       if(!document.getElementById('nombre_empresa').value.trim()){showMsg('El nombre de la empresa es obligatorio.','error');return;}
@@ -1139,6 +1211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       const cedulaNeg=document.getElementById('cedula_neg').value;
       data.set('tipo_documento_hidden',tipDocNeg);
       data.append('cedula',cedulaNeg);
+      const fNeg=document.getElementById('doc_cedula_neg'); if(fNeg&&fNeg.files[0]) data.append('doc_cedula',fNeg.files[0]);
     }
     
     if(document.getElementById('camposServicio').classList.contains('show')){
@@ -1155,6 +1228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       data.append('fecha_nacimiento', fechaNacServ);
       data.append('cedula', cedulaServ);
       data.set('tipo_documento_hidden', tipDocServ);
+      const fServ=document.getElementById('doc_cedula_serv'); if(fServ&&fServ.files[0]) data.append('doc_cedula',fServ.files[0]);
     }
 
     try {
