@@ -3123,51 +3123,69 @@ if ($subTipo === 'servicio') {
 
       <!-- ── INDICADOR DE PLAN ACTIVO (span3) ── -->
       <?php if (!empty($datosPlan)): ?>
-      <div class="card span3" style="background:linear-gradient(135deg,rgba(0,180,90,.08),rgba(33,150,243,.08));border:1.5px solid rgba(0,180,90,.25)">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
-          <!-- Nombre del plan -->
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#5a7a6a;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3px">Plan activo</div>
-            <div style="font-size:20px;font-weight:800;color:#1a5c3a"><?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
+      <?php
+        $usados   = $datosPlan['usados'] ?? [];
+        $cfg      = $datosPlan['config'] ?? [];
+        $showBars = [
+          'mensajes'     => ['💬', 'Mensajes'],
+          'aplicaciones' => ['📋', 'Aplicaciones'],
+          'vacantes'     => ['💼', 'Vacantes'],
+        ];
+      ?>
+      <div class="card span3" style="background:linear-gradient(135deg,#f0faf4,#e8f5e9);border:1.5px solid #a5d6a7">
+        <div style="padding:22px 26px">
+
+          <!-- Fila superior -->
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:44px;height:44px;border-radius:14px;background:#2e7d32;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">⭐</div>
+              <div>
+                <div style="font-size:10px;font-weight:700;color:#558b6e;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:3px">Plan activo</div>
+                <div style="font-size:22px;font-weight:800;color:#1b5e20;line-height:1.1"><?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
+              </div>
+            </div>
+            <a href="empresas.php#planes" style="display:inline-flex;align-items:center;gap:6px;padding:11px 22px;background:#2e7d32;color:#fff;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;box-shadow:0 3px 12px rgba(46,125,50,.3)">
+              ✦ Mejorar plan
+            </a>
           </div>
-          <?php
-            $usados   = $datosPlan['usados'] ?? [];
-            $cfg      = $datosPlan['config'] ?? [];
-            $showBars = [
-              'mensajes'     => ['🗨️', 'Mensajes'],
-              'aplicaciones' => ['📋', 'Aplicaciones'],
-              'vacantes'     => ['💼', 'Vacantes'],
-            ];
-          ?>
+
           <!-- Barras de uso -->
-          <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px">
             <?php foreach ($showBars as $key => [$ico, $label]): ?>
               <?php
-                $limite = $cfg[$key] ?? 0;
+                $limite   = $cfg[$key] ?? 0;
                 if ($limite === 0) continue;
-                $usado  = $usados[$key] ?? 0;
-                $pctBar = ($limite === -1) ? 15 : min(100, ($usado / max(1, $limite)) * 100);
-                $color  = $pctBar >= 90 ? '#e53935' : ($pctBar >= 70 ? '#fb8c00' : '#2e7d32');
-                $bgBar  = $pctBar >= 90 ? 'rgba(229,57,53,.15)' : ($pctBar >= 70 ? 'rgba(251,140,0,.15)' : 'rgba(46,125,50,.12)');
-                $numColor = $pctBar >= 90 ? '#c62828' : ($pctBar >= 70 ? '#e65100' : '#1b5e20');
+                $usado    = $usados[$key] ?? 0;
+                $esInf    = ($limite === -1);
+                $pctBar   = $esInf ? 12 : min(100, ($usado / max(1, $limite)) * 100);
+                $color    = $pctBar >= 90 ? '#e53935' : ($pctBar >= 70 ? '#fb8c00' : '#43a047');
+                $bgCard   = $pctBar >= 90 ? '#fff5f5' : ($pctBar >= 70 ? '#fff8f0' : '#f9fbe7');
+                $bdCard   = $pctBar >= 90 ? '#ef9a9a' : ($pctBar >= 70 ? '#ffcc80' : '#c5e1a5');
+                $numColor = $pctBar >= 90 ? '#c62828' : ($pctBar >= 70 ? '#e65100' : '#2e7d32');
+                $limTxt   = $esInf ? '∞' : $limite;
               ?>
-              <div style="min-width:88px">
-                <div style="font-size:11px;font-weight:600;color:#4a6b58;margin-bottom:5px"><?= $ico ?> <?= $label ?></div>
-                <div style="font-size:17px;font-weight:800;color:<?= $numColor ?>;line-height:1">
-                  <?= $usado ?> <span style="font-size:13px;font-weight:500;color:#6a8a74">/ <?= $limite === -1 ? '∞' : $limite ?></span>
+              <div style="background:<?= $bgCard ?>;border:1px solid <?= $bdCard ?>;border-radius:14px;padding:16px">
+                <div style="font-size:12px;font-weight:600;color:#546e7a;margin-bottom:8px"><?= $ico ?> <?= $label ?></div>
+                <div style="font-size:22px;font-weight:800;color:<?= $numColor ?>;line-height:1;margin-bottom:10px">
+                  <?= $usado ?><span style="font-size:14px;font-weight:500;color:#90a4ae"> / <?= $limTxt ?></span>
                 </div>
-                <div style="height:5px;background:<?= $bgBar ?>;border-radius:4px;margin-top:6px">
-                  <div style="height:5px;width:<?= $pctBar ?>%;background:<?= $color ?>;border-radius:4px;transition:.3s"></div>
+                <div style="height:7px;background:rgba(0,0,0,.07);border-radius:6px">
+                  <div style="height:7px;width:<?= $pctBar ?>%;background:<?= $color ?>;border-radius:6px;transition:.4s"></div>
                 </div>
+                <?php if (!$esInf && $pctBar >= 70): ?>
+                  <div style="font-size:10px;color:<?= $numColor ?>;margin-top:7px;font-weight:700">
+                    <?= $pctBar >= 90 ? '⚠️ Límite alcanzado' : '⚡ Casi en el límite' ?>
+                  </div>
+                <?php endif; ?>
               </div>
             <?php endforeach; ?>
           </div>
-          <a href="empresas.php#planes" style="padding:9px 22px;background:#2e7d32;color:#fff;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;box-shadow:0 2px 8px rgba(46,125,50,.25)">Mejorar plan →</a>
+
         </div>
       </div>
       <?php endif; ?>
 
-      <!-- ── LISTA EMPLEOS / VACANTES / TALENTOS ── -->
+            <!-- ── LISTA EMPLEOS / VACANTES / TALENTOS ── -->
       <div class="card span2">
         <div class="ce-head">
           <div class="ce-tit">
