@@ -396,9 +396,9 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 
     .hero-badge {
       display: inline-block;
-      background: rgba(26, 86, 219, 0.2);
-      border: 1px solid rgba(59, 130, 246, 0.4);
-      color: #93c5fd;
+      background: rgba(31, 157, 85, 0.2);
+      border: 1px solid rgba(46, 204, 113, 0.4);
+      color: #4ade80;
       font-size: 13px;
       font-weight: 600;
       padding: 6px 20px;
@@ -470,7 +470,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .empresa-search button {
-      background: linear-gradient(135deg, #1a56db, #3b82f6);
+      background: linear-gradient(135deg, #1f9d55, #2ecc71);
       color: white;
       border: none;
       border-radius: 40px;
@@ -491,23 +491,45 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     .hero-links {
       display: flex;
       justify-content: center;
-      gap: 24px;
+      gap: 14px;
       flex-wrap: wrap;
+      animation: fadeUp .8s .8s ease both;
     }
 
     .hero-link {
-      color: rgba(255, 255, 255, 0.7);
-      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 22px;
+      border-radius: 30px;
       font-size: 14px;
-      font-weight: 500;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-      padding-bottom: 2px;
-      transition: color 0.2s;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all .25s;
+      white-space: nowrap;
     }
 
-    .hero-link:hover {
-      color: #93c5fd;
-      border-color: #93c5fd;
+    .hero-link-verde {
+      background: #1f9d55;
+      color: white;
+      box-shadow: 0 4px 16px rgba(31,157,85,.45);
+    }
+
+    .hero-link-verde:hover {
+      background: #166f3d;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(31,157,85,.55);
+    }
+
+    .hero-link-outline {
+      border: 2px solid rgba(255,255,255,.6);
+      color: white;
+    }
+
+    .hero-link-outline:hover {
+      background: white;
+      color: #111;
+      transform: translateY(-2px);
     }
 
     /* STATS */
@@ -524,7 +546,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       font-family: 'Syne', sans-serif;
       font-size: 38px;
       font-weight: 800;
-      color: #1a56db;
+      color: #1f9d55;
     }
 
     .stats-band .s p {
@@ -582,10 +604,11 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 
     .cat-btn:hover,
     .cat-btn.activa {
-      background: #eff6ff;
-      border-color: #1a56db;
-      color: #1a56db;
-      box-shadow: 0 6px 20px rgba(26, 86, 219, 0.15);
+      background: #edfaf3;
+      border-color: #1f9d55;
+      color: #1f9d55;
+      box-shadow: 0 6px 20px rgba(31, 157, 85, 0.18);
+      transform: translateY(-2px);
     }
 
     .cat-btn .count {
@@ -598,8 +621,8 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .cat-btn.activa .count {
-      background: rgba(26, 86, 219, 0.12);
-      color: #1a56db;
+      background: rgba(31, 157, 85, 0.15);
+      color: #1f9d55;
     }
 
     /* FILTROS TIPO */
@@ -626,9 +649,10 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 
     .filtro-btn:hover,
     .filtro-btn.activo {
-      background: #1a56db;
-      border-color: #1a56db;
+      background: #1f9d55;
+      border-color: #1f9d55;
       color: white;
+      box-shadow: 0 6px 16px rgba(31,157,85,.25);
     }
 
     /* EMPRESAS SECTION */
@@ -691,23 +715,23 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       font-weight: 700;
       padding: 4px 10px;
       border-radius: 20px;
-      background: #eff6ff;
-      color: #1a56db;
+      background: #edfaf3;
+      color: #1f9d55;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .badge-verificado-principal {
-      background: #dbeafe !important;
+      background: #d1fae5 !important;
       color: #1e40af !important;
-      border: 1px solid #93c5fd !important;
+      border: 1px solid #4ade80 !important;
     }
 
     .empresa-avatar {
       width: 68px;
       height: 68px;
       border-radius: 14px;
-      background: linear-gradient(135deg, #1a56db, #3b82f6);
+      background: linear-gradient(135deg, #1f9d55, #2ecc71);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -725,7 +749,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .empresa-card .sector-label {
-      color: #1a56db;
+      color: #1f9d55;
       font-weight: 600;
       font-size: 14px;
       margin-bottom: 4px;
@@ -757,8 +781,8 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       display: block;
       text-align: center;
       background: transparent;
-      border: 2px solid #1a56db;
-      color: #1a56db;
+      border: 2px solid #1f9d55;
+      color: #1f9d55;
       padding: 10px;
       border-radius: 25px;
       font-weight: 600;
@@ -771,7 +795,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .btn-perfil:hover {
-      background: #1a56db;
+      background: #1f9d55;
       color: white;
     }
 
@@ -826,7 +850,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     .modal-cover {
       height: 120px;
       border-radius: 24px 24px 0 0;
-      background: linear-gradient(135deg, #1a56db, #3b82f6);
+      background: linear-gradient(135deg, #1f9d55, #2ecc71);
       position: relative;
     }
 
@@ -868,7 +892,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       width: 80px;
       height: 80px;
       border-radius: 18px;
-      background: linear-gradient(135deg, #1a56db, #3b82f6);
+      background: linear-gradient(135deg, #1f9d55, #2ecc71);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -924,7 +948,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       flex-wrap: wrap;
     }
 
-    .modal-meta span:first-child { color: #1a56db; font-weight: 600; }
+    .modal-meta span:first-child { color: #1f9d55; font-weight: 600; }
     .meta-sep { color: #cbd5e1; }
 
     .btn-ver-perfil {
@@ -940,9 +964,9 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       white-space: nowrap;
     }
     .btn-ver-perfil:hover {
-      border-color: #1a56db;
-      color: #1a56db;
-      background: #eff6ff;
+      border-color: #1f9d55;
+      color: #1f9d55;
+      background: #edfaf3;
     }
 
     .modal-desc {
@@ -996,7 +1020,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     .conv-spinner {
       width: 18px; height: 18px;
       border: 2px solid #e2e8f0;
-      border-top-color: #1a56db;
+      border-top-color: #1f9d55;
       border-radius: 50%;
       animation: spin .7s linear infinite;
     }
@@ -1017,13 +1041,13 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       transition: all .2s;
     }
     .conv-item:hover {
-      border-color: #1a56db;
-      background: #eff6ff;
+      border-color: #1f9d55;
+      background: #edfaf3;
       transform: translateX(3px);
     }
     .conv-icon {
       width: 40px; height: 40px;
-      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      background: linear-gradient(135deg, #edfaf3, #d1fae5);
       border-radius: 10px;
       display: flex;
       align-items: center;
@@ -1105,7 +1129,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       width: 100%;
       margin-top: 20px;
       padding: 14px;
-      background: linear-gradient(135deg, #1a56db, #3b82f6);
+      background: linear-gradient(135deg, #1f9d55, #2ecc71);
       color: white;
       border-radius: 14px;
       font-size: 15px;
@@ -1196,7 +1220,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     .btn-azul {
-      background: linear-gradient(135deg, #1a56db, #3b82f6);
+      background: linear-gradient(135deg, #1f9d55, #2ecc71);
       color: white;
       padding: 14px 32px;
       border-radius: 30px;
@@ -1239,7 +1263,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       width: 50px;
       height: 50px;
       border-radius: 14px;
-      background: linear-gradient(135deg, #1a56db, #3b82f6);
+      background: linear-gradient(135deg, #1f9d55, #2ecc71);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1536,8 +1560,8 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         <button id="searchBtn">Buscar empresa</button>
       </div>
       <div class="hero-links">
-        <a href="registro.php" class="hero-link">✨ Registrar mi empresa gratis</a>
-        <a href="#empresas" class="hero-link">👇 Ver todas las empresas</a>
+        <a href="registro.php" class="hero-link hero-link-verde">✨ Registrar mi empresa gratis</a>
+        <a href="#empresas" class="hero-link hero-link-outline">👇 Ver todas las empresas</a>
       </div>
     </div>
   </section>
@@ -1607,7 +1631,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
           $sec = htmlspecialchars($empresa['sector'] ?: 'Empresa local');
           $ciu = htmlspecialchars($empresa['ciudad'] ?: 'Chocó');
           $desc = htmlspecialchars($empresa['descripcion'] ?: 'Empresa del Chocó generando oportunidades para la región.');
-          $grd = htmlspecialchars($empresa['avatar_color'] ?: 'linear-gradient(135deg,#1a56db,#3b82f6)');
+          $grd = htmlspecialchars($empresa['avatar_color'] ?: 'linear-gradient(135deg,#1f9d55,#2ecc71)');
 
           // Badge principal a mostrar
           if ($empresa['tiene_top'])
@@ -1665,7 +1689,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
           <p style="font-size:16px;font-weight:600;color:#555;margin-bottom:8px">Aún no hay empresas registradas</p>
           <p style="font-size:14px">¡Sé el primero en registrar tu empresa!</p>
           <a href="registro.php"
-            style="display:inline-block;margin-top:20px;padding:12px 28px;background:linear-gradient(135deg,#1a56db,#3b82f6);color:white;border-radius:30px;text-decoration:none;font-weight:700">✨
+            style="display:inline-block;margin-top:20px;padding:12px 28px;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:white;border-radius:30px;text-decoration:none;font-weight:700">✨
             Registrar mi empresa</a>
         </div>
       <?php endif; ?>
@@ -1814,7 +1838,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       <div style="display:flex;justify-content:center;margin-bottom:28px">
         <div style="display:inline-flex;background:#f1f5f9;border-radius:30px;padding:4px;gap:4px">
           <button class="precio-tipo-btn" onclick="setPrecioTipo('empresa',this)"
-            style="padding:9px 24px;border-radius:26px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#1a56db,#3b82f6);color:white;transition:all .25s">
+            style="padding:9px 24px;border-radius:26px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:white;transition:all .25s">
             🏢 Empresa
           </button>
           <button class="precio-tipo-btn" onclick="setPrecioTipo('candidato',this)"
@@ -1850,7 +1874,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       <!-- Nota al pie -->
       <p style="text-align:center;margin-top:32px;font-size:13px;color:#9ca3af">
         Pagos seguros · Sin contratos · Cancela cuando quieras ·
-        <a href="mailto:soporte@quibdoconecta.co" style="color:#1a56db;text-decoration:none;font-weight:600">¿Dudas?
+        <a href="mailto:soporte@quibdoconecta.co" style="color:#1f9d55;text-decoration:none;font-weight:600">¿Dudas?
           Contáctanos</a>
       </p>
     </div>
@@ -2066,7 +2090,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
           b.style.background = 'transparent';
           b.style.color = '#666';
         });
-        btn.style.background = 'linear-gradient(135deg,#1a56db,#3b82f6)';
+        btn.style.background = 'linear-gradient(135deg,#1f9d55,#2ecc71)';
         btn.style.color = 'white';
         renderPrecios();
       };
@@ -2079,7 +2103,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
         const lMes = document.getElementById('precio-lbl-mes');
         track.dataset.checked = String(precioPeriodo);
         if (precioPeriodo) {
-          track.style.background = '#1a56db';
+          track.style.background = '#1f9d55';
           thumb.style.transform = 'translateX(24px)';
           lSem.style.fontWeight = '400'; lSem.style.color = '#999';
           lMes.style.fontWeight = '500'; lMes.style.color = '#111';
@@ -2282,7 +2306,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     }
 
     function abrirModal(card) {
-      const grad = card.dataset.grad || 'linear-gradient(135deg,#1a56db,#3b82f6)';
+      const grad = card.dataset.grad || 'linear-gradient(135deg,#1f9d55,#2ecc71)';
       const uid = card.dataset.uid || '';
 
       // Cover
@@ -2322,7 +2346,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       document.getElementById('mInfoGrid').innerHTML = `
         <div class="info-item"><div class="i-label">Sector</div><div class="i-val">${card.dataset.sector || '—'}</div></div>
         <div class="info-item"><div class="i-label">Ciudad</div><div class="i-val">${card.dataset.ubicacion || '—'}</div></div>
-        <div class="info-item" style="grid-column:1/-1"><div class="i-label">Sitio web</div><div class="i-val">${web ? `<a href="${web.startsWith('http')?web:'https://'+web}" target="_blank" style="color:#1a56db;text-decoration:none">${web}</a>` : '—'}</div></div>
+        <div class="info-item" style="grid-column:1/-1"><div class="i-label">Sitio web</div><div class="i-val">${web ? `<a href="${web.startsWith('http')?web:'https://'+web}" target="_blank" style="color:#1f9d55;text-decoration:none">${web}</a>` : '—'}</div></div>
       `;
 
       // Botón CTA → siempre al perfil de la empresa
