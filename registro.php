@@ -1059,7 +1059,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const tipoReal = document.getElementById('tipo').value;
     const tipoUI = document.querySelector('.tipo-btn[class*="active"]')?.textContent?.includes('servicio')?'servicio':tipoReal;
 
-    if(tipoReal==='candidato'){
+    if(tipoUI==='servicio'){
+      if(!document.getElementById('tipo_doc_serv').value){showMsg('Selecciona el tipo de documento.','error');return;}
+      if(!document.getElementById('cedula_serv').value.trim()){showMsg('El número de documento es obligatorio.','error');return;}
+      if(!document.getElementById('fecha_nac_serv').value){showMsg('La fecha de nacimiento es obligatoria.','error');return;}
+    }
+    if(tipoReal==='candidato' && tipoUI!=='servicio'){
       if(!document.getElementById('tipo_documento').value){showMsg('Selecciona el tipo de documento.','error');return;}
       if(!document.getElementById('cedula').value.trim()){showMsg('El número de documento es obligatorio.','error');return;}
       if(!document.getElementById('doc_cedula').files[0]){showMsg('Debes subir la foto o PDF de tu documento.','error');return;}
