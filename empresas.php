@@ -1490,6 +1490,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       <a href="Empleo.php">Empleos</a>
       <a href="talentos.php">Talento</a>
       <a href="empresas.php" class="active">Empresas</a>
+      <a href="buscar.php" class="highlight">🔍 Buscar</a>
       <a href="Ayuda.html">Ayuda</a>
     </nav>
     <div class="nav-right">
@@ -1506,6 +1507,7 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
     <a href="Empleo.php">💼 Empleos</a>
     <a href="talentos.php">🌟 Talento</a>
     <a href="empresas.php">🏢 Empresas</a>
+    <a href="buscar.php">🔍 Buscar</a>
     <a href="Ayuda.html">❓ Ayuda</a>
     <div class="mobile-auth">
       <a href="inicio_sesion.php" class="m-login">Iniciar sesión</a>
