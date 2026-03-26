@@ -134,6 +134,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // ── SUBIR BANNER ─────────────────────────────────────────
+    if ($action === 'subir_banner') {
+        if (!isset($_FILES['banner']) || $_FILES['banner']['error'] !== 0) {
+            echo json_encode(['ok' => false, 'msg' => 'No se recibió imagen.']); exit;
+        }
+        $ext = strtolower(pathinfo($_FILES['banner']['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg','jpeg','png','webp'])) {
+            echo json_encode(['ok' => false, 'msg' => 'Solo JPG, PNG o WEBP.']); exit;
+        }
+        if ($_FILES['banner']['size'] > 5 * 1024 * 1024) {
+            echo json_encode(['ok' => false, 'msg' => 'Máximo 5 MB.']); exit;
+        }
+        try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
+        require_once __DIR__ . '/Php/cloudinary_upload.php';
+        $result = cloudinary_upload($_FILES['banner']['tmp_name'], 'quibdoconecta/banners');
+        if (!$result['ok']) {
+            echo json_encode(['ok' => false, 'msg' => $result['msg']]); exit;
+        }
+        $url = $result['url'];
+        $db->prepare("UPDATE usuarios SET banner=? WHERE id=?")->execute([$url, $usuario['id']]);
+        echo json_encode(['ok' => true, 'banner' => $url]);
+        exit;
+    }
+
+    // ── ELIMINAR BANNER ──────────────────────────────────────
+    if ($action === 'eliminar_banner') {
+        try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
+        $db->prepare("UPDATE usuarios SET banner='' WHERE id=?")->execute([$usuario['id']]);
+        echo json_encode(['ok' => true]);
+        exit;
+    }
+
     // ── PUBLICAR VACANTE (empresa) ───────────────────────────────
     if ($action === 'publicar_vacante') {
         $titulo      = trim($_POST['titulo']      ?? '');
@@ -312,6 +344,11 @@ $ciudad         = htmlspecialchars($usuario['ciudad'] ?? '');
 $logoUrl        = !empty($ep['logo'])
     ? (str_starts_with($ep['logo'], 'http') ? htmlspecialchars($ep['logo']) : 'uploads/logos/' . htmlspecialchars($ep['logo']))
     : '';
+// Auto-migrar columna banner
+try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
+// Releer usuario para incluir banner
+$usuarioRe = $db->prepare("SELECT * FROM usuarios WHERE id=?"); $usuarioRe->execute([$usuario['id']]); $usuarioRe = $usuarioRe->fetch();
+$bannerUrl = !empty($usuarioRe['banner']) ? (str_starts_with($usuarioRe['banner'], 'http') ? htmlspecialchars($usuarioRe['banner']) : 'uploads/banners/' . htmlspecialchars($usuarioRe['banner'])) : '';
 $fechaRegistro  = date('d \de F Y', strtotime($usuario['creado_en']));
 $correo         = htmlspecialchars($usuario['correo']);
 $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1);
@@ -641,6 +678,71 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
 <!-- ── CONTENIDO ── -->
 <div class="contenido">
   <div class="grid">
+
+    <!-- ── LOGO + BANNER EMPRESA ── -->
+    <div class="card span3" style="border:1.5px solid #dbeafe;padding:0;overflow:visible">
+      <div style="overflow:hidden;border-radius:17px">
+
+        <!-- BANNER -->
+        <div id="bannerZone" style="position:relative;height:160px;background:linear-gradient(135deg,#1a3060,#1a56db);cursor:pointer;overflow:hidden" onclick="document.getElementById('bannerInput').click()" title="Cambiar banner">
+          <?php if ($bannerUrl): ?>
+            <img id="bannerImg" src="<?= $bannerUrl ?>" style="width:100%;height:100%;object-fit:cover;display:block">
+          <?php else: ?>
+            <div id="bannerPlaceholder" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:rgba(255,255,255,.6)">
+              <div style="font-size:36px">🖼️</div>
+              <div style="font-size:13px;font-weight:600">Haz clic para subir el banner de tu empresa</div>
+              <div style="font-size:11px;opacity:.7">Recomendado: 1200 × 300 px · JPG, PNG, WEBP · máx 5 MB</div>
+            </div>
+          <?php endif; ?>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0);transition:.2s;display:flex;align-items:center;justify-content:center"
+               onmouseover="this.style.background='rgba(0,0,0,.35)';this.querySelector('span').style.opacity='1'"
+               onmouseout="this.style.background='rgba(0,0,0,0)';this.querySelector('span').style.opacity='0'">
+            <span style="opacity:0;color:#fff;font-size:13px;font-weight:700;background:rgba(0,0,0,.5);padding:8px 18px;border-radius:20px;transition:.2s">✏️ Cambiar banner</span>
+          </div>
+          <?php if ($bannerUrl): ?>
+          <button onclick="event.stopPropagation();eliminarBanner()" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">🗑 Quitar</button>
+          <?php endif; ?>
+        </div>
+        <input type="file" id="bannerInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="subirBanner(this)">
+
+        <!-- LOGO + INFO -->
+        <div style="padding:0 26px 22px;margin-top:-50px;position:relative;z-index:2">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px">
+            <!-- Logo empresa -->
+            <div style="position:relative;display:inline-block">
+              <div id="cpAvatar" onclick="abrirModal()" title="Cambiar logo"
+                   style="width:100px;height:100px;border-radius:18px;border:4px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,.18);background:linear-gradient(135deg,#1a56db,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#fff;cursor:pointer;overflow:hidden;transition:.2s">
+                <?php if ($logoUrl): ?>
+                  <img src="<?= $logoUrl ?>" style="width:100%;height:100%;object-fit:cover" alt="Logo">
+                <?php else: ?>
+                  <?= $iniciales ?>
+                <?php endif; ?>
+              </div>
+              <div onclick="abrirModal()" style="position:absolute;bottom:2px;right:2px;width:28px;height:28px;border-radius:50%;background:#1a56db;border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">✏️</div>
+            </div>
+            <!-- Nombre + info -->
+            <div style="flex:1;min-width:180px;padding-top:56px">
+              <div style="font-size:20px;font-weight:800;color:#0e1a3e"><?= $nombreEmpresa ?></div>
+              <div style="font-size:13px;color:#64748b;margin-top:3px">
+                <?php if ($sector): ?><?= htmlspecialchars($sector) ?><?php endif; ?>
+                <?php if ($ciudad): ?> · 📍 <?= $ciudad ?><?php endif; ?>
+              </div>
+            </div>
+            <!-- Acciones -->
+            <div style="display:flex;gap:10px;padding-top:56px;flex-wrap:wrap">
+              <a href="perfil.php?id=<?= $usuario['id'] ?>" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:#eff6ff;color:#1a56db;border:1.5px solid #bfdbfe;border-radius:12px;font-size:12px;font-weight:700;text-decoration:none">
+                👁 Ver mi perfil
+              </a>
+              <button onclick="abrirModal()" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:#1a56db;color:#fff;border:none;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer">
+                🖼 Cambiar logo
+              </button>
+            </div>
+          </div>
+          <div id="bannerMsg" style="font-size:12px;color:#e53935;margin-top:8px;display:none"></div>
+        </div>
+
+      </div>
+    </div>
 
     <!-- MINI: VACANTES -->
     <div class="card mini">
@@ -1192,6 +1294,82 @@ $visibleEnWeb   = (int)($ep['visible'] ?? 1) && (int)($ep['visible_admin'] ?? 1)
       btn.disabled = false; btn.textContent = '💼 Publicar vacante';
     }
   }
+
+  // ── BANNER: subir ─────────────────────────────────────────
+  async function subirBanner(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const msg = document.getElementById('bannerMsg');
+    msg.style.display = 'none';
+    // Preview inmediato
+    const reader = new FileReader();
+    reader.onload = e => {
+      const zone = document.getElementById('bannerZone');
+      let img = document.getElementById('bannerImg');
+      const ph = document.getElementById('bannerPlaceholder');
+      if (ph) ph.style.display = 'none';
+      if (!img) {
+        img = document.createElement('img');
+        img.id = 'bannerImg';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0';
+        zone.insertBefore(img, zone.firstChild);
+      }
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    // Subir
+    const fd = new FormData();
+    fd.append('_action', 'subir_banner');
+    fd.append('banner', file);
+    try {
+      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (!j.ok) {
+        msg.textContent = '❌ ' + (j.msg || 'Error al subir banner');
+        msg.style.display = 'block';
+      } else {
+        const zone = document.getElementById('bannerZone');
+        if (!zone.querySelector('.btn-quitar-banner')) {
+          const btn = document.createElement('button');
+          btn.className = 'btn-quitar-banner';
+          btn.textContent = '🗑 Quitar';
+          btn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;z-index:5';
+          btn.onclick = (e) => { e.stopPropagation(); eliminarBanner(); };
+          zone.appendChild(btn);
+        }
+      }
+    } catch(e) {
+      msg.textContent = '❌ Error de conexión.';
+      msg.style.display = 'block';
+    }
+    input.value = '';
+  }
+
+  // ── BANNER: eliminar ──────────────────────────────────────
+  async function eliminarBanner() {
+    if (!confirm('¿Quitar el banner?')) return;
+    const fd = new FormData();
+    fd.append('_action', 'eliminar_banner');
+    try {
+      const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.ok) {
+        const img = document.getElementById('bannerImg');
+        if (img) img.remove();
+        const zone = document.getElementById('bannerZone');
+        let ph = document.getElementById('bannerPlaceholder');
+        if (!ph) {
+          ph = document.createElement('div');
+          ph.id = 'bannerPlaceholder';
+          ph.style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:rgba(255,255,255,.6)';
+          ph.innerHTML = '<div style="font-size:36px">🖼️</div><div style="font-size:13px;font-weight:600">Haz clic para subir el banner de tu empresa</div>';
+          zone.insertBefore(ph, zone.firstChild);
+        } else { ph.style.display = 'flex'; }
+        zone.querySelectorAll('.btn-quitar-banner,button').forEach(b => b.remove());
+      }
+    } catch(e) {}
+  }
+
 </script>
 
 <!-- ── MODAL PUBLICAR VACANTE ───────────────────────────────── -->

@@ -118,6 +118,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
+  // ── SUBIR BANNER ─────────────────────────────────────────
+  if ($action === 'subir_banner') {
+    if (!isset($_FILES['banner']) || $_FILES['banner']['error'] !== 0) {
+      echo json_encode(['ok' => false, 'msg' => 'No se recibió imagen.']); exit;
+    }
+    $ext = strtolower(pathinfo($_FILES['banner']['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, ['jpg','jpeg','png','webp'])) {
+      echo json_encode(['ok' => false, 'msg' => 'Solo JPG, PNG o WEBP.']); exit;
+    }
+    if ($_FILES['banner']['size'] > 5 * 1024 * 1024) {
+      echo json_encode(['ok' => false, 'msg' => 'Máximo 5 MB.']); exit;
+    }
+    try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
+    require_once __DIR__ . '/Php/cloudinary_upload.php';
+    $result = cloudinary_upload($_FILES['banner']['tmp_name'], 'quibdoconecta/banners');
+    if (!$result['ok']) {
+      echo json_encode(['ok' => false, 'msg' => $result['msg']]); exit;
+    }
+    $url = $result['url'];
+    $db->prepare("UPDATE usuarios SET banner=? WHERE id=?")->execute([$url, $usuario['id']]);
+    echo json_encode(['ok' => true, 'banner' => $url]);
+    exit;
+  }
+
+  // ── ELIMINAR BANNER ──────────────────────────────────────
+  if ($action === 'eliminar_banner') {
+    try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
+    $db->prepare("UPDATE usuarios SET banner='' WHERE id=?")->execute([$usuario['id']]);
+    echo json_encode(['ok' => true]);
+    exit;
+  }
+
   // ── ELIMINAR CUENTA ───────────────────────────────────────
   if ($action === 'eliminar_cuenta') {
     $confirmar = trim($_POST['confirmar'] ?? '');
@@ -691,6 +723,11 @@ if ($tipo === 'candidato' || $subTipo === 'servicio') {
 // Datos
 /* $fotoUrl       = !empty($usuario['foto']) ? 'uploads/fotos/'.htmlspecialchars($usuario['foto']) : ''; */
 $fotoUrl = !empty($usuario['foto']) ? (str_starts_with($usuario['foto'], 'http') ? htmlspecialchars($usuario['foto']) : 'uploads/fotos/' . htmlspecialchars($usuario['foto'])) : '';
+// Auto-migrar columna banner si no existe
+try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
+// Releer usuario para incluir banner
+$usuario = $db->prepare("SELECT * FROM usuarios WHERE id=?"); $usuario->execute([$_SESSION['usuario_id']]); $usuario = $usuario->fetch();
+$bannerUrl = !empty($usuario['banner']) ? (str_starts_with($usuario['banner'], 'http') ? htmlspecialchars($usuario['banner']) : 'uploads/banners/' . htmlspecialchars($usuario['banner'])) : '';
 $inicial = strtoupper(mb_substr($usuario['nombre'], 0, 1));
 $nombreCompleto = htmlspecialchars(trim($usuario['nombre'] . ' ' . ($usuario['apellido'] ?? '')));
 $correo = htmlspecialchars($usuario['correo']);
@@ -3090,7 +3127,69 @@ if ($subTipo === 'servicio') {
         </div>
       </div>
 
-      <!-- ── QUIÉN ME VIO + PLAN (span3) ── -->
+      <!-- ── FOTO DE PERFIL + BANNER ── -->
+      <div class="card span3" style="border:1.5px solid #e0e0e0">
+        <div style="padding:0;overflow:hidden;border-radius:18px">
+
+          <!-- BANNER -->
+          <div id="bannerZone" style="position:relative;height:160px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);cursor:pointer;overflow:hidden" onclick="document.getElementById('bannerInput').click()" title="Cambiar banner">
+            <?php if ($bannerUrl): ?>
+              <img id="bannerImg" src="<?= $bannerUrl ?>" style="width:100%;height:100%;object-fit:cover;display:block">
+            <?php else: ?>
+              <div id="bannerPlaceholder" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#81c784">
+                <div style="font-size:36px">🖼️</div>
+                <div style="font-size:13px;font-weight:600">Haz clic para subir tu banner</div>
+                <div style="font-size:11px;opacity:.7">Recomendado: 1200 × 300 px · JPG, PNG, WEBP · máx 5 MB</div>
+              </div>
+            <?php endif; ?>
+            <!-- Overlay editar -->
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,0);transition:.2s;display:flex;align-items:center;justify-content:center" 
+                 onmouseover="this.style.background='rgba(0,0,0,.35)';this.querySelector('span').style.opacity='1'" 
+                 onmouseout="this.style.background='rgba(0,0,0,0)';this.querySelector('span').style.opacity='0'">
+              <span style="opacity:0;color:#fff;font-size:13px;font-weight:700;background:rgba(0,0,0,.5);padding:8px 18px;border-radius:20px;transition:.2s">✏️ Cambiar banner</span>
+            </div>
+            <?php if ($bannerUrl): ?>
+            <button onclick="event.stopPropagation();eliminarBanner()" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">🗑 Quitar</button>
+            <?php endif; ?>
+          </div>
+          <input type="file" id="bannerInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="subirBanner(this)">
+
+          <!-- FOTO DE PERFIL sobre el banner -->
+          <div style="padding:0 24px 20px;margin-top:-48px;position:relative;z-index:2">
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <!-- Avatar grande -->
+              <div style="position:relative;display:inline-block">
+                <div id="fotoCardAvatar" onclick="abrirModal()" title="Cambiar foto de perfil"
+                     style="width:96px;height:96px;border-radius:50%;border:4px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.15);background:#c8e6c9;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:#2e7d32;cursor:pointer;overflow:hidden;transition:.2s">
+                  <?php if ($fotoUrl): ?>
+                    <img src="<?= $fotoUrl ?>" style="width:100%;height:100%;object-fit:cover" alt="Foto">
+                  <?php else: ?>
+                    <?= $inicial ?>
+                  <?php endif; ?>
+                </div>
+                <div onclick="abrirModal()" style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:#2e7d32;border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px">✏️</div>
+              </div>
+              <!-- Nombre + acciones -->
+              <div style="flex:1;min-width:180px;padding-top:52px">
+                <div style="font-size:18px;font-weight:800;color:#1b5e20"><?= htmlspecialchars($usuario['nombre'] . ' ' . ($usuario['apellido'] ?? '')) ?></div>
+                <div style="font-size:13px;color:#546e7a;margin-top:2px"><?= $tc['label'] ?> <?php if ($ciudad): ?>· <?= htmlspecialchars($ciudad) ?><?php endif; ?></div>
+              </div>
+              <div style="display:flex;gap:8px;padding-top:52px;flex-wrap:wrap">
+                <a href="perfil.php?id=<?= $usuario['id'] ?>" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:#f1f8e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:12px;font-size:12px;font-weight:700;text-decoration:none">
+                  👁 Ver mi perfil
+                </a>
+                <button onclick="abrirModal()" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:#2e7d32;color:#fff;border:none;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer">
+                  📷 Cambiar foto
+                </button>
+              </div>
+            </div>
+            <div id="bannerMsg" style="font-size:12px;color:#e53935;margin-top:8px;display:none"></div>
+          </div>
+
+        </div>
+      </div>
+
+            <!-- ── QUIÉN ME VIO + PLAN (span3) ── -->
       <?php if (!empty($visitantesRecientes) || $maxVisitantes === 0): ?>
       <div class="card span3" style="border:1.5px solid #e0e0e0">
         <!-- Encabezado -->
@@ -4910,6 +5009,87 @@ if ($subTipo === 'servicio') {
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') cerrarModalSolicitud();
   });
+
+  // ── BANNER: subir ─────────────────────────────────────────
+  async function subirBanner(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const msg = document.getElementById('bannerMsg');
+    msg.style.display = 'none';
+
+    // Preview inmediato
+    const reader = new FileReader();
+    reader.onload = e => {
+      const zone = document.getElementById('bannerZone');
+      let img = document.getElementById('bannerImg');
+      if (!img) {
+        zone.querySelector('#bannerPlaceholder') && (zone.querySelector('#bannerPlaceholder').style.display = 'none');
+        img = document.createElement('img');
+        img.id = 'bannerImg';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0';
+        zone.insertBefore(img, zone.firstChild);
+      }
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    // Subir al servidor
+    const fd = new FormData();
+    fd.append('_action', 'subir_banner');
+    fd.append('banner', file);
+    try {
+      const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (!j.ok) {
+        msg.textContent = '❌ ' + (j.msg || 'Error al subir banner');
+        msg.style.display = 'block';
+      } else {
+        // Mostrar botón quitar si no existía
+        const zone = document.getElementById('bannerZone');
+        if (!zone.querySelector('.btn-quitar-banner')) {
+          const btn = document.createElement('button');
+          btn.className = 'btn-quitar-banner';
+          btn.textContent = '🗑 Quitar';
+          btn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;z-index:5';
+          btn.onclick = (e) => { e.stopPropagation(); eliminarBanner(); };
+          zone.appendChild(btn);
+        }
+      }
+    } catch(e) {
+      msg.textContent = '❌ Error de conexión.';
+      msg.style.display = 'block';
+    }
+    input.value = '';
+  }
+
+  // ── BANNER: eliminar ──────────────────────────────────────
+  async function eliminarBanner() {
+    if (!confirm('¿Quitar el banner?')) return;
+    const fd = new FormData();
+    fd.append('_action', 'eliminar_banner');
+    try {
+      const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.ok) {
+        const img = document.getElementById('bannerImg');
+        if (img) img.remove();
+        const zone = document.getElementById('bannerZone');
+        // Mostrar placeholder
+        let ph = zone.querySelector('#bannerPlaceholder');
+        if (!ph) {
+          ph = document.createElement('div');
+          ph.id = 'bannerPlaceholder';
+          ph.style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#81c784';
+          ph.innerHTML = '<div style="font-size:36px">🖼️</div><div style="font-size:13px;font-weight:600">Haz clic para subir tu banner</div><div style="font-size:11px;opacity:.7">Recomendado: 1200 × 300 px · JPG, PNG, WEBP · máx 5 MB</div>';
+          zone.insertBefore(ph, zone.firstChild);
+        } else {
+          ph.style.display = 'flex';
+        }
+        // Quitar botón quitar
+        zone.querySelectorAll('.btn-quitar-banner, button').forEach(b => b.remove());
+      }
+    } catch(e) {}
+  }
   </script>
 
   <!-- Widget de sesión activa — QuibdóConecta -->

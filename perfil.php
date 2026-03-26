@@ -87,6 +87,9 @@ function resolveUrl($val, $prefix) {
 $nombre  = htmlspecialchars(trim($u['nombre'].' '.($u['apellido']??'')));
 $ciudad  = htmlspecialchars($u['ciudad'] ?? 'Quibdó, Chocó');
 $fotoUrl = resolveUrl($u['foto'] ?? '', 'uploads/fotos/');
+// Leer banner (con auto-migración silenciosa)
+try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
+$bannerUrl = resolveUrl($u['banner'] ?? '', 'uploads/banners/');
 $inicial = strtoupper(mb_substr($u['nombre'],0,1).mb_substr($u['apellido']??'',0,1));
 
 $titulo = $nombre; $subtitulo = ''; $descripcion = ''; $logoUrl = $fotoUrl;
@@ -191,7 +194,11 @@ else { $tipoLabel = '👤 Talento profesional'; }
     }
     .cover-bg {
       position:absolute; inset:0;
+      <?php if ($bannerUrl): ?>
+      background: url('<?= $bannerUrl ?>') center/cover no-repeat;
+      <?php else: ?>
       background:linear-gradient(135deg, <?= $colorAccent ?>, <?= $colorAccent2 ?>);
+      <?php endif; ?>
     }
     .cover-pattern {
       position:absolute; inset:0; opacity:.12;
