@@ -1916,34 +1916,104 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
         </div>
       </div>
 
-      <!-- Toggle Semanal / Mensual -->
-      <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:40px">
-        <span id="precio-lbl-semana" style="font-size:14px;font-weight:500;color:#111">Semanal</span>
-        <div style="position:relative;width:48px;height:26px;cursor:pointer"
-          onclick="setPrecioPeriodo(!document.getElementById('precio-track').dataset.checked)">
-          <div id="precio-track" data-checked="false"
-            style="width:48px;height:26px;border-radius:13px;background:#ddd;transition:background .3s;position:absolute;top:0;left:0">
-          </div>
-          <div id="precio-thumb"
-            style="width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:3px;left:3px;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .3s">
-          </div>
+      <!-- Toggle Semanal / Mensual / Anual -->
+      <div style="display:flex;justify-content:center;margin-bottom:40px">
+        <div style="display:inline-flex;background:#f1f5f9;border-radius:30px;padding:4px;gap:4px" id="periodo-tabs">
+          <button class="periodo-btn activo-periodo" onclick="setPrecioPeriodo('semana',this)"
+            style="padding:8px 20px;border-radius:26px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;background:white;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:all .2s">
+            Semanal
+          </button>
+          <button class="periodo-btn" onclick="setPrecioPeriodo('mes',this)"
+            style="padding:8px 20px;border-radius:26px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;background:transparent;color:#666;transition:all .2s">
+            Mensual
+          </button>
+          <button class="periodo-btn" onclick="setPrecioPeriodo('anio',this)"
+            style="padding:8px 20px;border-radius:26px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;background:transparent;color:#666;transition:all .2s">
+            Anual <span style="background:#dcfce7;color:#166534;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:4px">-30%</span>
+          </button>
         </div>
-        <span id="precio-lbl-mes" style="font-size:14px;font-weight:400;color:#999">
-          Mensual <span
-            style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:4px">Ahorra
-            hasta 30%</span>
-        </span>
       </div>
 
       <!-- Grid de planes -->
       <div id="precios-grid"
         style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;align-items:start"></div>
 
+      <!-- Servicios adicionales -->
+      <div style="margin-top:64px">
+        <div style="text-align:center;margin-bottom:32px">
+          <span style="display:inline-block;background:#e8f5ee;color:#1f6b3a;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;padding:5px 16px;border-radius:20px;margin-bottom:12px">⚡ Sin suscripción</span>
+          <h3 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#111;margin-bottom:8px">Servicios adicionales — Pago por evento</h3>
+          <p style="font-size:14px;color:#6b7280;max-width:480px;margin:0 auto">Accede a funciones puntuales sin comprometerte a un plan mensual.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;max-width:900px;margin:0 auto">
+          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+            <div style="font-size:28px;flex-shrink:0">💼</div>
+            <div>
+              <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">Publicar vacante suelta</div>
+              <div style="font-size:12px;color:#888">Una vacante por 30 días</div>
+            </div>
+            <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$9.900</div>
+          </div>
+          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+            <div style="font-size:28px;flex-shrink:0">⭐</div>
+            <div>
+              <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">Destacar vacante</div>
+              <div style="font-size:12px;color:#888">Aparece primero en inicio por 7 días</div>
+            </div>
+            <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$4.900</div>
+          </div>
+          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+            <div style="font-size:28px;flex-shrink:0">👤</div>
+            <div>
+              <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">5 contactos de CVs</div>
+              <div style="font-size:12px;color:#888">Acceso a 5 perfiles de candidatos</div>
+            </div>
+            <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$4.900</div>
+          </div>
+          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+            <div style="font-size:28px;flex-shrink:0">👥</div>
+            <div>
+              <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">10 contactos de CVs</div>
+              <div style="font-size:12px;color:#888">Acceso a 10 perfiles de candidatos</div>
+            </div>
+            <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$8.900</div>
+          </div>
+          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+            <div style="font-size:28px;flex-shrink:0">🔍</div>
+            <div>
+              <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">Destacar perfil candidato</div>
+              <div style="font-size:12px;color:#888">Primero en búsquedas por 7 días</div>
+            </div>
+            <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$3.900</div>
+          </div>
+          <div style="background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:16px">
+            <div style="font-size:28px;flex-shrink:0">✅</div>
+            <div>
+              <div style="font-weight:700;font-size:14px;color:#111;margin-bottom:3px">Verificación express</div>
+              <div style="font-size:12px;color:#888">Verificación de identidad única</div>
+            </div>
+            <div style="margin-left:auto;font-size:18px;font-weight:800;color:#1a56db;white-space:nowrap">$14.900</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Métodos de pago -->
+      <div style="margin-top:48px;text-align:center">
+        <p style="font-size:13px;color:#9ca3af;margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:.6px">Métodos de pago disponibles</p>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px">
+          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">📱 Nequi</span>
+          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">💳 Daviplata</span>
+          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">🏪 Efecty / Baloto</span>
+          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">🏦 Transferencia bancaria</span>
+          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">💳 Tarjeta débito/crédito</span>
+          <span style="background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;color:#444">💬 Pago por WhatsApp</span>
+        </div>
+      </div>
+
       <!-- Nota al pie -->
       <p style="text-align:center;margin-top:32px;font-size:13px;color:#9ca3af">
         Pagos seguros · Sin contratos · Cancela cuando quieras ·
-        <a href="mailto:soporte@quibdoconecta.co" style="color:#1a56db;text-decoration:none;font-weight:600">¿Dudas?
-          Contáctanos</a>
+        <a href="mailto:soporte@quibdoconecta.com" style="color:#1a56db;text-decoration:none;font-weight:600">¿Dudas? Contáctanos</a>
       </p>
     </div>
   </section>
@@ -1957,26 +2027,26 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
     // ── PLANES Y PRECIOS ────────────────────────────────────────
     (function () {
       let precioTipo = 'empresa';
-      let precioPeriodo = false; // false=semanal, true=mensual
+      let precioPeriodo = 'semana'; // 'semana' | 'mes' | 'anio'
 
       const planesData = [
         {
           id: 'semilla', nombre: 'Semilla', icon: '🌱',
           color: '#4a7c59', bg: '#eef6f1', borderColor: 'rgba(74,124,89,0.2)',
           desc: 'Para comenzar sin costo alguno.',
-          precioSemana: 0, precioMes: 0,
+          precioSemana: 0, precioMes: 0, precioAnio: 0,
           candidato: [
-            { ok: true, text: '2 aplicaciones a empleos/mes' },
-            { ok: true, text: 'Hoja de vida completa' },
-            { ok: true, text: 'Ver 5 perfiles de empresas/mes' },
-            { ok: true, text: '10 mensajes de chat/mes' },
-            { ok: false, text: 'Posición destacada', lock: 'Verde Selva+' },
+            { ok: true,  text: '3 aplicaciones a empleos/mes' },
+            { ok: true,  text: 'Hoja de vida completa' },
+            { ok: true,  text: 'Ver 5 perfiles de empresas/mes' },
+            { ok: true,  text: '10 mensajes de chat/mes' },
+            { ok: false, text: 'Posición en búsquedas', lock: 'Verde Selva+' },
             { ok: false, text: 'Ver quién visitó tu perfil', lock: 'Amarillo Oro+' },
           ],
           empresa: [
-            { ok: true, text: '1 vacante por mes' },
-            { ok: true, text: 'Ver 5 perfiles de candidatos/mes' },
-            { ok: true, text: '10 mensajes de chat/mes' },
+            { ok: true,  text: '1 vacante por mes' },
+            { ok: true,  text: 'Ver 5 perfiles de candidatos/mes' },
+            { ok: true,  text: '10 mensajes de chat/mes' },
             { ok: false, text: 'Logo en perfil', lock: 'Verde Selva+' },
             { ok: false, text: 'Estadísticas de vacantes', lock: 'Verde Selva+' },
             { ok: false, text: 'Insignia empresa activa', lock: 'Verde Selva+' },
@@ -1986,42 +2056,57 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
           id: 'selva', nombre: 'Verde Selva', icon: '🌿',
           color: '#1f6b3a', bg: '#e8f5ee', borderColor: 'rgba(31,107,58,0.35)',
           desc: 'Más visibilidad y conexiones reales.',
-          precioSemana: 6900, precioMes: 15000, popular: true,
+          precioSemana: 4900, precioMes: 9900, precioAnio: 99000, popular: true,
           candidato: [
-            { ok: true, text: '4 aplicaciones a empleos/mes' },
-            { ok: true, text: 'Ver 15 perfiles de empresas/mes' },
-            { ok: true, text: '30 mensajes de chat/mes' },
-            { ok: true, text: 'Estadísticas básicas del perfil' },
-            { ok: true, text: 'Alertas de nuevos empleos' },
-            { ok: false, text: 'Ver quién visitó tu perfil', lock: 'Amarillo Oro+' },
+            { ok: true, text: '8 aplicaciones a empleos/mes' },
+            { ok: true, text: 'Ver 20 perfiles de empresas/mes' },
+            { ok: true, text: '40 mensajes de chat/mes' },
+            { ok: true, text: 'Posición normal en búsquedas' },
+            { ok: true, text: 'Alertas de empleo' },
+            { ok: true, text: 'Portafolio de trabajos' },
           ],
           empresa: [
-            { ok: true, text: '3 vacantes por mes' },
-            { ok: true, text: 'Ver 20 perfiles de candidatos/mes' },
-            { ok: true, text: '50 mensajes de chat/mes' },
+            { ok: true, text: '5 vacantes por mes' },
+            { ok: true, text: 'Ver 30 perfiles de candidatos/mes' },
+            { ok: true, text: '80 mensajes de chat/mes' },
             { ok: true, text: 'Logo en perfil de empresa' },
             { ok: true, text: 'Insignia empresa activa' },
             { ok: true, text: 'Estadísticas básicas de vacantes' },
           ]
         },
         {
+          id: 'micro', nombre: 'Microempresa', icon: '🏪',
+          color: '#7c3aed', bg: '#f5f0ff', borderColor: 'rgba(124,58,237,0.25)',
+          desc: 'Ideal para pequeños negocios locales.',
+          precioSemana: null, precioMes: 19900, precioAnio: 199000,
+          soloEmpresa: true,
+          empresa: [
+            { ok: true, text: '2 vacantes por mes' },
+            { ok: true, text: 'Ver 15 perfiles de candidatos/mes' },
+            { ok: true, text: '40 mensajes de chat/mes' },
+            { ok: true, text: 'Logo en perfil de empresa' },
+            { ok: true, text: 'Insignia empresa activa' },
+            { ok: true, text: 'Estadísticas básicas' },
+          ]
+        },
+        {
           id: 'oro', nombre: 'Amarillo Oro', icon: '✦',
           color: '#b8860b', bg: '#fdf8e8', borderColor: 'rgba(184,134,11,0.35)',
           desc: 'Datos exactos y conexiones directas.',
-          precioSemana: 14900, precioMes: 35000,
+          precioSemana: 9900, precioMes: 24900, precioAnio: 249000,
           candidato: [
             { ok: true, text: 'Aplicaciones ilimitadas', star: true },
             { ok: true, text: 'Ver perfiles ilimitados', star: true },
-            { ok: true, text: '100 mensajes de chat/mes' },
-            { ok: true, text: 'Número exacto de visitas', star: true },
-            { ok: true, text: 'Ver 3 cuentas que te visitaron', star: true },
+            { ok: true, text: '150 mensajes de chat/mes' },
+            { ok: true, text: 'Posición destacada en búsquedas', star: true },
+            { ok: true, text: 'Ver 5 cuentas que te visitaron', star: true },
             { ok: true, text: 'Insignia verificada', star: true },
           ],
           empresa: [
             { ok: true, text: 'Vacantes ilimitadas', star: true },
             { ok: true, text: 'Ver perfiles ilimitados', star: true },
-            { ok: true, text: '200 mensajes de chat/mes' },
-            { ok: true, text: 'Número exacto de visitas', star: true },
+            { ok: true, text: '300 mensajes de chat/mes' },
+            { ok: true, text: 'Ver 5 cuentas visitantes', star: true },
             { ok: true, text: 'Estadísticas avanzadas', star: true },
             { ok: true, text: 'Verificación legal', star: true },
           ]
@@ -2030,21 +2115,21 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
           id: 'azul', nombre: 'Azul Profundo', icon: '◆',
           color: '#1a3f6f', bg: '#e8f0fa', borderColor: 'rgba(26,63,111,0.35)',
           desc: 'El máximo poder sin ningún límite.',
-          precioSemana: 24900, precioMes: 55000,
+          precioSemana: 14900, precioMes: 39900, precioAnio: 399000,
           candidato: [
             { ok: true, text: 'Todo ilimitado', crown: true },
-            { ok: true, text: 'Chat ilimitado', crown: true },
             { ok: true, text: 'Primero en búsquedas siempre', crown: true },
             { ok: true, text: 'Ver TODAS las cuentas visitantes', crown: true },
+            { ok: true, text: 'Historial de visitas 90 días', crown: true },
             { ok: true, text: 'Insignia oficial QuibdóConecta', crown: true },
             { ok: true, text: 'Soporte dedicado', crown: true },
           ],
           empresa: [
             { ok: true, text: 'Todo ilimitado', crown: true },
-            { ok: true, text: 'Primero en búsquedas siempre', crown: true },
             { ok: true, text: 'Ver TODAS las cuentas visitantes', crown: true },
-            { ok: true, text: 'Sello oficial QuibdóConecta', crown: true },
-            { ok: true, text: 'Banner en inicio 7 días/mes', crown: true },
+            { ok: true, text: 'Historial de visitas 60 días', crown: true },
+            { ok: true, text: 'Banner en inicio 15 días/mes', crown: true },
+            { ok: true, text: 'Reporte mensual PDF', crown: true },
             { ok: true, text: 'Gestor de cuenta dedicado', crown: true },
           ]
         }
@@ -2057,30 +2142,48 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
       function featureIcon(f) {
         if (!f.ok) return `<span style="color:#ccc;font-size:13px">✕</span>`;
         if (f.crown) return `<span style="color:#1a3f6f;font-size:12px">◆</span>`;
-        if (f.star) return `<span style="color:#b8860b;font-size:13px">★</span>`;
+        if (f.star)  return `<span style="color:#b8860b;font-size:13px">★</span>`;
         return `<span style="color:#1f6b3a;font-size:13px;font-weight:700">✓</span>`;
       }
 
       function renderPrecios() {
         const grid = document.getElementById('precios-grid');
         if (!grid) return;
-        grid.innerHTML = planesData.map(p => {
-          const features = precioTipo === 'candidato' ? p.candidato : p.empresa;
+
+        // Filtrar Microempresa si estamos en candidato
+        const planes = planesData.filter(p => !(p.soloEmpresa && precioTipo === 'candidato'));
+
+        grid.innerHTML = planes.map(p => {
+          const features = precioTipo === 'candidato' ? (p.candidato || []) : p.empresa;
           const gratis = p.precioMes === 0;
+          const sinSemana = p.precioSemana === null;
+
           let precioHTML = '';
           if (gratis) {
             precioHTML = `<div style="font-size:34px;font-weight:800;color:${p.color};font-family:'Syne',sans-serif">Gratis</div><div style="font-size:12px;color:#999;margin-top:2px">para siempre</div>`;
-          } else if (precioPeriodo) {
-            const ahorro = (p.precioSemana * 4) - p.precioMes;
+          } else if (precioPeriodo === 'anio') {
+            const porMes = Math.round(p.precioAnio / 12);
             precioHTML = `
-            <div style="font-size:34px;font-weight:800;color:${p.color};font-family:'Syne',sans-serif">${fmtPrecio(p.precioMes)}</div>
-            <div style="font-size:12px;color:#999;margin-top:2px">por mes</div>
-            <span style="display:inline-block;background:${p.bg};color:${p.color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:8px">Ahorras ${fmtPrecio(ahorro)}</span>`;
+              <div style="font-size:34px;font-weight:800;color:${p.color};font-family:'Syne',sans-serif">${fmtPrecio(p.precioAnio)}</div>
+              <div style="font-size:12px;color:#999;margin-top:2px">por año · ${fmtPrecio(porMes)}/mes</div>
+              <span style="display:inline-block;background:${p.bg};color:${p.color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:8px">2 meses gratis</span>`;
+          } else if (precioPeriodo === 'mes') {
+            precioHTML = `
+              <div style="font-size:34px;font-weight:800;color:${p.color};font-family:'Syne',sans-serif">${fmtPrecio(p.precioMes)}</div>
+              <div style="font-size:12px;color:#999;margin-top:2px">por mes</div>
+              ${!sinSemana ? `<span style="display:inline-block;background:${p.bg};color:${p.color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:8px">o ${fmtPrecio(p.precioSemana)}/semana</span>` : ''}`;
           } else {
-            precioHTML = `
-            <div style="font-size:34px;font-weight:800;color:${p.color};font-family:'Syne',sans-serif">${fmtPrecio(p.precioSemana)}</div>
-            <div style="font-size:12px;color:#999;margin-top:2px">por semana</div>
-            <span style="display:inline-block;background:${p.bg};color:${p.color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:8px">o ${fmtPrecio(p.precioMes)}/mes</span>`;
+            // semana
+            if (sinSemana) {
+              precioHTML = `
+                <div style="font-size:34px;font-weight:800;color:${p.color};font-family:'Syne',sans-serif">${fmtPrecio(p.precioMes)}</div>
+                <div style="font-size:12px;color:#999;margin-top:2px">por mes</div>`;
+            } else {
+              precioHTML = `
+                <div style="font-size:34px;font-weight:800;color:${p.color};font-family:'Syne',sans-serif">${fmtPrecio(p.precioSemana)}</div>
+                <div style="font-size:12px;color:#999;margin-top:2px">por semana</div>
+                <span style="display:inline-block;background:${p.bg};color:${p.color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:8px">o ${fmtPrecio(p.precioMes)}/mes</span>`;
+            }
           }
 
           const featuresHTML = features.map(f => `
@@ -2117,9 +2220,8 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
 
             <div style="margin-bottom:22px;padding-bottom:20px;border-bottom:1px solid ${isPopular ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.07)'}">
               ${isPopular
-              ? precioHTML.replace(/color:${p.color}/g, 'color:white').replace(/color:#999/g, 'color:rgba(255,255,255,0.7)')
-                .replace(new RegExp('color:' + p.color.replace('#', '\\#'), 'g'), 'color:white')
-              : precioHTML}
+                ? precioHTML.replace(new RegExp('color:' + p.color.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), 'color:white').replace(/color:#999/g, 'color:rgba(255,255,255,0.7)')
+                : precioHTML}
             </div>
 
             <div style="margin-bottom:22px">
@@ -2163,24 +2265,16 @@ $heroCount = $totalEmpresas > 0 ? '+' . $totalEmpresas : '+120';
         renderPrecios();
       };
 
-      window.setPrecioPeriodo = function (checked) {
-        precioPeriodo = checked === true || checked === 'true';
-        const track = document.getElementById('precio-track');
-        const thumb = document.getElementById('precio-thumb');
-        const lSem = document.getElementById('precio-lbl-semana');
-        const lMes = document.getElementById('precio-lbl-mes');
-        track.dataset.checked = String(precioPeriodo);
-        if (precioPeriodo) {
-          track.style.background = '#1a56db';
-          thumb.style.transform = 'translateX(24px)';
-          lSem.style.fontWeight = '400'; lSem.style.color = '#999';
-          lMes.style.fontWeight = '500'; lMes.style.color = '#111';
-        } else {
-          track.style.background = '#ddd';
-          thumb.style.transform = 'translateX(0)';
-          lSem.style.fontWeight = '500'; lSem.style.color = '#111';
-          lMes.style.fontWeight = '400'; lMes.style.color = '#999';
-        }
+      window.setPrecioPeriodo = function (periodo, btn) {
+        precioPeriodo = periodo;
+        document.querySelectorAll('.periodo-btn').forEach(b => {
+          b.style.background = 'transparent';
+          b.style.color = '#666';
+          b.style.boxShadow = 'none';
+        });
+        btn.style.background = 'white';
+        btn.style.color = '#111';
+        btn.style.boxShadow = '0 1px 4px rgba(0,0,0,.08)';
         renderPrecios();
       };
 
