@@ -5395,119 +5395,92 @@ if ($action) {
 
           loading.style.display = 'none';
 
-          // Stats
           if (d.stats) {
             statsEl.innerHTML = `
-        <div style="padding:10px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:13px">
-          📁 <strong>${d.stats.total || 0}</strong> total
-        </div>
-        <div style="padding:10px 16px;background:rgba(255,171,0,.1);border:1px solid rgba(255,171,0,.3);border-radius:10px;font-size:13px;color:var(--amber)">
-          ⏳ <strong>${d.stats.pendiente || 0}</strong> pendientes
-        </div>
-        <div style="padding:10px 16px;background:var(--green-bg);border:1px solid rgba(0,230,118,.2);border-radius:10px;font-size:13px;color:var(--green)">
-          ✅ <strong>${d.stats.aprobado || 0}</strong> aprobados
-        </div>
-        <div style="padding:10px 16px;background:var(--red-bg);border:1px solid rgba(255,68,68,.2);border-radius:10px;font-size:13px;color:var(--red)">
-          ❌ <strong>${d.stats.rechazado || 0}</strong> rechazados
-        </div>
-        ${(d.stats.papelera > 0) ? `<div onclick="irA('papelera')" style="padding:10px 16px;background:rgba(120,60,60,.15);border:1px solid rgba(180,60,60,.25);border-radius:10px;font-size:13px;color:#ff7070;cursor:pointer" title="Ver papelera">
-          🗑️ <strong>${d.stats.papelera}</strong> en papelera
-        </div>` : ''}`;
+              <div style="padding:10px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:13px">
+                📁 <strong>${d.stats.total || 0}</strong> total
+              </div>
+              <div style="padding:10px 16px;background:rgba(255,171,0,.1);border:1px solid rgba(255,171,0,.3);border-radius:10px;font-size:13px;color:var(--amber)">
+                ⏳ <strong>${d.stats.pendiente || 0}</strong> pendientes
+              </div>
+              <div style="padding:10px 16px;background:var(--green-bg);border:1px solid rgba(0,230,118,.2);border-radius:10px;font-size:13px;color:var(--green)">
+                ✅ <strong>${d.stats.aprobado || 0}</strong> aprobados
+              </div>
+              <div style="padding:10px 16px;background:var(--red-bg);border:1px solid rgba(255,68,68,.2);border-radius:10px;font-size:13px;color:var(--red)">
+                ❌ <strong>${d.stats.rechazado || 0}</strong> rechazados
+              </div>
+              ${(d.stats.papelera > 0) ? `<div onclick="irA('papelera')" style="padding:10px 16px;background:rgba(120,60,60,.15);border:1px solid rgba(180,60,60,.25);border-radius:10px;font-size:13px;color:#ff7070;cursor:pointer" title="Ver papelera">
+                🗑️ <strong>${d.stats.papelera}</strong> en papelera
+              </div>` : ''}`;
           }
 
           if (!d.docs || !d.docs.length) {
-          empty.style.display = 'block'; return;
-        }
-
-        grid.style.display = 'grid';
-        grid.innerHTML = d.docs.map(doc => {
-          const docUrl = doc.doc_url ? (doc.doc_url.startsWith('uploads/') ? doc.doc_url : 'uploads/verificaciones/' + doc.doc_url) : null;
-          const selfUrl = doc.foto_doc_url ? (doc.foto_doc_url.startsWith('uploads/') ? doc.foto_doc_url : 'uploads/verificaciones/' + doc.foto_doc_url) : null;
-          const ext = docUrl ? docUrl.split('.').pop().toLowerCase() : '';
-          const esImg = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
-          const esPdf = ext === 'pdf';
-          const estadoColor = doc.estado === 'aprobado' ? 'green' : doc.estado === 'pendiente' ? 'amber' : 'red';
-
-          return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden">
-        <!-- Header -->
-        <div style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
-          <div style="width:38px;height:38px;border-radius:50%;background:${doc.user_tipo === 'empresa' ? '#2255cc' : '#1f9d55'};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0">
-            ${doc.nombre.charAt(0).toUpperCase()}
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(doc.nombre + ' ' + (doc.apellido || ''))}</div>
-            <div style="font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(doc.correo)}</div>
-          </div>
-          <span class="badge ${estadoColor}" style="flex-shrink:0">${doc.estado}</span>
-        </div>
-
-        <!-- Documento principal -->
-        <div style="padding:14px 16px">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">
-            📄 ${(doc.tipo_doc || 'Sin tipo').replace('_', ' ')} · ${fFecha(doc.creado_en)}
-          </div>
-
-          ${docUrl ? `
-          <div style="margin-bottom:10px;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:#0a0a0a">
-            ${esImg ? `<a href="${docUrl}" target="_blank" title="Clic para abrir en tamaño completo">
-              <img src="${docUrl}" alt="Documento"
-                style="width:100%;height:200px;object-fit:contain;background:#0a0a0a;display:block;cursor:zoom-in">
-            </a>` : ''}
-            ${esPdf ? `<a href="${docUrl}" target="_blank"
-              style="display:flex;align-items:center;justify-content:center;gap:10px;height:80px;color:var(--blue);font-weight:600;font-size:14px;text-decoration:none">
-              📄 Ver PDF del documento
-            </a>` : ''}
-            ${!esImg && !esPdf && docUrl ? `<a href="${docUrl}" target="_blank"
-              style="display:flex;align-items:center;justify-content:center;gap:10px;height:60px;color:var(--blue);font-size:13px;text-decoration:none">
-              🔗 Ver archivo
-            </a>` : ''}
-          </div>` : `<p style="font-size:12px;color:rgba(255,100,100,.7);margin-bottom:10px">⚠️ Sin documento adjunto</p>`}
-
-          ${selfUrl ? `<div style="margin-bottom:10px">
-            <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">📸 Selfie con doc</div>
-            <a href="${selfUrl}" target="_blank">
-              <img src="${selfUrl}" alt="Selfie"
-                style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border2);cursor:zoom-in;background:#0a0a0a">
-            </a>
-          </div>` : ''}
-
-          ${doc.nota_rechazo ? `<div style="padding:8px 12px;background:var(--red-bg);border:1px solid rgba(255,68,68,.2);border-radius:8px;font-size:12px;color:var(--red);margin-top:8px">
-            💬 Nota: ${esc(doc.nota_rechazo)}
-          </div>` : ''}
-
-          <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-            <div style="font-size:11px;color:var(--text3)">
-              👤 ID: #${doc.usuario_id} · 🆔 Doc: #${doc.id}
-            </div>
-            <button onclick="eliminarDocumento(${doc.id})"
-              style="padding:5px 12px;background:var(--red-bg);border:1px solid rgba(255,68,68,.3);border-radius:8px;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s"
-              onmouseover="this.style.background='var(--red)';this.style.color='white'"
-              onmouseout="this.style.background='var(--red-bg)';this.style.color='var(--red)'">
-              🗑️ Mover a papelera
-            </button>
-          </div>
-        </div>
-      </div>`;
-        }).join('');
-
-        // Paginación
-        const totalPages = Math.ceil(d.total / d.limit);
-        if (totalPages > 1) {
-          let html = '';
-          for (let i = 1; i <= totalPages; i++) {
-            html += `<button onclick="cargarDocumentos(${i})"
-          style="padding:6px 12px;border-radius:8px;border:1px solid ${i === docsPage ? 'var(--green)' : 'var(--border)'};background:${i === docsPage ? 'var(--green-bg)' : 'var(--bg3)'};color:${i === docsPage ? 'var(--green)' : 'var(--text)'};cursor:pointer;font-size:13px">${i}</button>`;
+            empty.style.display = 'block';
+            return;
           }
-          pag.innerHTML = `<div style="font-size:13px;color:var(--text2);margin-right:8px">${d.total} documentos</div>` + html;
-        }
 
-      } catch (e) {
-        loading.style.display = 'none';
-        grid.style.display = 'none';
-        empty.style.display = 'block';
-        document.getElementById('docs-empty').innerHTML = `<span class="ei">⚠️</span><p>${e.message}</p>`;
-      }
+          grid.style.display = 'grid';
+          grid.innerHTML = d.docs.map(doc => {
+            const docUrl = doc.doc_url ? (doc.doc_url.startsWith('uploads/') ? doc.doc_url : 'uploads/verificaciones/' + doc.doc_url) : null;
+            const selfUrl = doc.foto_doc_url ? (doc.foto_doc_url.startsWith('uploads/') ? doc.foto_doc_url : 'uploads/verificaciones/' + doc.foto_doc_url) : null;
+            const ext = docUrl ? docUrl.split('.').pop().toLowerCase() : '';
+            const esImg = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
+            const esPdf = ext === 'pdf';
+            const estadoColor = doc.estado === 'aprobado' ? 'green' : doc.estado === 'pendiente' ? 'amber' : 'red';
+            return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+              <div style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
+                <div style="width:38px;height:38px;border-radius:50%;background:${doc.user_tipo === 'empresa' ? '#2255cc' : '#1f9d55'};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0">
+                  ${doc.nombre.charAt(0).toUpperCase()}
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(doc.nombre + ' ' + (doc.apellido || ''))}</div>
+                  <div style="font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(doc.correo)}</div>
+                </div>
+                <span class="badge ${estadoColor}" style="flex-shrink:0">${doc.estado}</span>
+              </div>
+              <div style="padding:14px 16px">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">
+                  📄 ${(doc.tipo_doc || 'Sin tipo').replace('_', ' ')} · ${fFecha(doc.creado_en)}
+                </div>
+                ${docUrl ? `<div style="margin-bottom:10px;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:#0a0a0a">
+                  ${esImg ? `<a href="${docUrl}" target="_blank"><img src="${docUrl}" alt="Documento" style="width:100%;height:200px;object-fit:contain;background:#0a0a0a;display:block;cursor:zoom-in"></a>` : ''}
+                  ${esPdf ? `<a href="${docUrl}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;height:80px;color:var(--blue);font-weight:600;font-size:14px;text-decoration:none">📄 Ver PDF del documento</a>` : ''}
+                  ${!esImg && !esPdf ? `<a href="${docUrl}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;height:60px;color:var(--blue);font-size:13px;text-decoration:none">🔗 Ver archivo</a>` : ''}
+                </div>` : `<p style="font-size:12px;color:rgba(255,100,100,.7);margin-bottom:10px">⚠️ Sin documento adjunto</p>`}
+                ${selfUrl ? `<div style="margin-bottom:10px">
+                  <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">📸 Selfie con doc</div>
+                  <a href="${selfUrl}" target="_blank"><img src="${selfUrl}" alt="Selfie" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border2);cursor:zoom-in;background:#0a0a0a"></a>
+                </div>` : ''}
+                ${doc.nota_rechazo ? `<div style="padding:8px 12px;background:var(--red-bg);border:1px solid rgba(255,68,68,.2);border-radius:8px;font-size:12px;color:var(--red);margin-top:8px">💬 Nota: ${esc(doc.nota_rechazo)}</div>` : ''}
+                <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+                  <div style="font-size:11px;color:var(--text3)">👤 ID: #${doc.usuario_id} · 🆔 Doc: #${doc.id}</div>
+                  <button onclick="eliminarDocumento(${doc.id})"
+                    style="padding:5px 12px;background:var(--red-bg);border:1px solid rgba(255,68,68,.3);border-radius:8px;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s"
+                    onmouseover="this.style.background='var(--red)';this.style.color='white'"
+                    onmouseout="this.style.background='var(--red-bg)';this.style.color='var(--red)'">
+                    🗑️ Mover a papelera
+                  </button>
+                </div>
+              </div>
+            </div>`;
+          }).join('');
+
+          const totalPages = Math.ceil(d.total / d.limit);
+          if (totalPages > 1) {
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+              html += `<button onclick="cargarDocumentos(${i})" style="padding:6px 12px;border-radius:8px;border:1px solid ${i === docsPage ? 'var(--green)' : 'var(--border)'};background:${i === docsPage ? 'var(--green-bg)' : 'var(--bg3)'};color:${i === docsPage ? 'var(--green)' : 'var(--text)'};cursor:pointer;font-size:13px">${i}</button>`;
+            }
+            pag.innerHTML = `<div style="font-size:13px;color:var(--text2);margin-right:8px">${d.total} documentos</div>` + html;
+          }
+
+        } catch (e) {
+          loading.style.display = 'none';
+          grid.style.display = 'none';
+          empty.style.display = 'block';
+          document.getElementById('docs-empty').innerHTML = `<span class="ei">⚠️</span><p>${e.message}</p>`;
         }
+      }
 
       // ── ELIMINAR DOCUMENTO (mover a papelera) ──────────────────
       async function eliminarDocumento(id) {
