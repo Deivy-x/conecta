@@ -443,11 +443,10 @@ if ($action && $logueado) {
     exit;
   }
 
-  // Eliminar usuario permanentemente — superadmin Y admin delegado
+  // Eliminar usuario permanentemente
   if ($action === 'eliminar_usuario' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!$ajaxPerms['usuarios'] || !in_array($nivel, ['superadmin', 'admin'])) {
-      ob_clean();
-      echo json_encode(['ok' => false, 'msg' => 'Sin permisos para eliminar usuarios.']);
+    if (!$ajaxPerms['usuarios'] || $nivel !== 'superadmin') {
+      echo json_encode(['ok' => false, 'msg' => 'Solo el superadmin puede eliminar usuarios.']);
       exit;
     }
     $uid = (int) ($_POST['id'] ?? 0);
@@ -737,7 +736,7 @@ if ($action && $logueado) {
   }
 
   // ── VACIAR PAPELERA ──────────────────────────────────────────
-  if ($action === 'vaciar_papelera' && $_SERVER['REQUEST_METHOD'] === 'POST' && in_array($nivel, ['superadmin', 'admin'])) {
+  if ($action === 'vaciar_papelera' && $_SERVER['REQUEST_METHOD'] === 'POST' && $nivel === 'superadmin') {
     $count = (int) $db->query("SELECT COUNT(*) FROM verificaciones WHERE eliminado=1")->fetchColumn();
     $db->exec("DELETE FROM verificaciones WHERE eliminado=1");
     try {
@@ -1110,40 +1109,6 @@ if ($action && $logueado) {
     } catch (Exception $e) {
     }
     echo json_encode(['ok' => true]);
-    exit;
-  }
-
-  // ── TOGGLE VERIFICACIÓN DE REGISTRO ──────────────────────────
-  if ($action === 'get_registro_modo' && in_array($nivel, ['superadmin', 'admin'])) {
-    $cfgFile = __DIR__ . '/Php/registro_config.json';
-    $modo = 'solicitud';
-    if (file_exists($cfgFile)) {
-      $cfg = json_decode(file_get_contents($cfgFile), true);
-      $modo = $cfg['modo'] ?? 'solicitud';
-    }
-    ob_clean();
-    echo json_encode(['ok' => true, 'modo' => $modo]);
-    exit;
-  }
-
-  if ($action === 'set_registro_modo' && $_SERVER['REQUEST_METHOD'] === 'POST' && in_array($nivel, ['superadmin', 'admin'])) {
-    $nuevo = trim($_POST['modo'] ?? '');
-    if (!in_array($nuevo, ['solicitud', 'directo'])) {
-      ob_clean();
-      echo json_encode(['ok' => false, 'msg' => 'Modo inválido']);
-      exit;
-    }
-    $cfgFile = __DIR__ . '/Php/registro_config.json';
-    $cfgDir = dirname($cfgFile);
-    if (!is_dir($cfgDir)) mkdir($cfgDir, 0755, true);
-    file_put_contents($cfgFile, json_encode(['modo' => $nuevo]));
-    $etiq = $nuevo === 'directo' ? 'Registro directo activado' : 'Registro con solicitud activado';
-    try {
-      $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")
-        ->execute([$_SESSION['admin_id'], 'set_registro_modo', $etiq]);
-    } catch (Exception $e) {}
-    ob_clean();
-    echo json_encode(['ok' => true, 'modo' => $nuevo]);
     exit;
   }
 
@@ -1918,6 +1883,49 @@ if ($action && $logueado) {
       echo json_encode(['ok' => true]);
     } catch (Exception $e) {
       echo json_encode(['ok' => false, 'msg' => $e->getMessage()]);
+    }
+    exit;
+  }
+
+  // ── SISTEMA: obtener modo de registro ────────────────────────────────
+  if ($action === 'get_modo_registro' && $nivel === 'superadmin') {
+    try {
+      $db->exec("CREATE TABLE IF NOT EXISTS sistema_config (
+        clave VARCHAR(80) PRIMARY KEY,
+        valor TEXT NOT NULL,
+        actualizado TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )");
+      $row = $db->query("SELECT valor FROM sistema_config WHERE clave='modo_registro'")->fetch();
+      $modo = $row ? $row['valor'] : 'solicitud';
+    } catch (Exception $e) {
+      $modo = 'solicitud';
+    }
+    echo json_encode(['ok' => true, 'modo' => $modo]);
+    exit;
+  }
+
+  // ── SISTEMA: cambiar modo de registro ─────────────────────────────────
+  if ($action === 'set_modo_registro' && $_SERVER['REQUEST_METHOD'] === 'POST' && $nivel === 'superadmin') {
+    $modo = trim($_POST['modo'] ?? '');
+    if (!in_array($modo, ['solicitud', 'directo'])) {
+      echo json_encode(['ok' => false, 'msg' => 'Modo inválido']);
+      exit;
+    }
+    try {
+      $db->exec("CREATE TABLE IF NOT EXISTS sistema_config (
+        clave VARCHAR(80) PRIMARY KEY,
+        valor TEXT NOT NULL,
+        actualizado TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )");
+      $db->prepare("INSERT INTO sistema_config (clave, valor) VALUES ('modo_registro', ?)
+        ON DUPLICATE KEY UPDATE valor = VALUES(valor)")->execute([$modo]);
+      try {
+        $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")
+          ->execute([$_SESSION['admin_id'], 'set_modo_registro', "Modo de registro cambiado a '$modo'"]);
+      } catch (Exception $e) {}
+      echo json_encode(['ok' => true, 'modo' => $modo]);
+    } catch (Exception $e) {
+      echo json_encode(['ok' => false, 'msg' => 'Error BD: ' . $e->getMessage()]);
     }
     exit;
   }
@@ -3750,12 +3758,10 @@ if ($action) {
             <span class="ic">💹</span><span>Simulador</span>
           </button>
         <?php endif; ?>
-        <?php if ($esSA || $esAD): ?>
+        <?php if ($perms['roles']): ?>
           <button class="sb-item" data-tip="Sistema" onclick="irA('sistema')" id="nav-sistema">
             <span class="ic">⚙️</span><span>Sistema</span>
           </button>
-        <?php endif; ?>
-        <?php if ($perms['roles']): ?>
           <button class="sb-item" data-tip="Roles" onclick="irA('roles')" id="nav-roles">
             <span class="ic">👑</span><span>Roles</span>
           </button>
@@ -4900,40 +4906,49 @@ if ($action) {
           </div>
         <?php endif; // fin simulador ?>
 
-        <?php if ($esSA || $esAD): ?>
-          <div class="section" id="section-sistema">
-            <div style="max-width:700px;margin:0 auto;padding:8px 0">
-              <h2 style="font-size:22px;font-weight:800;margin-bottom:4px">⚙️ Sistema</h2>
-              <p style="color:var(--text3);font-size:13px;margin-bottom:28px">Configuración general de QuibdóConecta.</p>
+        <!-- ═══ SISTEMA ═══ (solo superadmin) -->
+        <?php if ($nivel === 'superadmin'): ?>
+        <div class="section" id="section-sistema">
+          <div style="max-width:700px;margin:0 auto">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px">
+              <div style="width:48px;height:48px;border-radius:14px;background:rgba(68,136,255,.15);border:1px solid rgba(68,136,255,.25);display:flex;align-items:center;justify-content:center;font-size:22px">⚙️</div>
+              <div>
+                <h2 style="font-size:20px;font-weight:800">Sistema</h2>
+                <p style="font-size:13px;color:var(--text2);margin-top:2px">Configuración general de QuibdóConecta.</p>
+              </div>
+            </div>
 
-              <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px">
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
-                  <div>
-                    <div style="font-size:15px;font-weight:700;margin-bottom:4px">📋 Modo de registro de cuentas</div>
-                    <div style="font-size:13px;color:var(--text3);max-width:420px;line-height:1.6">
-                      <strong style="color:var(--text1)">Solicitud (recomendado):</strong> el usuario llena el formulario y queda pendiente hasta que un admin lo apruebe.<br>
-                      <strong style="color:var(--text1)">Directo:</strong> la cuenta se crea al instante sin revisión previa. Útil para períodos de alta demanda.
-                    </div>
-                    <div style="margin-top:12px;font-size:12px;color:var(--text3)">Estado actual: <span id="registro-modo-label" style="font-weight:700;color:var(--green)">cargando…</span></div>
-                  </div>
-                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex-shrink:0">
-                    <div style="display:flex;gap:8px">
-                      <button onclick="setRegistroModo('solicitud')" id="btn-modo-solicitud"
-                        style="padding:9px 18px;border-radius:30px;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s">
-                        📋 Solicitud
-                      </button>
-                      <button onclick="setRegistroModo('directo')" id="btn-modo-directo"
-                        style="padding:9px 18px;border-radius:30px;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s">
-                        ⚡ Directo
-                      </button>
-                    </div>
-                    <div id="registro-modo-msg" style="font-size:12px;color:var(--green);min-height:18px;text-align:right"></div>
-                  </div>
+            <!-- Modo de registro -->
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px">
+              <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px">
+                <span style="font-size:20px">📋</span>
+                <div>
+                  <h3 style="font-size:15px;font-weight:700;margin-bottom:8px">Modo de registro de cuentas</h3>
+                  <p style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:4px">
+                    <strong style="color:var(--text)">Solicitud (recomendado):</strong> el usuario llena el formulario y queda pendiente hasta que un admin lo apruebe.
+                  </p>
+                  <p style="font-size:13px;color:var(--text2);line-height:1.6">
+                    <strong style="color:var(--text)">Directo:</strong> la cuenta se crea al instante sin revisión previa. Útil para períodos de alta demanda.
+                  </p>
                 </div>
               </div>
-
+              <p style="font-size:12px;color:var(--text3);margin-bottom:14px">
+                Estado actual: <span id="sistema-modo-label" style="color:var(--green);font-weight:700;font-family:'JetBrains Mono',monospace">cargando...</span>
+              </p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                <button onclick="setModoRegistro('solicitud')" id="btn-modo-solicitud"
+                  style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s">
+                  📋 Solicitud
+                </button>
+                <button onclick="setModoRegistro('directo')" id="btn-modo-directo"
+                  style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s">
+                  ⚡ Directo
+                </button>
+                <span id="sistema-msg" style="display:none;font-size:12px;font-weight:600"></span>
+              </div>
             </div>
           </div>
+        </div>
         <?php endif; ?>
 
       </div><!-- /content -->
@@ -6992,6 +7007,78 @@ if ($action) {
     });
 
     // ── INICIO ──
+    // ── SISTEMA ──
+    async function cargarSistema() {
+      const label = document.getElementById('sistema-modo-label');
+      const msg = document.getElementById('sistema-msg');
+      const btnS = document.getElementById('btn-modo-solicitud');
+      const btnD = document.getElementById('btn-modo-directo');
+      if (!label) return;
+      label.textContent = 'cargando...';
+      label.style.color = 'var(--text3)';
+      if (msg) msg.style.display = 'none';
+      try {
+        const r = await fetch('gestion-qbc-2025.php?action=get_modo_registro');
+        const text = await r.text();
+        let d;
+        try { d = JSON.parse(text); } catch (e) { throw new Error('Sesión expirada — recarga'); }
+        if (!d.ok) throw new Error(d.msg || 'Error');
+        aplicarModoUI(d.modo);
+      } catch (e) {
+        label.textContent = 'error: ' + e.message;
+        label.style.color = 'var(--red)';
+      }
+    }
+
+    function aplicarModoUI(modo) {
+      const label = document.getElementById('sistema-modo-label');
+      const btnS = document.getElementById('btn-modo-solicitud');
+      const btnD = document.getElementById('btn-modo-directo');
+      if (!label) return;
+      label.textContent = modo;
+      label.style.color = modo === 'solicitud' ? 'var(--green)' : 'var(--amber)';
+      if (btnS) {
+        btnS.style.background = modo === 'solicitud' ? 'var(--green-bg)' : 'var(--bg3)';
+        btnS.style.borderColor = modo === 'solicitud' ? 'rgba(0,230,118,.4)' : 'var(--border2)';
+        btnS.style.color = modo === 'solicitud' ? 'var(--green)' : 'var(--text)';
+      }
+      if (btnD) {
+        btnD.style.background = modo === 'directo' ? 'var(--amber-bg)' : 'var(--bg3)';
+        btnD.style.borderColor = modo === 'directo' ? 'rgba(255,171,0,.4)' : 'var(--border2)';
+        btnD.style.color = modo === 'directo' ? 'var(--amber)' : 'var(--text)';
+      }
+    }
+
+    async function setModoRegistro(modo) {
+      const msg = document.getElementById('sistema-msg');
+      if (msg) { msg.style.display = 'none'; }
+      const fd = new FormData();
+      fd.append('modo', modo);
+      try {
+        const r = await fetch('gestion-qbc-2025.php?action=set_modo_registro', { method: 'POST', body: fd });
+        const text = await r.text();
+        let d;
+        try { d = JSON.parse(text); } catch (e) { throw new Error('Sesión expirada — recarga'); }
+        if (!d.ok) throw new Error(d.msg || 'Error al guardar');
+        aplicarModoUI(d.modo);
+        if (msg) {
+          msg.style.display = 'inline';
+          msg.style.color = 'var(--green)';
+          msg.textContent = '✅ Guardado correctamente';
+          setTimeout(() => { msg.style.display = 'none'; }, 2500);
+        }
+        mostrarToast('✅ Modo de registro: ' + d.modo, 'green');
+      } catch (e) {
+        if (msg) {
+          msg.style.display = 'inline';
+          msg.style.color = 'var(--red)';
+          msg.textContent = '❌ Error al guardar';
+        }
+        mostrarToast('❌ ' + e.message, 'red');
+      }
+    }
+
+    // ── INICIO ──
     cargarDashboard();
     actualizarBadgeSolicitudes();
 
@@ -7831,63 +7918,6 @@ if ($action) {
         }
       </script>
     <?php endif; // fin simulador JS ?>
-
-    <?php if ($esSA || $esAD): ?>
-      <script>
-        async function cargarSistema() {
-          try {
-            const r = await fetch('gestion-qbc-2025.php?action=get_registro_modo');
-            const text = await r.text();
-            let d;
-            try { d = JSON.parse(text); } catch(e) { return; }
-            if (d.ok) actualizarUIModo(d.modo);
-          } catch(e) {}
-        }
-
-        function actualizarUIModo(modo) {
-          const label = document.getElementById('registro-modo-label');
-          const btnS = document.getElementById('btn-modo-solicitud');
-          const btnD = document.getElementById('btn-modo-directo');
-          if (!label) return;
-
-          if (modo === 'directo') {
-            label.textContent = '⚡ Registro directo (cuentas instantáneas)';
-            label.style.color = '#fbbf24';
-            if (btnS) { btnS.style.background = 'transparent'; btnS.style.color = 'rgba(255,255,255,.45)'; btnS.style.borderColor = 'rgba(255,255,255,.15)'; }
-            if (btnD) { btnD.style.background = '#92400e'; btnD.style.color = '#fde68a'; btnD.style.borderColor = '#b45309'; }
-          } else {
-            label.textContent = '📋 Solicitud (aprobación manual)';
-            label.style.color = 'var(--green)';
-            if (btnS) { btnS.style.background = 'rgba(0,200,100,.15)'; btnS.style.color = '#4ade80'; btnS.style.borderColor = 'rgba(0,200,100,.4)'; }
-            if (btnD) { btnD.style.background = 'transparent'; btnD.style.color = 'rgba(255,255,255,.45)'; btnD.style.borderColor = 'rgba(255,255,255,.15)'; }
-          }
-        }
-
-        async function setRegistroModo(modo) {
-          const msg = document.getElementById('registro-modo-msg');
-          const fd = new FormData();
-          fd.append('modo', modo);
-          try {
-            const r = await fetch('gestion-qbc-2025.php?action=set_registro_modo', { method: 'POST', body: fd });
-            const text = await r.text();
-            let d;
-            try { d = JSON.parse(text); } catch(e) { if(msg) msg.textContent = 'Error al guardar'; return; }
-            if (d.ok) {
-              actualizarUIModo(d.modo);
-              if (msg) {
-                msg.textContent = d.modo === 'directo' ? '⚡ Registro directo activado' : '📋 Registro con solicitud activado';
-                setTimeout(() => { if(msg) msg.textContent = ''; }, 3000);
-              }
-              mostrarToast(d.modo === 'directo' ? '⚡ Registro directo activado' : '📋 Registro con solicitud activado', 'success');
-            } else {
-              if (msg) msg.textContent = d.msg || 'Error';
-            }
-          } catch(e) {
-            if (msg) msg.textContent = 'Error de conexión';
-          }
-        }
-      </script>
-    <?php endif; ?>
 
   <?php endif; ?>
 
