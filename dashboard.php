@@ -64,6 +64,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
   
+  if ($action === 'toggle_vis') {
+    $visible = ($_POST['visible'] ?? '0') === '1' ? 1 : 0;
+    // Verificar que el plan sea verde_selva o superior
+    if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
+    $planActualTv = 'semilla';
+    if (function_exists('getDatosPlan')) {
+      $dpTv = getDatosPlan($db, $usuario['id']);
+      $planActualTv = $dpTv['plan'] ?? 'semilla';
+    }
+    $prioridadTv = PLAN_PRIORIDAD[$planActualTv] ?? 0;
+    if ($prioridadTv < 2) {
+      echo json_encode(['ok' => false, 'msg' => 'Necesitas el plan Verde Selva o superior para activar la visibilidad.']);
+      exit;
+    }
+    $tpChkV = $db->prepare("SELECT id FROM talento_perfil WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+    $tpChkV->execute([$usuario['id']]);
+    $tpRowV = $tpChkV->fetch();
+    if ($tpRowV) {
+      $db->prepare("UPDATE talento_perfil SET visible=? WHERE id=?")->execute([$visible, $tpRowV['id']]);
+    } else {
+      $db->prepare("INSERT INTO talento_perfil (usuario_id, visible, visible_admin) VALUES (?,?,1)")->execute([$usuario['id'], $visible]);
+    }
+    echo json_encode(['ok' => true, 'visible' => $visible]);
+    exit;
+  }
+
   if ($action === 'subir_foto') {
     if (!isset($_FILES['foto']) || $_FILES['foto']['error'] !== 0) {
       echo json_encode(['ok' => false, 'msg' => 'No se recibió imagen.']);
@@ -456,6 +482,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
       $bland = substr(trim($_POST['aptitudes_bland'] ?? ''), 0, 500);
       $idiomas = substr(trim($_POST['aptitudes_idiomas'] ?? ''), 0, 300);
+      $skillsTec = isset($_POST['skills_tec']) ? substr(trim($_POST['skills_tec']), 0, 500) : null;
       try {
         $db->exec("ALTER TABLE talento_perfil ADD COLUMN IF NOT EXISTS aptitudes_bland VARCHAR(500) DEFAULT ''");
         $db->exec("ALTER TABLE talento_perfil ADD COLUMN IF NOT EXISTS aptitudes_idiomas VARCHAR(300) DEFAULT ''");
@@ -465,9 +492,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $chk->execute([$usuario['id']]);
       $row = $chk->fetch();
       if ($row) {
-        $db->prepare("UPDATE talento_perfil SET aptitudes_bland=?, aptitudes_idiomas=? WHERE id=?")->execute([$bland, $idiomas, $row['id']]);
+        if ($skillsTec !== null) {
+          $db->prepare("UPDATE talento_perfil SET aptitudes_bland=?, aptitudes_idiomas=?, skills=? WHERE id=?")->execute([$bland, $idiomas, $skillsTec, $row['id']]);
+        } else {
+          $db->prepare("UPDATE talento_perfil SET aptitudes_bland=?, aptitudes_idiomas=? WHERE id=?")->execute([$bland, $idiomas, $row['id']]);
+        }
       } else {
-        $db->prepare("INSERT INTO talento_perfil (usuario_id,aptitudes_bland,aptitudes_idiomas,visible,visible_admin) VALUES (?,?,?,0,1)")->execute([$usuario['id'], $bland, $idiomas]);
+        $skVal = $skillsTec ?? '';
+        $db->prepare("INSERT INTO talento_perfil (usuario_id,aptitudes_bland,aptitudes_idiomas,skills,visible,visible_admin) VALUES (?,?,?,?,0,1)")->execute([$usuario['id'], $bland, $idiomas, $skVal]);
       }
       echo json_encode(['ok' => true]);
     } catch (Exception $e) {
@@ -3066,74 +3098,7 @@ object-fit:contain;
         </div>
       </div>
 
-      <!-- ── FOTO DE PERFIL + BANNER ── -->
-      <div class="card span3" style="border:1.5px solid #e0e0e0">
-        <div style="padding:0;overflow:hidden;border-radius:18px">
-
-          <!-- BANNER -->
-          <div id="bannerZone" style="position:relative;height:160px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);cursor:pointer;overflow:hidden" onclick="document.getElementById('bannerInput').click()" title="Cambiar banner">
-            <?php if ($bannerUrl): ?>
-              <img id="bannerImg" src="<?= $bannerUrl ?>" style="width:100%;height:100%;object-fit:cover;display:block">
-            <?php else: ?>
-              <div id="bannerPlaceholder" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#81c784">
-                <div style="font-size:36px">🖼️</div>
-                <div style="font-size:13px;font-weight:600">Haz clic para subir tu banner</div>
-                <div style="font-size:11px;opacity:.7">Recomendado: 1200 × 300 px · JPG, PNG, WEBP · máx 5 MB</div>
-              </div>
-            <?php endif; ?>
-            <!-- Overlay editar -->
-            <div style="position:absolute;inset:0;background:rgba(0,0,0,0);transition:.2s;display:flex;align-items:center;justify-content:center" 
-                 onmouseover="this.style.background='rgba(0,0,0,.35)';this.querySelector('span').style.opacity='1'" 
-                 onmouseout="this.style.background='rgba(0,0,0,0)';this.querySelector('span').style.opacity='0'">
-              <span style="opacity:0;color:#fff;font-size:13px;font-weight:700;background:rgba(0,0,0,.5);padding:8px 18px;border-radius:20px;transition:.2s">✏️ Cambiar banner</span>
-            </div>
-            <?php if ($bannerUrl): ?>
-            <button onclick="event.stopPropagation();eliminarBanner()" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">🗑 Quitar</button>
-            <?php endif; ?>
-          </div>
-          <input type="file" id="bannerInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="subirBanner(this)">
-
-          <!-- FOTO DE PERFIL sobre el banner -->
-          <div style="padding:0 24px 20px;margin-top:-48px;position:relative;z-index:2">
-            <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px">
-              <!-- Avatar grande -->
-              <div style="position:relative;display:inline-block">
-                <div id="fotoCardAvatar" onclick="abrirModal()" title="Cambiar foto de perfil"
-                     style="width:96px;height:96px;border-radius:50%;border:4px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.15);background:#c8e6c9;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:#2e7d32;cursor:pointer;overflow:hidden;transition:.2s">
-                  <?php if ($fotoUrl): ?>
-                    <img src="<?= $fotoUrl ?>" style="width:100%;height:100%;object-fit:cover" alt="Foto">
-                  <?php else: ?>
-                    <?= $inicial ?>
-                  <?php endif; ?>
-                </div>
-                <div onclick="abrirModal()" style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:#2e7d32;border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px">✏️</div>
-              </div>
-              <!-- Nombre + acciones -->
-              <div style="flex:1;min-width:180px;padding-top:52px">
-                <div style="font-size:18px;font-weight:800;color:#1b5e20"><?= htmlspecialchars($usuario['nombre'] . ' ' . ($usuario['apellido'] ?? '')) ?></div>
-                <div style="font-size:13px;color:#546e7a;margin-top:2px"><?= $tc['label'] ?> <?php if ($ciudad): ?>· <?= htmlspecialchars($ciudad) ?><?php endif; ?></div>
-              </div>
-              <div style="display:flex;gap:8px;padding-top:52px;flex-wrap:wrap">
-                <a href="perfil.php?id=<?= $usuario['id'] ?>" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:#f1f8e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:12px;font-size:12px;font-weight:700;text-decoration:none">
-                  👁 Ver mi perfil
-                </a>
-                <button onclick="abrirModal()" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:#2e7d32;color:#fff;border:none;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer">
-                  📷 Cambiar foto
-                </button>
-                <?php if ($fotoUrl): ?>
-                <button onclick="eliminarFotoBanner()" id="btnEliminarFotoBanner" style="display:inline-flex;align-items:center;gap:5px;padding:9px 16px;background:transparent;color:#e53935;border:1.5px solid #e53935;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer">
-                  🗑 Eliminar foto
-                </button>
-                <?php endif; ?>
-              </div>
-            </div>
-            <div id="bannerMsg" style="font-size:12px;color:#e53935;margin-top:8px;display:none"></div>
-          </div>
-
-        </div>
-      </div>
-
-            <!-- ── QUIÉN ME VIO + PLAN (span3) ── -->
+      <!-- ── QUIÉN ME VIO + PLAN (span3) ── -->
       <?php if (!empty($visitantesRecientes) || $maxVisitantes === 0): ?>
       <div class="card span3" style="border:1.5px solid #e0e0e0">
         <!-- Encabezado -->
@@ -3926,6 +3891,35 @@ object-fit:contain;
         <p class="msub">Actualiza tu información personal y perfil profesional.</p>
         <div class="mmsg" id="editMsg"></div>
 
+        <!-- Banner -->
+        <div class="msec">Banner de perfil</div>
+        <div style="margin-bottom:18px">
+          <div id="bannerZone" style="position:relative;height:120px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);cursor:pointer;overflow:hidden;border-radius:14px;border:1.5px dashed rgba(39,168,85,.3)" onclick="document.getElementById('bannerInput').click()" title="Cambiar banner">
+            <?php if ($bannerUrl): ?>
+              <img id="bannerImg" src="<?= $bannerUrl ?>" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:12px">
+            <?php else: ?>
+              <div id="bannerPlaceholder" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#81c784">
+                <div style="font-size:28px">🖼️</div>
+                <div style="font-size:12px;font-weight:600">Clic para subir banner</div>
+                <div style="font-size:10px;opacity:.7">1200×300 px · JPG/PNG/WEBP · máx 5 MB</div>
+              </div>
+            <?php endif; ?>
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,0);transition:.2s;display:flex;align-items:center;justify-content:center;border-radius:12px"
+                 onmouseover="this.style.background='rgba(0,0,0,.3)';this.querySelector('span').style.opacity='1'"
+                 onmouseout="this.style.background='rgba(0,0,0,0)';this.querySelector('span').style.opacity='0'">
+              <span style="opacity:0;color:#fff;font-size:12px;font-weight:700;background:rgba(0,0,0,.5);padding:6px 14px;border-radius:20px;transition:.2s">✏️ Cambiar banner</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">
+            <input type="file" id="bannerInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="subirBanner(this)">
+            <button onclick="document.getElementById('bannerInput').click()" type="button" style="padding:7px 14px;border-radius:10px;background:rgba(39,168,85,.1);color:var(--v2);border:1.5px solid rgba(39,168,85,.25);font-size:12px;font-weight:700;cursor:pointer">🖼️ Cambiar banner</button>
+            <?php if ($bannerUrl): ?>
+            <button id="btnEliminarBannerModal" onclick="eliminarBanner()" type="button" style="padding:7px 14px;border-radius:10px;background:transparent;color:#e74c3c;border:1.5px solid #e74c3c;font-size:12px;font-weight:700;cursor:pointer">🗑 Quitar</button>
+            <?php endif; ?>
+          </div>
+          <div id="bannerMsg" style="font-size:12px;color:#e53935;margin-top:6px;display:none"></div>
+        </div>
+
         <!-- Foto -->
         <div class="msec">Foto de perfil</div>
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
@@ -4386,13 +4380,28 @@ object-fit:contain;
 
     async function toggleVis(visible) {
       const chip = document.getElementById('pvBadge');
-      const fd = new FormData();
-      
-      fd.append('_action', 'toggle_vis');
-      fd.append('visible', visible ? '1' : '0');
+      const toggle = document.querySelector('.tog input[type="checkbox"]');
+      // Optimistic UI
       chip.textContent = visible ? '🟢 Visible' : '🟡 Oculto';
       chip.className = 'pv-chip ' + (visible ? 'ok' : 'off');
-      
+      const fd = new FormData();
+      fd.append('_action', 'toggle_vis');
+      fd.append('visible', visible ? '1' : '0');
+      try {
+        const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (!j.ok) {
+          // Revertir si falla
+          chip.textContent = visible ? '🟡 Oculto' : '🟢 Visible';
+          chip.className = 'pv-chip ' + (visible ? 'off' : 'ok');
+          if (toggle) toggle.checked = !visible;
+          alert(j.msg || 'Error al cambiar visibilidad.');
+        }
+      } catch (e) {
+        chip.textContent = visible ? '🟡 Oculto' : '🟢 Visible';
+        chip.className = 'pv-chip ' + (visible ? 'off' : 'ok');
+        if (toggle) toggle.checked = !visible;
+      }
     }
 
     const notifBtn = document.getElementById('navNotif');
@@ -4710,20 +4719,17 @@ object-fit:contain;
         fetch('dashboard.php', { method: 'POST', body: fdApt }).catch(() => { });
       } catch (e) { }
       
-      const fd = new FormData();
-      fd.append('_action', 'editar_perfil');
-      fd.append('nombre', document.getElementById('editNombre')?.value || '<?= addslashes($usuario["nombre"] ?? "") ?>');
-      fd.append('apellido', '');
-      fd.append('telefono', '');
-      fd.append('ciudad', '');
-      fd.append('profesion', '');
-      fd.append('bio', '');
-      fd.append('skills', tec);
+      // Usar guardar_aptitudes_extra para las habilidades técnicas también
       try {
-        const r = await fetch('dashboard.php', { method: 'POST', body: fd });
-        const j = await r.json();
-        if (j.ok) { msg.textContent = '✅ Aptitudes guardadas.'; msg.className = 'mmsg success'; msg.style.display = 'block'; setTimeout(cerrarFormApt, 1200); renderApt(); }
-        else { msg.textContent = '❌ ' + (j.msg || 'Error'); msg.className = 'mmsg error'; msg.style.display = 'block'; }
+        const fdSkills = new FormData();
+        fdSkills.append('_action', 'guardar_aptitudes_extra');
+        fdSkills.append('aptitudes_bland', bland);
+        fdSkills.append('aptitudes_idiomas', idiomas);
+        fdSkills.append('skills_tec', tec); // skills técnicas adicionales
+        const r2 = await fetch('dashboard.php', { method: 'POST', body: fdSkills });
+        const j2 = await r2.json();
+        if (j2.ok) { msg.textContent = '✅ Aptitudes guardadas.'; msg.className = 'mmsg success'; msg.style.display = 'block'; setTimeout(cerrarFormApt, 1200); renderApt(); }
+        else { msg.textContent = '❌ ' + (j2.msg || 'Error'); msg.className = 'mmsg error'; msg.style.display = 'block'; }
       } catch (e) { msg.textContent = '❌ Error de conexión'; msg.className = 'mmsg error'; msg.style.display = 'block'; }
     }
 
