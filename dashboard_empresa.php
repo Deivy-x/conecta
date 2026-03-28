@@ -2639,7 +2639,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           <div id="bannerPlaceholder"
             style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:rgba(255,255,255,.65)">
             <div style="font-size:28px">🖼️</div>
-            <div style="font-size:12px;font-weight:600">Haz clic para subir el banner de tu empresa</div>
+            <div style="font-size:12px;font-weight:600">Haz clic pra subir el banner de tu empresa</div>
             <div style="font-size:11px;opacity:.7">1200×300 px · JPG/PNG/WEBP · máx 5 MB</div>
           </div>
         <?php endif; ?>
