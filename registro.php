@@ -355,6 +355,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .success-screen h2{font-family:'Fraunces',serif;font-size:28px;color:var(--lima);margin-bottom:10px}
     .success-screen p{color:rgba(255,255,255,.6);font-size:15px;margin-bottom:28px;line-height:1.6}
     .btns-success{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    @keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.3)}60%{box-shadow:0 0 0 14px rgba(74,222,128,0)}}
     .btn-ir{display:inline-block;padding:13px 28px;background:linear-gradient(135deg,var(--verde),var(--verde2));color:white;border-radius:25px;text-decoration:none;font-weight:700;font-size:14px;box-shadow:0 6px 20px rgba(30,140,69,.4);transition:transform .2s}
     .btn-ir:hover{transform:translateY(-2px)}
     .btn-ir.secundario{background:rgba(255,255,255,.08);box-shadow:none}
@@ -1025,13 +1026,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 
   <!-- SUCCESS -->
-  <div class="success-screen" id="successScreen">
-    <div class="big-icon" id="successIcon">⏳</div>
-    <h2 id="successNombre">¡Solicitud enviada!</h2>
-    <p id="successMsg">Tu solicitud fue recibida. El administrador la revisará y recibirás acceso una vez aprobada.</p>
+  <!-- ── PANTALLA ÉXITO: SOLICITUD PENDIENTE ── -->
+  <div class="success-screen" id="screenPendiente" style="display:none">
+    <div style="position:relative;display:inline-block;margin-bottom:20px">
+      <div style="width:88px;height:88px;border-radius:50%;background:rgba(245,200,0,.12);border:2px solid rgba(245,200,0,.35);display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto">⏳</div>
+      <div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:rgba(30,140,69,.9);border:2px solid rgba(4,21,11,.8);display:flex;align-items:center;justify-content:center;font-size:13px">📋</div>
+    </div>
+    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,200,0,.1);border:1px solid rgba(245,200,0,.3);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;color:#ffd94d;letter-spacing:.6px;text-transform:uppercase;margin-bottom:14px">
+      En revisión
+    </div>
+    <h2 id="pendienteNombre" style="font-family:'Fraunces',serif;font-size:28px;color:#4ade80;margin-bottom:10px">¡Solicitud enviada!</h2>
+    <p style="color:rgba(255,255,255,.55);font-size:15px;margin-bottom:8px;line-height:1.65">Tu solicitud fue recibida correctamente.</p>
+    <p style="color:rgba(255,255,255,.4);font-size:13.5px;margin-bottom:28px;line-height:1.65">El administrador la revisará y te notificará por correo cuando tu cuenta esté activa. Esto suele tomar menos de 24 horas.</p>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 20px;margin-bottom:28px;text-align:left">
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:8px">
+        <span style="font-size:16px">📧</span> Recibirás un correo cuando seas aprobado
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:8px">
+        <span style="font-size:16px">🕐</span> Tiempo de respuesta: generalmente menos de 24 h
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.5)">
+        <span style="font-size:16px">🔒</span> Tus datos están seguros y protegidos
+      </div>
+    </div>
     <div class="btns-success">
-      <a href="index.html" class="btn-ir">Ir al inicio →</a>
-      <a href="inicio_sesion.php" class="btn-ir secundario">Ya fui aprobado</a>
+      <a href="index.html" class="btn-ir">🏠 Ir al inicio</a>
+      <a href="inicio_sesion.php" class="btn-ir secundario">Ya fui aprobado →</a>
+    </div>
+  </div>
+
+  <!-- ── PANTALLA ÉXITO: CUENTA DIRECTA (ACTIVA) ── -->
+  <div class="success-screen" id="screenDirecto" style="display:none">
+    <div style="position:relative;display:inline-block;margin-bottom:20px">
+      <div style="width:88px;height:88px;border-radius:50%;background:rgba(74,222,128,.12);border:2px solid rgba(74,222,128,.4);display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto;animation:pulseGreen 2s ease-in-out infinite">✅</div>
+    </div>
+    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.35);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;color:#4ade80;letter-spacing:.6px;text-transform:uppercase;margin-bottom:14px">
+      Cuenta activa
+    </div>
+    <h2 id="directoNombre" style="font-family:'Fraunces',serif;font-size:28px;color:#4ade80;margin-bottom:10px">¡Todo listo!</h2>
+    <p style="color:rgba(255,255,255,.65);font-size:15.5px;margin-bottom:8px;line-height:1.65">Tu cuenta fue creada exitosamente.</p>
+    <p style="color:rgba(255,255,255,.4);font-size:13.5px;margin-bottom:28px;line-height:1.65">Ya puedes acceder a QuibdóConecta con tu correo y contraseña. ¡Bienvenido a la comunidad del Chocó!</p>
+    <div style="background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.15);border-radius:14px;padding:16px 20px;margin-bottom:28px;text-align:left">
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:8px">
+        <span style="font-size:16px">🚀</span> Acceso inmediato a tu panel personal
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:8px">
+        <span style="font-size:16px">🌿</span> Explora empleos, empresas, negocios y más
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.5)">
+        <span style="font-size:16px">🔑</span> Usa tu correo y contraseña para ingresar
+      </div>
+    </div>
+    <div class="btns-success">
+      <a href="inicio_sesion.php" class="btn-ir" style="background:linear-gradient(135deg,#1e8c45,#0d5c2e);border-color:#1e8c45">🔑 Iniciar sesión ahora</a>
+      <a href="index.html" class="btn-ir secundario">Ir al inicio</a>
     </div>
   </div>
 </div>
@@ -1356,10 +1404,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       const json = await res.json();
       if(json.ok){
         document.getElementById('formSection').style.display='none';
-        document.getElementById('successIcon').textContent='⏳';
-        document.getElementById('successNombre').textContent='¡Solicitud enviada, '+json.nombre+'!';
-        document.getElementById('successMsg').textContent='Tu solicitud fue recibida. El administrador la revisará y te notificará cuando tu cuenta esté lista.';
-        document.getElementById('successScreen').style.display='block';
+        if(json.directo){
+          // ── Modo DIRECTO: cuenta activa al instante ──
+          document.getElementById('directoNombre').textContent = '¡Todo listo, ' + json.nombre + '!';
+          document.getElementById('screenDirecto').style.display = 'block';
+        } else {
+          // ── Modo SOLICITUD: cuenta pendiente de aprobación ──
+          document.getElementById('pendienteNombre').textContent = '¡Solicitud enviada, ' + json.nombre + '!';
+          document.getElementById('screenPendiente').style.display = 'block';
+        }
       } else {
         showMsg(json.msg,'error');
         btn.disabled=false; btn.textContent='📋 Enviar solicitud';
