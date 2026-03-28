@@ -2986,6 +2986,122 @@ object-fit:contain;
         </div>
       <?php endif; ?>
 
+      <div class="card" style="display:flex;flex-direction:column">
+        <div class="cp-head">
+          <div class="cp-av" id="cpAvatar" onclick="abrirModal()">
+            <?php if ($fotoUrl): ?><img src="<?= $fotoUrl ?>" alt="Foto"
+                style="width:100%;height:100%;object-fit:cover;border-radius:18px"><?php else: ?><?= $inicial ?><?php endif; ?>
+          </div>
+          <div class="cp-nom" id="dNombre">
+            <?= $tipo === 'empresa' ? $nombreEmpresa : ($tipo === 'negocio' ? $nombreNegocio : $nombreCompleto) ?>
+          </div>
+          <div class="cp-pro" id="dProfesion">
+            <?php if ($tipo === 'empresa'): ?>
+              <?= $sectorEmp ?: 'Sector no definido' ?>
+            <?php elseif ($tipo === 'negocio'): ?>
+              <?= $catNeg ?: 'Categoría no definida' ?>
+            <?php elseif ($subTipo === 'servicio'): ?>
+              <?= $profesionTipo ?: 'Servicio para eventos' ?>
+            <?php else: ?>
+              <?= !empty($talento['profesion']) ? htmlspecialchars($talento['profesion']) : ($profesionTipo ?: 'Sin profesión') ?>
+            <?php endif; ?>
+          </div>
+        </div>
+        <div class="cp-body">
+          <div class="cp-fil"><span class="cp-ico">📍</span><span
+              id="dCiudad"><?= $ciudad ?: 'Ciudad no registrada' ?></span></div>
+          <div class="cp-fil"><span class="cp-ico">📞</span><span
+              id="dTelefono"><?= $telefono ?: 'Teléfono no registrado' ?></span></div>
+          <div class="cp-fil"><span class="cp-ico">✉️</span><span><?= $correo ?></span></div>
+          <?php if ($tipo === 'empresa' && !empty($extras['nit'] ?? $ep['nit'] ?? '')): ?>
+            <div class="cp-fil"><span class="cp-ico">🏛️</span><span>NIT:
+                <?= htmlspecialchars($extras['nit'] ?? $ep['nit'] ?? '') ?></span></div>
+          <?php endif; ?>
+          <?php if ($tipo === 'negocio' && !empty($extras['whatsapp_neg'] ?? $np['whatsapp'] ?? '')): ?>
+            <div class="cp-fil"><span class="cp-ico">💬</span><span>WhatsApp:
+                <?= htmlspecialchars($extras['whatsapp_neg'] ?? $np['whatsapp'] ?? '') ?></span></div>
+          <?php endif; ?>
+          <?php if ($subTipo === 'servicio' && !empty($talento['precio_desde'])): ?>
+            <div class="cp-fil"><span class="cp-ico">💰</span><span>Desde
+                $<?= number_format((float) $talento['precio_desde'], 0, ',', '.') ?></span></div>
+          <?php endif; ?>
+          <div class="cp-fil"><span class="cp-ico">📅</span><span><?= $fechaRegistro ?></span></div>
+          <?php if (!empty($badgesHTML)): ?>
+            <div style="margin-top:8px"><?= $badgesHTML ?></div>
+          <?php endif; ?>
+        </div>
+
+        <!-- Toggle visibilidad -->
+        <?php if ($tipo === 'candidato' || $subTipo === 'servicio'): ?>
+          <?php
+            // Determinar si el plan tiene acceso al toggle de visibilidad (verde_selva en adelante)
+            $planPrioridad = PLAN_PRIORIDAD[$planActual] ?? 0;
+            $tieneAccesoVisibilidad = $planPrioridad >= 2; // verde_selva=2, amarillo_oro=3, azul_profundo=4, demo=5
+          ?>
+          <div style="padding:0 22px">
+            <?php if ($tieneAccesoVisibilidad): ?>
+            <div class="vis-row">
+              <div>
+                <div class="vis-lab">Visible en <?= $subTipo === 'servicio' ? 'Servicios' : 'Talentos' ?></div>
+                <div class="vis-sub">Aparece en el directorio público</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span id="pvBadge"
+                  class="pv-chip <?= ($talento['visible'] ?? 0) ? 'ok' : 'off' ?>"><?= ($talento['visible'] ?? 0) ? '🟢 Visible' : '🟡 Oculto' ?></span>
+                <label class="tog"><input type="checkbox" <?= ($talento['visible'] ?? 0) ? 'checked' : '' ?>
+                    onchange="toggleVis(this.checked)"><span class="tog-sl"></span></label>
+              </div>
+            </div>
+            <?php else: ?>
+            <div class="vis-row" style="opacity:.75">
+              <div>
+                <div class="vis-lab">Visible en <?= $subTipo === 'servicio' ? 'Servicios' : 'Talentos' ?></div>
+                <div class="vis-sub" style="color:#e65100">🔒 Disponible desde el plan <strong>Verde Selva</strong></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <a href="empresas.php#planes" style="font-size:11px;font-weight:700;color:#2e7d32;text-decoration:none;background:rgba(46,125,50,.1);padding:5px 10px;border-radius:8px;white-space:nowrap">✦ Mejorar plan</a>
+              </div>
+            </div>
+            <?php endif; ?>
+          </div>
+        <?php elseif ($tipo === 'empresa'): ?>
+          <div style="padding:0 22px">
+            <div class="vis-row">
+              <div>
+                <div class="vis-lab">Visible en Empresas</div>
+                <div class="vis-sub">Aparece en el directorio público</div>
+              </div>
+              <span
+                class="pv-chip <?= ($ep['visible_admin'] ?? 1) ? 'ok' : 'off' ?>"><?= ($ep['visible_admin'] ?? 1) ? '🟢 Visible' : '🟡 Oculto' ?></span>
+            </div>
+          </div>
+        <?php elseif ($tipo === 'negocio'): ?>
+          <div style="padding:0 22px">
+            <div class="vis-row">
+              <div>
+                <div class="vis-lab">Visible en Negocios</div>
+                <div class="vis-sub">Aparece en el directorio público</div>
+              </div>
+              <span
+                class="pv-chip <?= ($np['visible_admin'] ?? 1) ? 'ok' : 'off' ?>"><?= ($np['visible_admin'] ?? 1) ? '🟢 Visible' : '🟡 Oculto' ?></span>
+            </div>
+          </div>
+        <?php endif; ?>
+
+        <!-- Progreso -->
+        <div class="prog-w" style="margin:10px 0">
+          <div class="prog-h"><span>Perfil completado</span><span id="pctLabel"><?= $pct ?>%</span></div>
+          <div class="prog-t">
+            <div class="prog-f" id="progBar" style="width:0%"></div>
+          </div>
+        </div>
+
+        <button class="btn-edit" onclick="abrirModal()">✏️ Editar mi perfil</button>
+        <a href="<?= $tipo === 'empresa' ? 'empresas.php#u' . $usuario['id'] : ($tipo === 'negocio' ? 'negocios.php#u' . $usuario['id'] : ($subTipo === 'servicio' ? 'servicios.php' : 'talentos.php')) ?>"
+          class="btn-sec">🌐 Ver mi perfil en directorio</a>
+        <a href="perfil.php?id=<?= $usuario['id'] ?>&tipo=<?= urlencode($tipo) ?>"
+          class="btn-sec" style="margin-top:6px;">👤 Ver mi perfil público</a>
+      </div>
       <!-- ── ACCIONES RÁPIDAS (span 3) ── -->
       <div class="card span3">
         <div class="ca-tit">⚡ Acciones rápidas</div>
@@ -3317,122 +3433,7 @@ object-fit:contain;
       </div>
 
       <!-- ── PERFIL CARD ── -->
-      <div class="card" style="display:flex;flex-direction:column">
-        <div class="cp-head">
-          <div class="cp-av" id="cpAvatar" onclick="abrirModal()">
-            <?php if ($fotoUrl): ?><img src="<?= $fotoUrl ?>" alt="Foto"
-                style="width:100%;height:100%;object-fit:cover;border-radius:18px"><?php else: ?><?= $inicial ?><?php endif; ?>
-          </div>
-          <div class="cp-nom" id="dNombre">
-            <?= $tipo === 'empresa' ? $nombreEmpresa : ($tipo === 'negocio' ? $nombreNegocio : $nombreCompleto) ?>
-          </div>
-          <div class="cp-pro" id="dProfesion">
-            <?php if ($tipo === 'empresa'): ?>
-              <?= $sectorEmp ?: 'Sector no definido' ?>
-            <?php elseif ($tipo === 'negocio'): ?>
-              <?= $catNeg ?: 'Categoría no definida' ?>
-            <?php elseif ($subTipo === 'servicio'): ?>
-              <?= $profesionTipo ?: 'Servicio para eventos' ?>
-            <?php else: ?>
-              <?= !empty($talento['profesion']) ? htmlspecialchars($talento['profesion']) : ($profesionTipo ?: 'Sin profesión') ?>
-            <?php endif; ?>
-          </div>
-        </div>
-        <div class="cp-body">
-          <div class="cp-fil"><span class="cp-ico">📍</span><span
-              id="dCiudad"><?= $ciudad ?: 'Ciudad no registrada' ?></span></div>
-          <div class="cp-fil"><span class="cp-ico">📞</span><span
-              id="dTelefono"><?= $telefono ?: 'Teléfono no registrado' ?></span></div>
-          <div class="cp-fil"><span class="cp-ico">✉️</span><span><?= $correo ?></span></div>
-          <?php if ($tipo === 'empresa' && !empty($extras['nit'] ?? $ep['nit'] ?? '')): ?>
-            <div class="cp-fil"><span class="cp-ico">🏛️</span><span>NIT:
-                <?= htmlspecialchars($extras['nit'] ?? $ep['nit'] ?? '') ?></span></div>
-          <?php endif; ?>
-          <?php if ($tipo === 'negocio' && !empty($extras['whatsapp_neg'] ?? $np['whatsapp'] ?? '')): ?>
-            <div class="cp-fil"><span class="cp-ico">💬</span><span>WhatsApp:
-                <?= htmlspecialchars($extras['whatsapp_neg'] ?? $np['whatsapp'] ?? '') ?></span></div>
-          <?php endif; ?>
-          <?php if ($subTipo === 'servicio' && !empty($talento['precio_desde'])): ?>
-            <div class="cp-fil"><span class="cp-ico">💰</span><span>Desde
-                $<?= number_format((float) $talento['precio_desde'], 0, ',', '.') ?></span></div>
-          <?php endif; ?>
-          <div class="cp-fil"><span class="cp-ico">📅</span><span><?= $fechaRegistro ?></span></div>
-          <?php if (!empty($badgesHTML)): ?>
-            <div style="margin-top:8px"><?= $badgesHTML ?></div>
-          <?php endif; ?>
-        </div>
-
-        <!-- Toggle visibilidad -->
-        <?php if ($tipo === 'candidato' || $subTipo === 'servicio'): ?>
-          <?php
-            // Determinar si el plan tiene acceso al toggle de visibilidad (verde_selva en adelante)
-            $planPrioridad = PLAN_PRIORIDAD[$planActual] ?? 0;
-            $tieneAccesoVisibilidad = $planPrioridad >= 2; // verde_selva=2, amarillo_oro=3, azul_profundo=4, demo=5
-          ?>
-          <div style="padding:0 22px">
-            <?php if ($tieneAccesoVisibilidad): ?>
-            <div class="vis-row">
-              <div>
-                <div class="vis-lab">Visible en <?= $subTipo === 'servicio' ? 'Servicios' : 'Talentos' ?></div>
-                <div class="vis-sub">Aparece en el directorio público</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <span id="pvBadge"
-                  class="pv-chip <?= ($talento['visible'] ?? 0) ? 'ok' : 'off' ?>"><?= ($talento['visible'] ?? 0) ? '🟢 Visible' : '🟡 Oculto' ?></span>
-                <label class="tog"><input type="checkbox" <?= ($talento['visible'] ?? 0) ? 'checked' : '' ?>
-                    onchange="toggleVis(this.checked)"><span class="tog-sl"></span></label>
-              </div>
-            </div>
-            <?php else: ?>
-            <div class="vis-row" style="opacity:.75">
-              <div>
-                <div class="vis-lab">Visible en <?= $subTipo === 'servicio' ? 'Servicios' : 'Talentos' ?></div>
-                <div class="vis-sub" style="color:#e65100">🔒 Disponible desde el plan <strong>Verde Selva</strong></div>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <a href="empresas.php#planes" style="font-size:11px;font-weight:700;color:#2e7d32;text-decoration:none;background:rgba(46,125,50,.1);padding:5px 10px;border-radius:8px;white-space:nowrap">✦ Mejorar plan</a>
-              </div>
-            </div>
-            <?php endif; ?>
-          </div>
-        <?php elseif ($tipo === 'empresa'): ?>
-          <div style="padding:0 22px">
-            <div class="vis-row">
-              <div>
-                <div class="vis-lab">Visible en Empresas</div>
-                <div class="vis-sub">Aparece en el directorio público</div>
-              </div>
-              <span
-                class="pv-chip <?= ($ep['visible_admin'] ?? 1) ? 'ok' : 'off' ?>"><?= ($ep['visible_admin'] ?? 1) ? '🟢 Visible' : '🟡 Oculto' ?></span>
-            </div>
-          </div>
-        <?php elseif ($tipo === 'negocio'): ?>
-          <div style="padding:0 22px">
-            <div class="vis-row">
-              <div>
-                <div class="vis-lab">Visible en Negocios</div>
-                <div class="vis-sub">Aparece en el directorio público</div>
-              </div>
-              <span
-                class="pv-chip <?= ($np['visible_admin'] ?? 1) ? 'ok' : 'off' ?>"><?= ($np['visible_admin'] ?? 1) ? '🟢 Visible' : '🟡 Oculto' ?></span>
-            </div>
-          </div>
-        <?php endif; ?>
-
-        <!-- Progreso -->
-        <div class="prog-w" style="margin:10px 0">
-          <div class="prog-h"><span>Perfil completado</span><span id="pctLabel"><?= $pct ?>%</span></div>
-          <div class="prog-t">
-            <div class="prog-f" id="progBar" style="width:0%"></div>
-          </div>
-        </div>
-
-        <button class="btn-edit" onclick="abrirModal()">✏️ Editar mi perfil</button>
-        <a href="<?= $tipo === 'empresa' ? 'empresas.php#u' . $usuario['id'] : ($tipo === 'negocio' ? 'negocios.php#u' . $usuario['id'] : ($subTipo === 'servicio' ? 'servicios.php' : 'talentos.php')) ?>"
-          class="btn-sec">🌐 Ver mi perfil en directorio</a>
-        <a href="perfil.php?id=<?= $usuario['id'] ?>&tipo=<?= urlencode($tipo) ?>"
-          class="btn-sec" style="margin-top:6px;">👤 Ver mi perfil público</a>
-      </div>
+      
 
       <!-- ── ACTIVIDAD RECIENTE ── -->
       <div class="card span2">
