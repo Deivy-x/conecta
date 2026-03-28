@@ -144,6 +144,11 @@ if ($action && $logueado) {
 
   // ── CATÁLOGO DE BADGES ──────────────────────────────────
   if ($action === 'badges_catalogo') {
+    // Auto-migrar columna beneficios si no existe
+    try {
+      $db->query("ALTER TABLE badges_catalog ADD COLUMN beneficios TEXT NULL DEFAULT NULL");
+    } catch (Exception $e) { /* ya existe */
+    }
     $stmt = $db->query("SELECT * FROM badges_catalog ORDER BY tipo, nombre");
     echo json_encode(['ok' => true, 'badges' => $stmt->fetchAll()]);
     exit;
@@ -156,12 +161,17 @@ if ($action && $logueado) {
     $desc = trim($_POST['descripcion'] ?? '');
     $color = trim($_POST['color'] ?? '#00e676');
     $tipo = $_POST['tipo'] ?? 'manual';
+    $beneficios = trim($_POST['beneficios'] ?? '');
     if (!$nombre) {
       echo json_encode(['ok' => false, 'msg' => 'Nombre requerido']);
       exit;
     }
-    $db->prepare("INSERT INTO badges_catalog (nombre,emoji,descripcion,color,tipo) VALUES (?,?,?,?,?)")
-      ->execute([$nombre, $emoji, $desc, $color, $tipo]);
+    try {
+      $db->query("ALTER TABLE badges_catalog ADD COLUMN beneficios TEXT NULL DEFAULT NULL");
+    } catch (Exception $e) {
+    }
+    $db->prepare("INSERT INTO badges_catalog (nombre,emoji,descripcion,color,tipo,beneficios) VALUES (?,?,?,?,?,?)")
+      ->execute([$nombre, $emoji, $desc, $color, $tipo, $beneficios ?: null]);
     try {
       $db->prepare("INSERT INTO admin_auditoria (admin_id,accion,detalle,creado_en) VALUES (?,?,?,NOW())")->execute([$_SESSION['admin_id'], 'badge_crear', "Badge '$nombre' creado"]);
     } catch (Exception $e) {
@@ -178,12 +188,17 @@ if ($action && $logueado) {
     $desc = trim($_POST['descripcion'] ?? '');
     $color = trim($_POST['color'] ?? '#00e676');
     $tipo = $_POST['tipo'] ?? 'manual';
+    $beneficios = trim($_POST['beneficios'] ?? '');
     if (!$id || !$nombre) {
       echo json_encode(['ok' => false, 'msg' => 'Datos inválidos']);
       exit;
     }
-    $db->prepare("UPDATE badges_catalog SET nombre=?,emoji=?,descripcion=?,color=?,tipo=? WHERE id=?")
-      ->execute([$nombre, $emoji, $desc, $color, $tipo, $id]);
+    try {
+      $db->query("ALTER TABLE badges_catalog ADD COLUMN beneficios TEXT NULL DEFAULT NULL");
+    } catch (Exception $e) {
+    }
+    $db->prepare("UPDATE badges_catalog SET nombre=?,emoji=?,descripcion=?,color=?,tipo=?,beneficios=? WHERE id=?")
+      ->execute([$nombre, $emoji, $desc, $color, $tipo, $beneficios ?: null, $id]);
     echo json_encode(['ok' => true]);
     exit;
   }
@@ -1594,7 +1609,7 @@ if ($action && $logueado) {
     }
 
     $profesion = trim($_POST['profesion'] ?? '');
-    $bio = trim($_POST['bio'] ?? '');
+    $bio = trim($_POST['bio'] ?? '') ?: '';
     $skills = trim($_POST['skills'] ?? '');
     $ciudad = trim($_POST['ciudad'] ?? '');
     $visible_admin = (int) ($_POST['visible_admin'] ?? 1);
@@ -1613,7 +1628,7 @@ if ($action && $logueado) {
     $db->prepare("
       INSERT INTO talento_perfil
         (usuario_id, profesion, bio, skills, visible, visible_admin, destacado, avatar_color, generos, precio_desde, tipo_servicio)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?)
+      VALUES (?,?,COALESCE(?,''),?,?,?,?,?,?,?,?)
       ON DUPLICATE KEY UPDATE
         profesion     = VALUES(profesion),
         bio           = VALUES(bio),
@@ -4315,6 +4330,17 @@ if ($action) {
                 </select>
               </div>
             </div>
+            <!-- Beneficios -->
+            <div style="margin-bottom:12px">
+              <label
+                style="font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px">💡
+                Beneficios <span style="font-weight:400;color:var(--text3)">(uno por línea)</span></label>
+              <textarea id="badge-beneficios" rows="5"
+                placeholder="Escribe un beneficio por línea, ej:&#10;✅ Perfil destacado en el directorio&#10;📊 Estadísticas de visitas&#10;💬 Mensajes directos"
+                style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'Space Grotesk',sans-serif;outline:none;resize:vertical;line-height:1.6;box-sizing:border-box"></textarea>
+              <p style="font-size:10px;color:var(--text3);margin-top:4px">Se mostrarán como lista en la tarjeta del badge.
+              </p>
+            </div>
             <!-- Preview -->
             <div style="margin-bottom:20px;padding:14px;background:var(--bg3);border-radius:10px;text-align:center">
               <p style="font-size:11px;color:var(--text3);margin-bottom:8px">PREVIEW</p>
@@ -6675,14 +6701,28 @@ if ($action) {
           html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(${minW},1fr));gap:12px;margin-bottom:24px">`;
           html += del_tipo.map(b => {
             const planInfo = PLAN_BENEFICIOS[b.nombre] || null;
-            const beneficiosHtml = planInfo ? `
+            // Beneficios: primero usa el campo guardado en BD, si no, usa el mapa de planes predefinidos
+            let beneficiosHtml = '';
+            if (b.beneficios && b.beneficios.trim()) {
+              const lineas = b.beneficios.split('\n').map(l => l.trim()).filter(Boolean);
+              beneficiosHtml = `
+                <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+                  <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">💡 Beneficios incluidos</div>
+                  <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px">
+                    ${lineas.map(ben => `<li style="font-size:11px;color:var(--text2)">${esc(ben)}</li>`).join('')}
+                  </ul>
+                  ${planInfo ? `<div style="margin-top:10px;display:inline-block;padding:4px 10px;background:${b.color}18;border:1px solid ${b.color}44;border-radius:20px;font-size:11px;font-weight:700;color:${b.color}">${planInfo.precio}</div>` : ''}
+                </div>`;
+            } else if (planInfo) {
+              beneficiosHtml = `
                 <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
                   <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">💡 Beneficios incluidos</div>
                   <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px">
                     ${planInfo.beneficios.map(ben => `<li style="font-size:11px;color:var(--text2)">${ben}</li>`).join('')}
                   </ul>
                   <div style="margin-top:10px;display:inline-block;padding:4px 10px;background:${b.color}18;border:1px solid ${b.color}44;border-radius:20px;font-size:11px;font-weight:700;color:${b.color}">${planInfo.precio}</div>
-                </div>` : '';
+                </div>`;
+            }
             return `
               <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
@@ -6802,6 +6842,7 @@ if ($action) {
       document.getElementById('badge-color').value = '#00e676';
       document.getElementById('badge-color-text').value = '#00e676';
       document.getElementById('badge-tipo').value = 'manual';
+      document.getElementById('badge-beneficios').value = '';
       document.getElementById('badge-msg').style.display = 'none';
       actualizarPreviewBadge();
       document.getElementById('modal-badge').style.display = 'flex';
@@ -6818,6 +6859,7 @@ if ($action) {
       document.getElementById('badge-color').value = b.color;
       document.getElementById('badge-color-text').value = b.color;
       document.getElementById('badge-tipo').value = b.tipo;
+      document.getElementById('badge-beneficios').value = b.beneficios || '';
       document.getElementById('badge-msg').style.display = 'none';
       actualizarPreviewBadge();
       document.getElementById('modal-badge').style.display = 'flex';
@@ -6854,6 +6896,7 @@ if ($action) {
       const desc = document.getElementById('badge-desc').value.trim();
       const color = document.getElementById('badge-color').value;
       const tipo = document.getElementById('badge-tipo').value;
+      const beneficios = document.getElementById('badge-beneficios').value.trim();
       const msg = document.getElementById('badge-msg');
 
       if (!nombre) { msg.style.display = 'block'; msg.style.color = 'var(--red)'; msg.textContent = '❌ El nombre es obligatorio'; return; }
@@ -6861,6 +6904,7 @@ if ($action) {
       const fd = new FormData();
       fd.append('nombre', nombre); fd.append('emoji', emoji);
       fd.append('descripcion', desc); fd.append('color', color); fd.append('tipo', tipo);
+      fd.append('beneficios', beneficios);
 
       const action = id ? 'badge_editar' : 'badge_crear';
       if (id) fd.append('id', id);
