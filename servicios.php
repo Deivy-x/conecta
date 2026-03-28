@@ -254,6 +254,12 @@ foreach ($dbServicios as $s) {
       filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .15))
     }
 
+.logo-navbar{
+height:45px;
+width:auto;
+object-fit:contain;
+}
+
     .brand {
       font-size: 22px;
       font-weight: 800;
@@ -1283,10 +1289,9 @@ foreach ($dbServicios as $s) {
 
 
   <header class="navbar" id="navbar">
-    <div class="nav-left">
-      <img src="Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
-      <span class="brand">Quibdó<span>Conecta</span></span>
-    </div>
+        <div class="nav-left">
+            <img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar">
+        </div>
     <nav class="nav-center">
       <a href="index.html">Inicio</a>
       <a href="Empleo.html">Empleos</a>
