@@ -2683,7 +2683,7 @@ object-fit:contain;
   <!-- ── NAVBAR ── -->
   <nav class="navbar">
         <div class="nav-left">
-            <img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar">
+            <a href="index.html"><img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar"></a>
         </div>
     <div class="nav-links">
       <a href="dashboard.php" class="nl on">🏠 Panel</a>
