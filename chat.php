@@ -292,7 +292,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
         }
 
 .logo-navbar{
-height:75px;
+height:30px;
 width:auto;
 object-fit:contain;
 }
