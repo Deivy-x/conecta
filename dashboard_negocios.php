@@ -60,7 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                ->execute([$usuario['id'], $nombreNeg, $categoria, $descripcion, $direccion,
                           $barrio, $municipio, $whatsapp, $instagram, $horario, $sitio_web]);
         }
-        echo json_encode(['ok'=>true,'nombre_negocio'=>$nombreNeg,'categoria'=>$categoria,'ciudad'=>$ciudad]);
+        // Releer foto actual para devolverla al frontend y que no se pierda del DOM
+        $fotoStmt = $db->prepare('SELECT foto FROM usuarios WHERE id=? LIMIT 1');
+        $fotoStmt->execute([$usuario['id']]);
+        $fotoActualResp = $fotoStmt->fetchColumn() ?: '';
+        echo json_encode(['ok'=>true,'nombre_negocio'=>$nombreNeg,'categoria'=>$categoria,'ciudad'=>$ciudad,'foto'=>$fotoActualResp]);
         exit;
     }
 
@@ -416,7 +420,7 @@ if ($tieneVerificado)$pct=min(100,$pct+7);
     <a href="Ayuda.html" class="nl">❓ Ayuda</a>
   </nav>
   <div class="nav-usuario">
-    <div class="nav-avatar" onclick="abrirModal()">
+    <div class="nav-avatar" id="navAvatar" onclick="abrirModal()">
       <?php if ($fotoUrl): ?><img src="<?=$fotoUrl?>" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$iniciales?><?php endif; ?>
     </div>
     <span class="nav-nombre"><?=$nombreNegocio?></span>
@@ -427,7 +431,7 @@ if ($tieneVerificado)$pct=min(100,$pct+7);
 <!-- HERO -->
 <div class="hero">
   <div class="hero-inner">
-    <div class="hero-av" onclick="abrirModal()" title="Cambiar foto">
+    <div class="hero-av" id="heroAvatar" onclick="abrirModal()" title="Cambiar foto">
       <?php if ($fotoUrl): ?><img src="<?=$fotoUrl?>" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$iniciales?><?php endif; ?>
     </div>
     <div>
@@ -883,6 +887,10 @@ async function guardarNegocio(){
       mostrarMsg('¡Perfil actualizado!','success');
       document.getElementById('dNombreNeg').textContent=j.nombre_negocio;
       document.getElementById('dNombre2').textContent=j.nombre_negocio;
+      if(j.foto){
+        const imgTag=`<img src="${j.foto}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+        ['fotoPreview','navAvatar','heroAvatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=imgTag;});
+      }
       setTimeout(cerrarModal,1500);
     }else{mostrarMsg(j.msg||'Error al guardar.','error');}
   }catch(e){mostrarMsg('Error de conexión.','error');}
@@ -904,7 +912,7 @@ async function subirFoto(input){
   try{const r=await fetch('dashboard_negocios.php',{method:'POST',body:fd});const j=await r.json();
     if(j.ok){msg.textContent='✅ Foto actualizada';msg.style.color='var(--verde2)';
       const img=`<img src="${j.foto}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
-      ['fotoPreview','nav-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=img;});
+      ['fotoPreview','navAvatar','heroAvatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=img;});
     }else{msg.textContent='❌ '+(j.msg||'Error');msg.style.color='#e74c3c';}
   }catch(e){msg.textContent='❌ Error de conexión';msg.style.color='#e74c3c';}
   input.value='';
