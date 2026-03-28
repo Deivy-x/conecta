@@ -137,6 +137,13 @@ $totalAll = count($dbNegocios);
     .navbar.abajo { box-shadow:0 4px 20px rgba(0,0,0,.12) }
     .nav-left { display:flex; align-items:center; gap:12px }
     .logo { width:52px; height:auto; filter:drop-shadow(0 1px 1px rgba(0,0,0,.15)) }
+    
+     .logo-navbar {
+            height: 48px;
+            width: auto;
+            object-fit: contain
+        }
+
     .brand { font-size:22px; font-weight:800; color:#111 }
     .brand span { color:var(--verde) }
     .nav-center { display:flex; align-items:center; gap:22px; flex:1; justify-content:center }
@@ -493,10 +500,9 @@ $totalAll = count($dbNegocios);
 
 <!-- NAVBAR -->
 <header class="navbar" id="navbar">
-  <div class="nav-left">
-    <img src="Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
-    <span class="brand">Quibdó<span>Conecta</span></span>
-  </div>
+        <div class="nav-left">
+            <img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar">
+        </div>
   <nav class="nav-center">
     <a href="index.html">Inicio</a>
     <a href="Empleo.html">Empleos</a>
