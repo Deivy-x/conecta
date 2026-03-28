@@ -3146,7 +3146,16 @@ if ($subTipo === 'servicio') {
     <a href="index.html" class="topbar-logo" title="Ir al inicio">
       <img src="Imagenes/quibdo_desco_new.png" alt="QuibdóConecta">
     </a>
-    <div class="topbar-title">🏴 Mi <span>Panel</span></div>
+    <div class="topbar-title">
+      <span class="choco-flag" title="Departamento del Chocó">
+        <svg width="22" height="15" viewBox="0 0 22 15" xmlns="http://www.w3.org/2000/svg"
+          style="border-radius:2px;vertical-align:middle;margin-right:6px;box-shadow:0 1px 3px rgba(0,0,0,.2)">
+          <rect width="22" height="5" y="0" fill="#1f9d55" />
+          <rect width="22" height="5" y="5" fill="#d4a017" />
+          <rect width="22" height="5" y="10" fill="#1a3a6b" />
+        </svg>
+      </span>Mi <span>Panel</span>
+    </div>
     <div class="topbar-actions">
       <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
         <button class="btn-primary" onclick="abrirPublicarVacante()" style="display:flex;align-items:center;gap:5px">

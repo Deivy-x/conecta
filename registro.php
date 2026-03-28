@@ -174,11 +174,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (in_array($tipoBD, ['candidato', 'servicio'])) {
                 try { $db->prepare("INSERT INTO perfiles_candidato (usuario_id) VALUES (?)")->execute([$newId]); } catch (Exception $e) {}
+                $extArrReg = json_decode($extras, true) ?: [];
+                $profesionReg = $extArrReg['profesion_tipo'] ?? $profesion_tipo ?? '';
                 if ($tipoBD === 'servicio') {
                     try {
-                        $extArr = json_decode($extras, true) ?: [];
                         $db->prepare("INSERT INTO talento_perfil (usuario_id, profesion, precio_desde, descripcion, visible, visible_admin) VALUES (?,?,?,?,1,1)")
-                           ->execute([$newId, $extArr['profesion_tipo'] ?? '', $extArr['precio_desde_neg'] ?? null, $extArr['descripcion_neg'] ?? '']);
+                           ->execute([$newId, $profesionReg, $extArrReg['precio_desde_neg'] ?? null, $extArrReg['descripcion_neg'] ?? '']);
+                    } catch (Exception $e) {}
+                } elseif ($profesionReg !== '') {
+                    try {
+                        $db->prepare("INSERT INTO talento_perfil (usuario_id, profesion, bio, skills, visible, visible_admin) VALUES (?,?,?,?,0,1)")
+                           ->execute([$newId, $profesionReg, '', '']);
                     } catch (Exception $e) {}
                 }
             } elseif ($tipoBD === 'empresa') {
