@@ -147,7 +147,13 @@ function catIcono($cat, $iconos) {
     .nav-center .highlight{background:linear-gradient(135deg,#1f9d55,#2ecc71);color:white!important;padding:9px 20px;border-radius:25px;font-weight:600;box-shadow:0 4px 12px rgba(31,157,85,.35);transition:transform .2s}
     .nav-center .highlight:hover{transform:translateY(-1px)}
     .nav-center .highlight::after{display:none}
+    
     .logo{width:52px;height:auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.15))}
+    .logo-navbar{
+height:75px;
+width:auto;
+object-fit:contain;
+}
     .brand{font-size:22px;font-weight:800;color:#111}
     .brand span{color:#1f9d55}
     
