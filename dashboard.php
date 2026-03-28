@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db->prepare("UPDATE usuarios SET nombre=?,apellido=?,telefono=?,ciudad=? WHERE id=?")
       ->execute([$nombre, $apellido, $telefono, $ciudad, $usuario['id']]);
     $_SESSION['usuario_nombre'] = $nombre;
-    
+
     // Siempre actualizar talento_perfil para no perder datos existentes del usuario.
     // Solo sobreescribir campos profesionales si el frontend indicó que estaban visibles (flag _edita_pro=1).
     $editaPro = ($_POST['_edita_pro'] ?? '0') === '1';
@@ -48,8 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tpRow = $tpChk->fetch();
     if ($tpRow) {
       $nuevaProfesion = $editaPro ? $profesion : $tpRow['profesion'];
-      $nuevaBio       = $editaPro ? $bio       : $tpRow['bio'];
-      $nuevaSkills    = $editaPro ? $skills    : $tpRow['skills'];
+      $nuevaBio = $editaPro ? $bio : $tpRow['bio'];
+      $nuevaSkills = $editaPro ? $skills : $tpRow['skills'];
       $db->prepare("UPDATE talento_perfil SET profesion=?, bio=?, skills=? WHERE id=?")
         ->execute([$nuevaProfesion, $nuevaBio, $nuevaSkills, $tpRow['id']]);
       $profesion = $nuevaProfesion;
@@ -63,11 +63,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode(['ok' => true, 'nombre' => $nombre, 'apellido' => $apellido, 'ciudad' => $ciudad, 'profesion' => $profesion]);
     exit;
   }
-  
+
   if ($action === 'toggle_vis') {
     $visible = ($_POST['visible'] ?? '0') === '1' ? 1 : 0;
     // Verificar que el plan sea verde_selva o superior
-    if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
+    if (file_exists(__DIR__ . '/Php/planes_helper.php'))
+      require_once __DIR__ . '/Php/planes_helper.php';
     $planActualTv = 'semilla';
     if (function_exists('getDatosPlan')) {
       $dpTv = getDatosPlan($db, $usuario['id']);
@@ -124,20 +125,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($action === 'subir_banner') {
     if (!isset($_FILES['banner']) || $_FILES['banner']['error'] !== 0) {
-      echo json_encode(['ok' => false, 'msg' => 'No se recibió imagen.']); exit;
+      echo json_encode(['ok' => false, 'msg' => 'No se recibió imagen.']);
+      exit;
     }
     $ext = strtolower(pathinfo($_FILES['banner']['name'], PATHINFO_EXTENSION));
-    if (!in_array($ext, ['jpg','jpeg','png','webp'])) {
-      echo json_encode(['ok' => false, 'msg' => 'Solo JPG, PNG o WEBP.']); exit;
+    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+      echo json_encode(['ok' => false, 'msg' => 'Solo JPG, PNG o WEBP.']);
+      exit;
     }
     if ($_FILES['banner']['size'] > 5 * 1024 * 1024) {
-      echo json_encode(['ok' => false, 'msg' => 'Máximo 5 MB.']); exit;
+      echo json_encode(['ok' => false, 'msg' => 'Máximo 5 MB.']);
+      exit;
     }
-    try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
+    try {
+      $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto");
+    } catch (Exception $e) {
+    }
     require_once __DIR__ . '/Php/cloudinary_upload.php';
     $result = cloudinary_upload($_FILES['banner']['tmp_name'], 'quibdoconecta/banners');
     if (!$result['ok']) {
-      echo json_encode(['ok' => false, 'msg' => $result['msg']]); exit;
+      echo json_encode(['ok' => false, 'msg' => $result['msg']]);
+      exit;
     }
     $url = $result['url'];
     $db->prepare("UPDATE usuarios SET banner=? WHERE id=?")->execute([$url, $usuario['id']]);
@@ -146,7 +154,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   if ($action === 'eliminar_banner') {
-    try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
+    try {
+      $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto");
+    } catch (Exception $e) {
+    }
     $db->prepare("UPDATE usuarios SET banner='' WHERE id=?")->execute([$usuario['id']]);
     echo json_encode(['ok' => true]);
     exit;
@@ -159,20 +170,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       exit;
     }
     try {
-      
+
       foreach (['perfiles_empresa', 'talento_galeria', 'talento_educacion', 'talento_certificaciones', 'talento_experiencia', 'perfil_vistas', 'sesiones', 'negocios_locales'] as $tabla) {
         try {
           $db->prepare("DELETE FROM $tabla WHERE usuario_id=?")->execute([$usuario['id']]);
         } catch (Exception $e) {
         }
       }
-      
+
       if (!empty($usuario['foto']) && !str_starts_with($usuario['foto'], 'http')) {
         @unlink(__DIR__ . '/uploads/fotos/' . $usuario['foto']);
       }
-      
+
       $db->prepare("DELETE FROM usuarios WHERE id=?")->execute([$usuario['id']]);
-      
+
       $_SESSION = [];
       session_destroy();
       echo json_encode(['ok' => true, 'msg' => 'Cuenta eliminada correctamente.']);
@@ -183,15 +194,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   if ($action === 'subir_evidencia') {
-    
-    if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
-    if (file_exists(__DIR__ . '/Php/badges_helper.php')) require_once __DIR__ . '/Php/badges_helper.php';
+
+    if (file_exists(__DIR__ . '/Php/planes_helper.php'))
+      require_once __DIR__ . '/Php/planes_helper.php';
+    if (file_exists(__DIR__ . '/Php/badges_helper.php'))
+      require_once __DIR__ . '/Php/badges_helper.php';
     $badgesU = function_exists('getBadgesUsuario') ? getBadgesUsuario($db, $usuario['id']) : [];
-    
+
     $tienePortafolio = function_exists('tieneBeneficio')
-        ? tieneBeneficio($db, $usuario['id'], 'portafolio')
-        : (function_exists('tieneBadge') && tieneBadge($badgesU, 'Selva Verde'));
-    $tieneSelvaVerde = $tienePortafolio; 
+      ? tieneBeneficio($db, $usuario['id'], 'portafolio')
+      : (function_exists('tieneBadge') && tieneBadge($badgesU, 'Selva Verde'));
+    $tieneSelvaVerde = $tienePortafolio;
 
     try {
       $db->exec("CREATE TABLE IF NOT EXISTS talento_galeria (
@@ -255,7 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       echo json_encode(['ok' => false, 'msg' => 'Formato no permitido. Usa JPG, PNG, MP4 o MOV.']);
       exit;
     }
-    $maxSize = $esVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024; 
+    $maxSize = $esVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
     if ($_FILES['archivo']['size'] > $maxSize) {
       echo json_encode(['ok' => false, 'msg' => $esVideo ? 'Máximo 50 MB para videos.' : 'Máximo 5 MB para fotos.']);
       exit;
@@ -316,7 +329,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 )");
         $seccion = htmlspecialchars($_POST['seccion'] ?? 'talentos');
         $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-        
+
         $ck = $db->prepare("SELECT COUNT(*) FROM perfil_vistas WHERE usuario_id=? AND ip=? AND creado_en >= DATE_SUB(NOW(), INTERVAL 1 HOUR)");
         $ck->execute([$uid, $ip]);
         if ((int) $ck->fetchColumn() === 0) {
@@ -408,7 +421,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['ok' => false, 'msg' => 'Vacante no válida.']);
         exit;
       }
-      
+
       $db->exec("CREATE TABLE IF NOT EXISTS solicitudes_empleo (
         id INT AUTO_INCREMENT PRIMARY KEY,
         empleo_id INT NOT NULL,
@@ -420,7 +433,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INDEX idx_empleo (empleo_id),
         INDEX idx_candidato (candidato_id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-      
+
       $chkV = $db->prepare("SELECT id, titulo FROM empleos WHERE id=? AND activo=1 LIMIT 1");
       $chkV->execute([$empleo_id]);
       $vacante = $chkV->fetch();
@@ -428,7 +441,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['ok' => false, 'msg' => 'La vacante no está disponible.']);
         exit;
       }
-      
+
       $chkS = $db->prepare("SELECT id FROM solicitudes_empleo WHERE empleo_id=? AND candidato_id=?");
       $chkS->execute([$empleo_id, $usuario['id']]);
       if ($chkS->fetch()) {
@@ -437,7 +450,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
       $mensaje = substr(trim($_POST['mensaje'] ?? ''), 0, 1000);
       $db->prepare("INSERT INTO solicitudes_empleo (empleo_id, candidato_id, mensaje) VALUES (?,?,?)")
-         ->execute([$empleo_id, $usuario['id'], $mensaje ?: null]);
+        ->execute([$empleo_id, $usuario['id'], $mensaje ?: null]);
       echo json_encode(['ok' => true, 'msg' => '✅ ¡Solicitud enviada! La empresa revisará tu perfil.']);
     } catch (Exception $e) {
       echo json_encode(['ok' => false, 'msg' => 'Error: ' . $e->getMessage()]);
@@ -593,7 +606,7 @@ try {
   $extras = [];
 }
 
-$subTipo = ''; 
+$subTipo = '';
 if (!empty($extras['tipo_negocio_reg']))
   $subTipo = $extras['tipo_negocio_reg'] === 'cc' ? 'negocio_cc' : 'negocio_emp';
 if (!empty($extras['profesion_tipo']) && $tipo === 'candidato') {
@@ -603,7 +616,8 @@ if (!empty($extras['profesion_tipo']) && $tipo === 'candidato') {
 }
 
 require_once __DIR__ . '/Php/badges_helper.php';
-if (file_exists(__DIR__ . '/Php/planes_helper.php')) require_once __DIR__ . '/Php/planes_helper.php';
+if (file_exists(__DIR__ . '/Php/planes_helper.php'))
+  require_once __DIR__ . '/Php/planes_helper.php';
 $badgesUsuario = getBadgesUsuario($db, $usuario['id']);
 $badgesHTML = renderBadges($badgesUsuario);
 $tieneVerificado = (bool) ($usuario['verificado'] ?? false) || tieneBadge($badgesUsuario, 'Verificado') || tieneBadge($badgesUsuario, 'Usuario Verificado') || tieneBadge($badgesUsuario, 'Empresa Verificada');
@@ -639,19 +653,19 @@ try {
   $vistas7dias = 0;
 }
 
-$datosPlan  = [];
+$datosPlan = [];
 $planActual = 'semilla';
 $maxVisitantes = 0;
 if (function_exists('getDatosPlan')) {
-  $datosPlan     = getDatosPlan($db, $usuario['id']);
-  $planActual    = $datosPlan['plan'];
+  $datosPlan = getDatosPlan($db, $usuario['id']);
+  $planActual = $datosPlan['plan'];
   $maxVisitantes = $datosPlan['config']['visitantes'] ?? 0;
 }
 
 $visitantesRecientes = [];
 if ($maxVisitantes !== 0) {
   try {
-    $limVis = ($maxVisitantes === -1) ? 50 : (int)$maxVisitantes;
+    $limVis = ($maxVisitantes === -1) ? 50 : (int) $maxVisitantes;
     $vvStmt = $db->prepare("
       SELECT pv.visitante_id, pv.creado_en,
              u.nombre, u.apellido, u.tipo
@@ -719,9 +733,14 @@ if ($tipo === 'candidato' || $subTipo === 'servicio') {
 
 $fotoUrl = !empty($usuario['foto']) ? (str_starts_with($usuario['foto'], 'http') ? htmlspecialchars($usuario['foto']) : 'uploads/fotos/' . htmlspecialchars($usuario['foto'])) : '';
 
-try { $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto"); } catch(Exception $e){}
+try {
+  $db->exec("ALTER TABLE usuarios ADD COLUMN banner VARCHAR(500) DEFAULT '' AFTER foto");
+} catch (Exception $e) {
+}
 
-$usuario = $db->prepare("SELECT * FROM usuarios WHERE id=?"); $usuario->execute([$_SESSION['usuario_id']]); $usuario = $usuario->fetch();
+$usuario = $db->prepare("SELECT * FROM usuarios WHERE id=?");
+$usuario->execute([$_SESSION['usuario_id']]);
+$usuario = $usuario->fetch();
 $bannerUrl = !empty($usuario['banner']) ? (str_starts_with($usuario['banner'], 'http') ? htmlspecialchars($usuario['banner']) : 'uploads/banners/' . htmlspecialchars($usuario['banner'])) : '';
 $inicial = strtoupper(mb_substr($usuario['nombre'], 0, 1));
 $nombreCompleto = htmlspecialchars(trim($usuario['nombre'] . ' ' . ($usuario['apellido'] ?? '')));
@@ -783,1019 +802,913 @@ if ($subTipo === 'servicio') {
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Mi Panel – QuibdóConecta</title>
   <link rel="icon" href="Imagenes/quibdo1-removebg-preview.png">
-  <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
   <style>
     :root {
-      --v1: #0a4020;
-      --v2: #1a7a3c;
-      --v3: #27a855;
-      --v4: #5dd882;
-      --vlima: #a3f0b5;
-      --a1: #b38000;
-      --a2: #d4a017;
-      --a3: #f5c800;
-      --a4: #ffd94d;
-      --acrem: #fff3b0;
-      --r1: #002880;
-      --r2: #0039a6;
-      --r3: #1a56db;
-      --r4: #5b8eff;
-      --rcielo: #b8d4ff;
-      --bg: #f4f7f5;
-      --bg2: #eaf2ec;
-      --bg3: #dceee0;
-      --card: #ffffff;
-      --borde: rgba(39, 168, 85, .22);
-      --ink: #0d1f12;
-      --ink2: #3a5a42;
-      --ink3: #6b8f74;
+      --brand: #1a7a3c;
+      --brand2: #27a855;
+      --brand-light: #e8f5ee;
+      --brand-mid: #a5d6a7;
+      --accent: #f9a825;
+      --accent-light: #fff8e1;
+      --danger: #e53935;
+      --ink: #0f1a14;
+      --ink2: #2d3f35;
+      --ink3: #5a7363;
+      --ink4: #8fa898;
+      --surface: #ffffff;
+      --surface2: #f6faf7;
+      --surface3: #edf5ef;
+      --border: rgba(27, 122, 60, .12);
+      --border2: rgba(27, 122, 60, .22);
+      --shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 4px 16px rgba(0, 0, 0, .05);
+      --shadow2: 0 2px 8px rgba(0, 0, 0, .08), 0 8px 32px rgba(0, 0, 0, .07);
+      --radius: 14px;
+      --radius-sm: 8px;
+      --radius-lg: 20px;
+      --nav-w: 240px;
+      --top-h: 60px;
+      --font: 'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif;
     }
 
     *,
     *::before,
     *::after {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box
     }
 
     html {
-      scroll-behavior: smooth
+      font-size: 15px;
+      scroll-behavior: smooth;
     }
 
     body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
+      font-family: var(--font);
+      background: var(--surface2);
       color: var(--ink);
-      min-height: 100vh
+      min-height: 100vh;
+      display: flex;
     }
 
-    .franja-top {
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* ──── SIDEBAR ──────────────────────────────── */
+    .sidebar {
+      width: var(--nav-w);
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
       position: fixed;
       top: 0;
       left: 0;
-      right: 0;
-      height: 3px;
-      display: flex;
-      z-index: 999
-    }
-
-    .franja-top span {
-      flex: 1
-    }
-
-    .franja-top span:nth-child(1) {
-      background: var(--v3)
-    }
-
-    .franja-top span:nth-child(2) {
-      background: var(--a3)
-    }
-
-    .franja-top span:nth-child(3) {
-      background: var(--r3)
-    }
-.logo-navbar{
-height:40px;
-width:auto;
-object-fit:contain;
-}
-    .navbar {
-      position: sticky;
-      top: 3px;
+      bottom: 0;
       z-index: 200;
-      background: rgba(244, 247, 245, .98);
-      border-bottom: 1px solid rgba(39, 168, 85, .18);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--borde);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 36px;
-      height: 56px
+      transition: transform .3s ease;
     }
 
-    .nav-marca {
+    .sidebar-logo {
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       gap: 10px;
-      text-decoration: none
     }
 
-    .nav-marca img {
-      width: 28px;
-      filter: drop-shadow(0 2px 6px rgba(163, 240, 181, .3))
+    .sidebar-logo img {
+      height: 32px;
     }
 
-    .nav-marca-txt {
-      font-family: 'Fraunces', serif;
-      font-size: 18px;
-      color: #0d1f12
-    }
-
-    .nav-marca-txt em {
-      color: var(--v2);
-      font-style: normal
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 2px
-    }
-
-    .nl {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 12px;
-      border-radius: 10px;
-      color: var(--ink3);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 600;
-      transition: all .2s;
-      position: relative;
-      white-space: nowrap
-    }
-
-    .nl:hover {
-      background: rgba(39, 168, 85, .07);
-      color: var(--ink)
-    }
-
-    .nl.on {
-      background: rgba(39, 168, 85, .1);
-      color: var(--v2)
-    }
-
-    .nl-dot {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #e74c3c;
-      border: 1.5px solid #060e07
-    }
-
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 10px
-    }
-
-    .nav-nombre {
+    .sidebar-logo-txt {
       font-size: 13px;
       font-weight: 700;
-      color: var(--ink2);
-      max-width: 130px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap
+      color: var(--brand);
+      letter-spacing: -.2px;
+      line-height: 1.2;
     }
 
-    .nav-av {
-      width: 34px;
-      height: 34px;
+    .sidebar-logo-sub {
+      font-size: 11px;
+      color: var(--ink4);
+      font-weight: 400;
+    }
+
+    .sidebar-user {
+      margin: 14px 14px 10px;
+      background: var(--brand-light);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .su-av {
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--v2), var(--vlima));
+      background: var(--brand);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
-      font-weight: 900;
-      color: white;
-      cursor: pointer;
-      border: 2px solid rgba(39, 168, 85, .35);
-      overflow: hidden;
+      font-weight: 700;
+      font-size: 16px;
       flex-shrink: 0;
-      transition: border-color .2s
+      overflow: hidden;
+      border: 2px solid #fff;
     }
 
-    .nav-av:hover {
-      border-color: var(--v2)
+    .su-av img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
-    .nav-notif {
+    .su-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .su-role {
+      font-size: 11px;
+      color: var(--ink3);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 6px 10px;
+      overflow-y: auto;
+    }
+
+    .nav-section {
+      margin-bottom: 4px;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--ink4);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      padding: 10px 10px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--ink2);
+      transition: all .18s;
+      cursor: pointer;
       position: relative;
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: rgba(39, 168, 85, .05);
-      border: 1px solid var(--borde);
+    }
+
+    .nav-item:hover {
+      background: var(--surface2);
+      color: var(--brand);
+    }
+
+    .nav-item.active {
+      background: var(--brand-light);
+      color: var(--brand);
+      font-weight: 700;
+    }
+
+    .nav-item .ni-ico {
+      font-size: 15px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .nav-item .ni-badge {
+      margin-left: auto;
+      background: var(--danger);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 20px;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .sidebar-bottom {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sidebar-plan {
+      background: linear-gradient(135deg, var(--brand) 0%, #1a9e4d 100%);
+      border-radius: var(--radius);
+      padding: 14px;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .sp-label {
+      font-size: 10px;
+      font-weight: 600;
+      opacity: .75;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sp-name {
+      font-size: 15px;
+      font-weight: 800;
+      margin: 2px 0 8px;
+    }
+
+    .sp-btn {
+      display: block;
+      text-align: center;
+      background: rgba(255, 255, 255, .2);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .3);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: background .2s;
+    }
+
+    .sp-btn:hover {
+      background: rgba(255, 255, 255, .32);
+    }
+
+    .nav-salir {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--ink3);
+      transition: all .18s;
+    }
+
+    .nav-salir:hover {
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    /* ──── TOPBAR ──────────────────────────────── */
+    .topbar {
+      height: var(--top-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: fixed;
+      top: 0;
+      left: var(--nav-w);
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 16px;
+    }
+
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink);
+      flex: 1;
+    }
+
+    .topbar-title span {
+      color: var(--brand);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tb-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 16px;
       cursor: pointer;
-      transition: background .2s;
-      flex-shrink: 0
+      position: relative;
+      transition: all .18s;
     }
 
-    .nav-notif:hover {
-      background: rgba(39, 168, 85, .08)
+    .tb-btn:hover {
+      background: var(--brand-light);
+      border-color: var(--brand-mid);
     }
 
-    .notif-dot {
+    .tb-dot {
       position: absolute;
-      top: 4px;
-      right: 4px;
+      top: 6px;
+      right: 6px;
       width: 8px;
       height: 8px;
+      background: var(--danger);
       border-radius: 50%;
-      background: #e74c3c;
-      border: 1.5px solid #060e07;
-      animation: pulse-dot 1.5s infinite;
-      display: none
+      border: 2px solid var(--surface);
     }
 
-    @keyframes pulse-dot {
-
-      0%,
-      100% {
-        transform: scale(1);
-        opacity: 1
-      }
-
-      50% {
-        transform: scale(1.3);
-        opacity: .7
-      }
-    }
-
-    .notif-panel {
+    .tb-notif-panel {
       position: absolute;
-      top: calc(100% + 10px);
+      top: calc(100% + 8px);
       right: 0;
-      width: 290px;
-      background: #fff;
-      border: 1px solid var(--borde);
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(39, 168, 85, .12);
-      z-index: 9999;
-      overflow: hidden;
-      display: none
+      width: 300px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+      display: none;
+      z-index: 300;
     }
 
-    .notif-panel.open {
-      display: block
+    .tb-notif-panel.open {
+      display: block;
     }
 
-    .notif-head {
+    .tnp-head {
       padding: 12px 16px;
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--v2);
-      border-bottom: 1px solid var(--borde);
-      text-transform: uppercase;
-      letter-spacing: .06em
-    }
-
-    .notif-item {
-      padding: 12px 16px;
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      border-bottom: 1px solid var(--borde);
       font-size: 13px;
-      color: var(--ink2)
-    }
-
-    .notif-item:last-child {
-      border-bottom: none
-    }
-
-    .notif-ico {
-      font-size: 18px;
-      flex-shrink: 0;
-      margin-top: 1px
-    }
-
-    .notif-sub {
-      font-size: 11px;
-      color: var(--ink3);
-      margin-top: 2px
-    }
-
-    .notif-empty {
-      padding: 18px 16px;
-      text-align: center;
-      color: var(--ink3);
-      font-size: 13px
-    }
-
-    .nav-salir {
-      padding: 6px 12px;
-      border-radius: 10px;
-      background: rgba(39, 168, 85, .05);
-      border: 1px solid var(--borde);
-      color: var(--ink3);
-      font-size: 12px;
       font-weight: 700;
-      text-decoration: none;
-      transition: all .2s
+      border-bottom: 1px solid var(--border);
     }
 
-    .nav-salir:hover {
-      background: rgba(231, 76, 60, .15);
-      color: #ff8080;
-      border-color: rgba(231, 76, 60, .25)
+    .tnp-body {
+      max-height: 280px;
+      overflow-y: auto;
     }
 
-    .hero {
-      background:
-        linear-gradient(160deg, rgba(4, 21, 11, .97) 0%, rgba(8, 24, 14, .92) 50%, rgba(0, 20, 60, .88) 100%),
-        url('Imagenes/quibdo 3.jpg') center/cover no-repeat;
-      padding: 40px 36px 0;
+    .tnp-empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--ink4);
+      font-size: 13px;
+    }
+
+    .hamburger {
+      display: none;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .hamburger span {
+      width: 18px;
+      height: 2px;
+      background: var(--ink2);
+      border-radius: 2px;
+      transition: all .2s;
+    }
+
+    /* ──── MAIN CONTENT ──────────────────────────── */
+    .main {
+      margin-left: var(--nav-w);
+      margin-top: var(--top-h);
+      flex: 1;
+      min-width: 0;
+      padding: 28px;
+    }
+
+    /* ──── HERO PROFILE STRIP ─────────────────── */
+    .hero-strip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 24px;
       position: relative;
       overflow: hidden;
     }
 
-    .hero::after {
+    .hero-strip::before {
       content: '';
       position: absolute;
-      bottom: 0;
+      top: 0;
       left: 0;
       right: 0;
-      height: 36px;
-      background: var(--bg);
-      border-radius: 36px 36px 0 0
-    }
-
-    .hero-tipo-borde {
-      position: absolute;
-      bottom: 35px;
-      left: 36px;
-      right: 36px;
-      height: 2px;
-      background: linear-gradient(to right,
-          <?= $tc['border'] ?>
-          , transparent)
-    }
-
-    .hero-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: end;
-      gap: 28px;
-      padding-bottom: 48px;
-      position: relative;
-      z-index: 2
+      height: 3px;
+      background: linear-gradient(90deg, var(--brand), var(--brand2), var(--accent));
     }
 
     .hero-av {
-      width: 96px;
-      height: 96px;
-      border-radius: 24px;
-      background: linear-gradient(135deg, var(--v1), var(--v3));
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 34px;
-      font-weight: 900;
-      color: white;
-      border: 3px solid rgba(39, 168, 85, .3);
-      box-shadow: 0 8px 32px rgba(39, 168, 85, .15), 0 0 0 6px rgba(39, 168, 85, .08);
+      font-size: 28px;
+      font-weight: 800;
       flex-shrink: 0;
-      cursor: pointer;
       overflow: hidden;
-      transition: all .25s;
+      cursor: pointer;
+      border: 3px solid var(--brand-light);
+      transition: border-color .2s;
     }
 
     .hero-av:hover {
-      border-color: var(--v2);
-      transform: scale(1.03)
+      border-color: var(--brand);
+    }
+
+    .hero-av img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-info {
+      flex: 1;
+      min-width: 0;
     }
 
     .hero-chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 12px
+      gap: 5px;
+      margin-bottom: 6px;
     }
 
     .hchip {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 12px;
-      border-radius: 20px;
       font-size: 11px;
       font-weight: 700;
-      letter-spacing: .3px
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
     }
 
     .hc-tipo {
-      background:
-        <?= $tc['chip_bg'] ?>
-      ;
-      color:
-        <?= $tc['chip_color'] ?>
-      ;
-      border: 1px solid
-        <?= $tc['border'] ?>
-        40
+      background: var(--brand-light);
+      color: var(--brand);
     }
 
     .hc-v {
-      background: rgba(45, 138, 80, .2);
-      color: #6dea8f;
-      border: 1px solid rgba(45, 138, 80, .3)
+      background: #e8f5e9;
+      color: #2e7d32;
     }
 
     .hc-p {
-      background: rgba(200, 134, 10, .2);
-      color: var(--a4);
-      border: 1px solid rgba(200, 134, 10, .3)
+      background: #fff8e1;
+      color: #f57f17;
     }
 
     .hc-top {
-      background: rgba(239, 68, 68, .2);
-      color: #fca5a5;
-      border: 1px solid rgba(239, 68, 68, .3)
+      background: #fce4ec;
+      color: #c62828;
     }
 
     .hc-dest {
-      background: rgba(139, 92, 246, .2);
-      color: #c4b5fd;
-      border: 1px solid rgba(139, 92, 246, .3)
+      background: #f3e5f5;
+      color: #6a1b9a;
     }
 
-    .hero-nombre {
-      font-family: 'Fraunces', serif;
-      font-size: clamp(28px, 3vw, 40px);
-      color: #fff;
-      line-height: 1.1;
-      margin-bottom: 6px
-    }
-
-    .hero-nombre em {
-      color: #a3f0b5;
-      font-style: normal
+    .hero-name {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -.5px;
     }
 
     .hero-sub {
-      font-size: 14px;
-      color: rgba(255, 255, 255, .75);
-      font-weight: 500
-    }
-
-    .hero-sub strong {
-      color: #fff
+      font-size: 13px;
+      color: var(--ink3);
+      margin-top: 2px;
     }
 
     .hero-stats {
       display: flex;
-      gap: 20px;
-      padding-bottom: 6px
+      gap: 24px;
+      flex-shrink: 0;
     }
 
     .hs {
       text-align: center;
-      min-width: 70px;
-      border-right: 1px solid rgba(255, 255, 255, .15);
-      padding-right: 20px
     }
 
     .hs-val {
-      font-family: 'Fraunces', serif;
       font-size: 24px;
-      font-weight: 900;
-      color: #fff;
-      line-height: 1
+      font-weight: 800;
+      color: var(--brand);
+      line-height: 1;
     }
 
     .hs-lab {
-      font-size: 10px;
-      color: var(--ink3);
-      text-transform: uppercase;
-      letter-spacing: .7px;
-      margin-top: 3px;
-      font-weight: 600
+      font-size: 11px;
+      color: var(--ink4);
+      margin-top: 2px;
+      font-weight: 500;
     }
 
-    .hero-deco {
-      position: absolute;
-      right: 40px;
-      top: 20px;
-      font-size: 100px;
-      opacity: .04;
-      user-select: none;
-      pointer-events: none
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
-    .contenido {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 28px 36px 80px
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: var(--radius-sm);
+      background: var(--brand);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: all .2s;
+      white-space: nowrap;
     }
 
-    .alerta {
-      border-radius: 16px;
-      padding: 14px 18px;
+    .btn-primary:hover {
+      background: #16692f;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: var(--radius-sm);
+      background: var(--surface2);
+      color: var(--ink2);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border2);
+      cursor: pointer;
+      font-family: var(--font);
+      transition: all .2s;
+      white-space: nowrap;
+    }
+
+    .btn-secondary:hover {
+      background: var(--brand-light);
+      color: var(--brand);
+      border-color: var(--brand-mid);
+    }
+
+    /* ──── ALERT BANNER ──────────────────────────── */
+    .alert-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+
+    .alert-bar.as {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      color: #7c5000;
+    }
+
+    .alert-bar.ap {
+      background: #e3f2fd;
+      border: 1px solid #90caf9;
+      color: #1565c0;
+    }
+
+    .alert-bar.ar {
+      background: #fce8e8;
+      border: 1px solid #f5a5a5;
+      color: #b71c1c;
+    }
+
+    .alert-bar.av {
+      background: #e8f5e9;
+      border: 1px solid #a5d6a7;
+      color: #1b5e20;
+    }
+
+    .alert-bar .a-ico {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .alert-bar .a-txt {
+      flex: 1;
+    }
+
+    .alert-bar .a-txt strong {
+      font-weight: 700;
+    }
+
+    .alert-bar .a-txt span {
+      margin-left: 6px;
+      opacity: .8;
+    }
+
+    .alert-bar .a-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ──── GRID LAYOUT ──────────────────────────── */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .col-4 {
+      grid-column: span 4;
+    }
+
+    .col-6 {
+      grid-column: span 6;
+    }
+
+    .col-8 {
+      grid-column: span 8;
+    }
+
+    .col-12 {
+      grid-column: span 12;
+    }
+
+    .col-3 {
+      grid-column: span 3;
+    }
+
+    /* ──── CARDS ──────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .card-link {
+      font-size: 12px;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    .card-body {
+      padding: 18px 20px;
+    }
+
+    /* ──── METRIC CARDS ──────────────────────────── */
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
       display: flex;
       align-items: center;
       gap: 14px;
-      margin-bottom: 22px;
-      border: 1.5px solid
+      transition: all .2s;
+      cursor: default;
     }
 
-    .alerta.ap {
-      background: rgba(245, 200, 0, .07);
-      border-color: rgba(245, 200, 0, .25)
+    .metric-card:hover {
+      border-color: var(--brand-mid);
+      box-shadow: var(--shadow);
+      transform: translateY(-1px);
     }
 
-    .alerta.ar {
-      background: rgba(239, 68, 68, .07);
-      border-color: rgba(239, 68, 68, .2)
-    }
-
-    .alerta.as {
-      background: rgba(39, 168, 85, .04);
-      border-color: var(--borde)
-    }
-
-    .alerta.av {
-      background: rgba(39, 168, 85, .07);
-      border-color: rgba(39, 168, 85, .2)
-    }
-
-    .a-ico {
-      font-size: 22px;
-      flex-shrink: 0
-    }
-
-    .a-txt {
-      flex: 1
-    }
-
-    .a-txt strong {
-      display: block;
-      font-size: 14px;
-      font-weight: 800;
-      margin-bottom: 2px
-    }
-
-    .alerta.ap .a-txt strong {
-      color: var(--a4)
-    }
-
-    .alerta.ar .a-txt strong {
-      color: #ff8080
-    }
-
-    .alerta.as .a-txt strong {
-      color: var(--ink)
-    }
-
-    .alerta.av .a-txt strong {
-      color: var(--v2)
-    }
-
-    .a-txt span {
-      font-size: 12px;
-      color: var(--ink2);
-      line-height: 1.5
-    }
-
-    .a-btn {
-      flex-shrink: 0;
-      padding: 7px 16px;
-      border-radius: 20px;
-      border: none;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 800;
-      font-family: 'DM Sans', sans-serif;
-      text-decoration: none
-    }
-
-    .alerta.ap .a-btn {
-      background: rgba(245, 200, 0, .15);
-      color: var(--a4)
-    }
-
-    .alerta.ar .a-btn,
-    .alerta.as .a-btn {
-      background: var(--v3);
-      color: white
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 16px
-    }
-
-    .span2 {
-      grid-column: span 2
-    }
-
-    .span3 {
-      grid-column: span 3
-    }
-
-    .card {
-      background: var(--card);
-      border-radius: 20px;
-      border: 1px solid rgba(39, 168, 85, .2);
-      box-shadow: 0 2px 12px rgba(39, 168, 85, .08);
-      overflow: hidden;
-      transition: box-shadow .25s, transform .25s
-    }
-
-    .card:hover {
-      box-shadow: 0 8px 28px rgba(39, 168, 85, .16);
-      transform: translateY(-2px)
-    }
-
-    .card-pad {
-      padding: 22px
-    }
-
-    .mini {
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 120px
-    }
-
-    .m-ico {
-      width: 40px;
-      height: 40px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      margin-bottom: 14px
-    }
-
-    .ig {
-      background: rgba(39, 168, 85, .18)
-    }
-
-    .ia {
-      background: rgba(26, 86, 219, .18)
-    }
-
-    .im {
-      background: rgba(139, 92, 246, .18)
-    }
-
-    .io {
-      background: rgba(245, 200, 0, .18)
-    }
-
-    .m-val {
-      font-family: 'Fraunces', serif;
-      font-size: 26px;
-      font-weight: 900;
-      color: #fff;
-      line-height: 1
-    }
-
-    .m-lab {
-      font-size: 11px;
-      color: var(--ink3);
-      margin-top: 4px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .4px
-    }
-
-    .m-sub {
-      font-size: 10px;
-      color: var(--v2);
-      margin-top: 3px;
-      font-weight: 800
-    }
-
-    .ca-tit {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--ink3);
-      text-transform: uppercase;
-      letter-spacing: .7px;
-      margin-bottom: 16px;
-      padding: 22px 22px 0
-    }
-
-    .ac-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-      gap: 8px;
-      padding: 0 22px 22px
-    }
-
-    .ac {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      padding: 14px 8px;
-      border-radius: 16px;
-      background: rgba(39, 168, 85, .04);
-      border: 1px solid var(--borde);
-      text-decoration: none;
-      transition: all .22s;
-      position: relative
-    }
-
-    .ac:hover {
-      background: rgba(163, 240, 181, .07);
-      border-color: rgba(163, 240, 181, .2);
-      transform: translateY(-2px)
-    }
-
-    .ac-ico {
-      font-size: 22px
-    }
-
-    .ac-tit {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--ink);
-      text-align: center
-    }
-
-    .ac-desc {
-      font-size: 11px;
-      color: #6b8f74;
-      text-align: center
-    }
-
-    .ac-badge {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      background: #e74c3c;
-      color: white;
-      font-size: 10px;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 10px;
-      white-space: nowrap
-    }
-
-    .ce-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 22px 22px 14px
-    }
-
-    .ce-tit {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--ink)
-    }
-
-    .ce-ver {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--v2);
-      text-decoration: none
-    }
-
-    .ce-ver:hover {
-      text-decoration: underline
-    }
-
-    .ce-list {
-      padding: 0 22px 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px
-    }
-
-    .ce-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: rgba(39, 168, 85, .04);
-      border: 1px solid var(--borde);
-      cursor: pointer;
-      transition: all .2s
-    }
-
-    .ce-item:hover {
-      background: rgba(163, 240, 181, .07);
-      border-color: rgba(163, 240, 181, .2)
-    }
-
-    .ce-ico {
-      font-size: 22px;
-      flex-shrink: 0
-    }
-
-    .ce-info {
-      flex: 1;
-      min-width: 0
-    }
-
-    .ce-nom {
-      font-size: 13px;
-      font-weight: 800;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: var(--ink)
-    }
-
-    .ce-emp {
-      font-size: 12px;
-      color: var(--ink2)
-    }
-
-    .ce-met {
-      font-size: 11px;
-      color: var(--v2);
-      font-weight: 600;
-      margin-top: 2px
-    }
-
-    .ce-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 9px;
-      border-radius: 10px;
-      background: rgba(163, 240, 181, .1);
-      color: var(--v2);
-      white-space: nowrap;
-      flex-shrink: 0;
-      border: 1px solid rgba(163, 240, 181, .15)
-    }
-
-    .hist-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
+    .mc-ico {
+      width: 44px;
+      height: 44px;
       border-radius: 12px;
-      background: rgba(39, 168, 85, .04);
-      border: 1px solid var(--borde)
-    }
-
-    .hdot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      flex-shrink: 0
-    }
-
-    .hdot.act {
-      background: #22c55e
-    }
-
-    .hdot.cer {
-      background: #94a3b8
-    }
-
-    .hdot.pen {
-      background: #f59e0b
-    }
-
-    .hnom {
-      font-size: 13px;
-      font-weight: 700;
-      color: #0d1f12;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis
-    }
-
-    .hmeta {
-      font-size: 11px;
-      color: #6b8f74;
-      margin-top: 2px
-    }
-
-    .hfecha {
-      font-size: 11px;
-      color: #6b8f74;
-      flex-shrink: 0;
-      white-space: nowrap
-    }
-
-    .cp-head {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 22px 22px 16px;
-      border-bottom: 1px solid var(--borde)
-    }
-
-    .cp-av {
-      width: 76px;
-      height: 76px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, var(--v1), var(--v3));
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .mc-ico.g {
+      background: var(--brand-light);
+    }
+
+    .mc-ico.a {
+      background: #fff8e1;
+    }
+
+    .mc-ico.o {
+      background: #fff3e0;
+    }
+
+    .mc-ico.m {
+      background: #f3e5f5;
+    }
+
+    .mc-val {
       font-size: 26px;
-      font-weight: 900;
-      color: white;
-      margin-bottom: 12px;
-      cursor: pointer;
-      border: 2px solid rgba(39, 168, 85, .3);
-      overflow: hidden;
-      transition: all .2s
-    }
-
-    .cp-av:hover {
-      border-color: var(--v2)
-    }
-
-    .cp-nom {
-      font-size: 16px;
-      font-weight: 900;
+      font-weight: 800;
       color: var(--ink);
-      margin-bottom: 3px
+      line-height: 1;
     }
 
-    .cp-pro {
-      font-size: 13px;
-      color: var(--v2);
-      font-weight: 600
+    .mc-lab {
+      font-size: 12px;
+      color: var(--ink3);
+      margin-top: 2px;
     }
 
-    .cp-body {
-      padding: 14px 22px;
+    .mc-sub {
+      font-size: 11px;
+      color: var(--brand);
+      font-weight: 600;
+      margin-top: 4px;
+      cursor: pointer;
+    }
+
+    /* ──── PROFILE CARD ──────────────────────────── */
+    .profile-card {
+      padding: 20px;
+    }
+
+    .pc-av {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      overflow: hidden;
+      cursor: pointer;
+      margin-bottom: 12px;
+      border: 3px solid var(--brand-light);
+    }
+
+    .pc-av img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .pc-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .pc-role {
+      font-size: 12px;
+      color: var(--ink3);
+      margin-bottom: 14px;
+    }
+
+    .pc-rows {
       display: flex;
       flex-direction: column;
-      gap: 8px
+      gap: 8px;
     }
 
-    .cp-fil {
+    .pc-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
-      color: var(--ink2)
+      font-size: 12.5px;
+      color: var(--ink2);
     }
 
-    .cp-ico {
-      font-size: 15px;
-      flex-shrink: 0
+    .pc-row-ico {
+      font-size: 14px;
+      flex-shrink: 0;
+      width: 18px;
+      text-align: center;
     }
 
+    /* Progress bar */
+    .prog-wrap {
+      margin: 14px 0;
+    }
+
+    .prog-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--ink3);
+      font-weight: 600;
+    }
+
+    .prog-track {
+      height: 6px;
+      background: var(--surface3);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      border-radius: 6px;
+      transition: width 1s ease;
+    }
+
+    /* Visibility toggle */
     .vis-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 14px;
-      background: rgba(39, 168, 85, .04);
-      border-radius: 12px;
-      border: 1px solid var(--borde);
-      margin: 4px 0
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
     }
 
-    .vis-lab {
-      font-size: 12px;
+    .vis-label {
+      font-size: 12.5px;
       font-weight: 700;
-      color: var(--ink2)
+      color: var(--ink2);
     }
 
     .vis-sub {
-      font-size: 10px;
-      color: var(--ink3);
-      margin-top: 1px
+      font-size: 11px;
+      color: var(--ink4);
     }
 
     .tog {
       position: relative;
-      width: 42px;
+      display: inline-block;
+      width: 40px;
       height: 22px;
-      cursor: pointer;
-      flex-shrink: 0
     }
 
     .tog input {
       opacity: 0;
       width: 0;
-      height: 0
+      height: 0;
     }
 
     .tog-sl {
       position: absolute;
       inset: 0;
-      border-radius: 11px;
-      background: rgba(39, 168, 85, .12);
-      transition: .3s
+      background: #ddd;
+      border-radius: 22px;
+      cursor: pointer;
+      transition: .3s;
     }
 
     .tog-sl::before {
@@ -1803,20 +1716,20 @@ object-fit:contain;
       position: absolute;
       width: 16px;
       height: 16px;
+      background: #fff;
+      border-radius: 50%;
       left: 3px;
       top: 3px;
-      border-radius: 50%;
-      background: white;
       transition: .3s;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, .3)
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
     }
 
-    .tog input:checked+.tog-sl {
-      background: var(--v3)
+    input:checked+.tog-sl {
+      background: var(--brand);
     }
 
-    .tog input:checked+.tog-sl::before {
-      transform: translateX(20px)
+    input:checked+.tog-sl::before {
+      transform: translateX(18px);
     }
 
     .pv-chip {
@@ -1824,885 +1737,598 @@ object-fit:contain;
       font-weight: 700;
       padding: 3px 10px;
       border-radius: 20px;
-      display: inline-block
     }
 
     .pv-chip.ok {
-      background: rgba(39, 168, 85, .15);
-      color: var(--v2);
-      border: 1px solid rgba(39, 168, 85, .25)
+      background: #e8f5e9;
+      color: #2e7d32;
     }
 
     .pv-chip.off {
-      background: rgba(245, 200, 0, .12);
-      color: var(--a4);
-      border: 1px solid rgba(245, 200, 0, .2)
+      background: #fff8e1;
+      color: #f57f17;
     }
 
-    .prog-w {
-      padding: 0 22px 8px
+    /* ──── QUICK ACTIONS GRID ──────────────────── */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      padding: 16px 20px;
     }
 
-    .prog-h {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: var(--ink3)
-    }
-
-    .prog-t {
-      height: 5px;
-      background: rgba(39, 168, 85, .08);
-      border-radius: 4px;
-      overflow: hidden
-    }
-
-    .prog-f {
-      height: 100%;
-      background: linear-gradient(90deg, var(--v2), var(--vlima));
-      border-radius: 4px;
-      transition: width 1s ease
-    }
-
-    .btn-edit {
-      margin: 14px 22px 22px;
-      padding: 11px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--v1), var(--v3));
-      color: white;
-      border: none;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      transition: all .2s;
-      box-shadow: 0 4px 12px rgba(39, 168, 85, .3);
-      display: block;
-      width: calc(100% - 44px);
-      text-align: center;
-      text-decoration: none
-    }
-
-    .btn-edit:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(39, 168, 85, .4)
-    }
-
-    .btn-sec {
-      margin: 0 22px 16px;
-      padding: 11px;
-      border-radius: 14px;
-      background: transparent;
-      color: var(--v2);
-      border: 1.5px solid rgba(163, 240, 181, .25);
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      transition: all .2s;
-      display: block;
-      width: calc(100% - 44px);
-      text-align: center;
-      text-decoration: none
-    }
-
-    .btn-sec:hover {
-      background: rgba(163, 240, 181, .07);
-      border-color: rgba(163, 240, 181, .4)
-    }
-
-    .cact-tit {
-      padding: 22px 22px 14px;
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--ink3);
-      text-transform: uppercase;
-      letter-spacing: .7px
-    }
-
-    .act-list {
-      padding: 0 22px 22px;
+    .action-item {
       display: flex;
       flex-direction: column;
-      gap: 8px
+      align-items: center;
+      gap: 7px;
+      padding: 14px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      transition: all .18s;
+      text-decoration: none;
+      text-align: center;
+      position: relative;
     }
 
-    .act-it {
+    .action-item:hover {
+      background: var(--brand-light);
+      border-color: var(--brand-mid);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(27, 122, 60, .1);
+    }
+
+    .action-item .ai-ico {
+      font-size: 22px;
+    }
+
+    .action-item .ai-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--ink2);
+      line-height: 1.2;
+    }
+
+    .action-item .ai-sub {
+      font-size: 10px;
+      color: var(--ink4);
+    }
+
+    .action-item .ai-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: var(--danger);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 20px;
+    }
+
+    /* ──── VISITOR CARDS ──────────────────────── */
+    .visitor-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 20px;
+    }
+
+    .visitor-card {
       display: flex;
       align-items: center;
-      gap: 12px
+      gap: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      min-width: 180px;
     }
 
-    .act-pt {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
+    .vc-av {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
-      flex-shrink: 0
+      font-weight: 800;
+      font-size: 14px;
+      flex-shrink: 0;
     }
 
-    .pv {
-      background: rgba(39, 168, 85, .15)
+    .vc-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
     }
 
-    .pa {
-      background: rgba(26, 86, 219, .15)
+    .vc-meta {
+      font-size: 11px;
+      color: var(--ink4);
     }
 
-    .po {
-      background: rgba(245, 200, 0, .12)
+    /* ──── PLAN USAGE BARS ──────────────────────── */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      padding: 16px 20px;
     }
 
-    .act-n {
+    .plan-bar {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+
+    .pb-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink3);
+      margin-bottom: 6px;
+    }
+
+    .pb-count {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .pb-count span {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--ink4);
+    }
+
+    .pb-track {
+      height: 5px;
+      background: rgba(0, 0, 0, .07);
+      border-radius: 5px;
+    }
+
+    .pb-fill {
+      height: 5px;
+      border-radius: 5px;
+      transition: width .5s;
+    }
+
+    .pb-fill.low {
+      background: var(--brand);
+    }
+
+    .pb-fill.mid {
+      background: var(--accent);
+    }
+
+    .pb-fill.high {
+      background: var(--danger);
+    }
+
+    .pb-warn {
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 5px;
+      color: var(--danger);
+    }
+
+    /* ──── JOB LIST ──────────────────────────── */
+    .job-list {
+      padding: 0 20px 16px;
+    }
+
+    .job-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .job-item:last-child {
+      border-bottom: none;
+    }
+
+    .job-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .job-dot.act {
+      background: var(--brand2);
+    }
+
+    .job-dot.pen {
+      background: var(--accent);
+    }
+
+    .job-dot.cer {
+      background: var(--ink4);
+    }
+
+    .job-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .job-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .job-meta {
+      font-size: 11px;
+      color: var(--ink4);
+      margin-top: 2px;
+    }
+
+    .job-date {
+      font-size: 11px;
+      color: var(--ink4);
+      flex-shrink: 0;
+    }
+
+    .job-empty {
+      text-align: center;
+      padding: 28px 16px;
+    }
+
+    .job-empty-ico {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .job-empty-txt {
       font-size: 13px;
       font-weight: 600;
-      color: var(--ink)
+      color: var(--ink2);
+      margin-bottom: 4px;
     }
 
-    .act-f {
-      font-size: 11px;
-      color: var(--ink3);
-      margin-top: 1px
-    }
-
-    .bandera-dash {
-      width: 52px;
-      height: 32px;
-      border-radius: 7px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      border: 1.5px solid var(--borde);
-      box-shadow: 0 3px 10px rgba(0, 0, 0, .4);
-      flex-shrink: 0;
-      position: relative
-    }
-
-    .banda {
-      flex: 1
-    }
-
-    .banda-v {
-      background: var(--v2)
-    }
-
-    .banda-a {
-      background: var(--a3)
-    }
-
-    .banda-r {
-      background: var(--r2)
-    }
-
-    .bandera-dash::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(120deg, rgba(39, 168, 85, .08) 0%, transparent 60%);
-      border-radius: 5px;
-      pointer-events: none
-    }
-
-    .modal-ov {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .75);
-      z-index: 500;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      backdrop-filter: blur(4px)
-    }
-
-    .modal-ov.open {
-      display: flex
-    }
-
-    .modal-box {
-      background: #fff;
-      border: 1px solid var(--borde);
-      border-radius: 24px;
-      max-width: 560px;
-      width: 100%;
-      box-shadow: 0 20px 60px rgba(39, 168, 85, .18);
-      animation: fadeUp .3s ease;
-      max-height: 90vh;
-      overflow-y: auto;
-      position: relative
-    }
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(18px)
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0)
-      }
-    }
-
-    .mcerrar {
-      position: absolute;
-      top: 16px;
-      right: 18px;
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--ink3);
-      z-index: 1
-    }
-
-    .mcerrar:hover {
-      color: var(--ink)
-    }
-
-    .modal-pad {
-      padding: 32px
-    }
-
-    .mtit {
-      font-family: 'Fraunces', serif;
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: var(--ink)
-    }
-
-    .msub {
-      font-size: 13px;
-      color: var(--ink3);
-      margin-bottom: 20px;
-      line-height: 1.5
-    }
-
-    .msec {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--ink3);
-      text-transform: uppercase;
-      letter-spacing: .7px;
-      margin: 16px 0 8px
-    }
-
-    .mmsg {
-      display: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 14px
-    }
-
-    .mmsg.success {
-      background: rgba(163, 240, 181, .12);
-      border: 1px solid rgba(163, 240, 181, .25);
-      color: var(--v2)
-    }
-
-    .mmsg.error {
-      background: rgba(255, 80, 80, .12);
-      border: 1px solid rgba(255, 80, 80, .25);
-      color: #ff9a9a
-    }
-
-    .mfila {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 8px
-    }
-
-    .mgr {
-      display: flex;
-      flex-direction: column;
-      gap: 5px
-    }
-
-    .mgr.full {
-      grid-column: 1/-1
-    }
-
-    .mgr label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--ink3);
-      text-transform: uppercase;
-      letter-spacing: .5px
-    }
-
-    .mgr input,
-    .mgr select,
-    .mgr textarea {
-      border: 1.5px solid var(--borde);
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 13px;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--ink);
-      background: rgba(39, 168, 85, .05);
-      transition: border-color .2s;
-      outline: none;
-      resize: none
-    }
-
-    .mgr input:focus,
-    .mgr select:focus,
-    .mgr textarea:focus {
-      border-color: var(--v3);
-      background: rgba(39, 168, 85, .06)
-    }
-
-    .mgr select option {
-      background: #fff;
-      color: var(--ink)
-    }
-
-    .btn-save {
-      width: 100%;
-      padding: 13px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--v1), var(--v3));
-      color: white;
-      border: none;
-      font-size: 14px;
-      font-weight: 900;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      margin-top: 18px;
-      box-shadow: 0 4px 14px rgba(39, 168, 85, .3);
-      transition: all .2s
-    }
-
-    .btn-save:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(39, 168, 85, .4)
-    }
-
-    .btn-save:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-      transform: none
-    }
-
-    .crop-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .8);
-      z-index: 99999;
-      align-items: center;
-      justify-content: center;
-      padding: 20px
-    }
-
-    .crop-inner {
-      background: #fff;
-      border: 1px solid var(--borde);
-      border-radius: 20px;
-      padding: 24px;
-      max-width: 420px;
-      width: 100%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, .5)
-    }
-
+    /* ──── PROFILE SECTIONS (edu/cert/aptitudes) ─── */
     .psec {
-      background: var(--card);
-      border: 1px solid rgba(39, 168, 85, .18);
-      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
       overflow: hidden;
-      margin-top: 12px;
-      box-shadow: 0 2px 8px rgba(39, 168, 85, .06);
-      transition: box-shadow .25s
-    }
-
-    .psec:hover {
-      box-shadow: 0 6px 20px rgba(39, 168, 85, .14)
     }
 
     .psec-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 13px 18px 0
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
     }
 
-    .psec-tit {
-      font-family: 'Fraunces', serif;
-      font-size: 14px;
+    .psec-title {
+      font-size: 13.5px;
       font-weight: 700;
-      color: #0d1f12
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 7px;
     }
 
     .psec-btns {
       display: flex;
-      gap: 6px
+      gap: 6px;
     }
 
     .psec-btn {
-      background: rgba(39, 168, 85, .08);
-      border: 1.5px solid rgba(39, 168, 85, .25);
-      color: var(--v2);
-      font-size: 16px;
-      cursor: pointer;
-      padding: 5px 10px;
+      width: 30px;
+      height: 30px;
       border-radius: 8px;
-      line-height: 1;
-      transition: all .2s
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .18s;
+      font-family: var(--font);
     }
 
     .psec-btn:hover {
-      background: rgba(39, 168, 85, .18);
-      color: var(--v1)
-    }
-
-    .psec-list {
-      padding: 10px 18px 6px
-    }
-
-    .psec-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(39, 168, 85, .12);
-      position: relative
-    }
-
-    .psec-item:last-child {
-      border-bottom: none
-    }
-
-    .psec-logo {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
-      background: rgba(39, 168, 85, .06);
-      border: 1px solid rgba(39, 168, 85, .18);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-      overflow: hidden
-    }
-
-    .psec-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 11px
+      background: var(--brand-light);
+      border-color: var(--brand-mid);
+      color: var(--brand);
     }
 
     .psec-body {
-      flex: 1;
-      min-width: 0
+      padding: 16px 20px;
     }
 
-    .psec-nom {
+    .psec-empty {
+      text-align: center;
+      padding: 24px 16px;
+      color: var(--ink3);
       font-size: 13px;
-      font-weight: 800;
-      color: #0d1f12;
-      line-height: 1.3
     }
 
-    .psec-sub {
-      font-size: 12px;
-      color: #3a5a42;
-      margin-top: 1px
+    .psec-empty-ico {
+      font-size: 28px;
+      margin-bottom: 8px;
     }
 
-    .psec-meta {
-      font-size: 11px;
-      color: #6b8f74;
-      margin-top: 2px
-    }
-
-    .psec-credencial {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      margin-top: 8px;
-      padding: 5px 12px;
-      border: 1px solid var(--borde);
+    .btn-dashed {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 8px 20px;
+      border: 1.5px dashed var(--border2);
       border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--ink2);
-      background: rgba(39, 168, 85, .04);
-      cursor: pointer;
-      transition: all .2s;
-      text-decoration: none
-    }
-
-    .psec-credencial:hover {
-      border-color: var(--v2);
-      color: var(--v2);
-      background: rgba(163, 240, 181, .06)
-    }
-
-    .psec-archivo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 8px;
-      padding: 9px 12px;
-      border: 1px solid var(--borde);
-      border-radius: 12px;
-      background: rgba(39, 168, 85, .03);
-      cursor: pointer;
-      transition: background .2s;
-      text-decoration: none
-    }
-
-    .psec-archivo:hover {
-      background: rgba(39, 168, 85, .07)
-    }
-
-    .psec-arch-thumb {
-      width: 44px;
-      height: 40px;
-      background: rgba(26, 86, 219, .15);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0
-    }
-
-    .psec-arch-name {
-      font-size: 12px;
-      color: var(--ink2);
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis
-    }
-
-    .psec-item-del {
-      position: absolute;
-      top: 14px;
-      right: 0;
       background: none;
-      border: none;
-      color: var(--ink3);
-      font-size: 14px;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 6px;
-      opacity: 0;
-      transition: all .2s
-    }
-
-    .psec-item:hover .psec-item-del {
-      opacity: 1
-    }
-
-    .psec-item-del:hover {
-      color: #ff6b6b;
-      background: rgba(255, 107, 107, .1)
-    }
-
-    .psec-ver-mas {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      padding: 12px 22px;
-      border-top: 1px solid var(--borde);
-      font-size: 13px;
+      color: var(--brand);
+      font-size: 12.5px;
       font-weight: 700;
-      color: var(--ink3);
       cursor: pointer;
-      transition: color .2s;
-      background: none;
-      border-left: none;
-      border-right: none;
-      border-bottom: none;
-      width: 100%;
-      font-family: 'DM Sans', sans-serif
+      font-family: var(--font);
+      transition: all .2s;
     }
 
-    .psec-ver-mas:hover {
-      color: var(--v2)
+    .btn-dashed:hover {
+      background: var(--brand-light);
+      border-color: var(--brand);
     }
 
-    .apt-grupo {
-      margin-bottom: 16px
-    }
-
-    .apt-grupo:last-child {
-      margin-bottom: 0
-    }
-
-    .apt-nom {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--ink);
-      margin-bottom: 6px
-    }
-
-    .apt-items {
+    /* Aptitudes chips */
+    .apt-chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px
+      gap: 7px;
     }
 
     .apt-chip {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 12px;
-      background: rgba(39, 168, 85, .05);
-      border: 1px solid var(--borde);
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--brand-light);
+      color: var(--brand);
       font-size: 12px;
       font-weight: 600;
-      color: var(--ink2);
-      cursor: default
     }
 
-    .apt-chip-ico {
-      font-size: 14px
-    }
-
-    .hoja-modal-box {
-      background: #fff;
-      border: 1px solid var(--borde);
-      border-radius: 24px;
-      max-width: 700px;
-      width: 100%;
-      box-shadow: 0 30px 80px rgba(39, 168, 85, .15);
-      animation: fadeUp .3s ease;
-      max-height: 92vh;
-      overflow-y: auto;
-      position: relative
-    }
-
-    .hoja-sec {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--v2);
-      text-transform: uppercase;
-      letter-spacing: .8px;
-      margin: 20px 0 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px
-    }
-
-    .hoja-sec-num {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--v2), var(--v3));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 9px;
-      color: #fff;
-      font-weight: 900;
-      flex-shrink: 0
-    }
-
-    .hoja-divider {
-      height: 1px;
-      background: var(--borde);
-      margin: 16px 0
-    }
-
-    .hoja-fila {
+    /* ──── GALLERY ──────────────────────────── */
+    .gallery-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 10px
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
+      padding: 14px 20px;
     }
 
-    @media(max-width:600px) {
-      .hoja-fila {
-        grid-template-columns: 1fr
-      }
-    }
-
-    .hoja-gr {
-      display: flex;
-      flex-direction: column;
-      gap: 5px
-    }
-
-    .hoja-gr.full {
-      grid-column: 1/-1
-    }
-
-    .hoja-gr label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--ink2);
-      text-transform: uppercase;
-      letter-spacing: .6px
-    }
-
-    .hoja-gr input,
-    .hoja-gr select,
-    .hoja-gr textarea {
-      width: 100%;
-      padding: 11px 13px;
-      background: #f8fdf9;
-      border: 1.5px solid var(--borde);
-      border-radius: 13px;
-      color: var(--ink);
-      font-size: 13px;
-      font-family: 'DM Sans', sans-serif;
-      outline: none;
-      transition: border-color .2s, background .2s, box-shadow .2s;
-      resize: none
-    }
-
-    .hoja-gr input:focus,
-    .hoja-gr select:focus,
-    .hoja-gr textarea:focus {
-      border-color: var(--v3);
-      background: rgba(39, 168, 85, .07);
-      box-shadow: 0 0 0 3px rgba(39, 168, 85, .1)
-    }
-
-    .hoja-gr input::placeholder,
-    .hoja-gr textarea::placeholder {
-      color: var(--ink3)
-    }
-
-    .hoja-gr select option {
-      background: #fff;
-      color: var(--ink)
-    }
-
-    .hoja-item-card {
-      background: #f8fdf9;
-      border: 1px solid var(--borde);
-      border-radius: 14px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
+    .gallery-item {
       position: relative;
-      animation: fadeUp .3s ease both
-    }
-
-    .hoja-item-rm {
-      position: absolute;
-      top: 10px;
-      right: 12px;
-      background: rgba(255, 80, 80, .15);
-      border: none;
-      color: #ff7a7a;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      font-size: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center
-    }
-
-    .hoja-item-rm:hover {
-      background: rgba(255, 80, 80, .3)
-    }
-
-    .hoja-btn-add {
-      width: 100%;
-      padding: 10px;
-      background: rgba(39, 168, 85, .1);
-      border: 1.5px dashed rgba(39, 168, 85, .3);
-      color: var(--v2);
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 700;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
-      transition: all .25s
-    }
-
-    .hoja-btn-add:hover {
-      background: rgba(39, 168, 85, .18);
-      border-color: var(--v3)
-    }
-
-    .hoja-progress-track {
-      background: rgba(39, 168, 85, .07);
-      border-radius: 8px;
-      height: 4px;
+      border-radius: 10px;
       overflow: hidden;
-      margin-bottom: 20px
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      aspect-ratio: 1;
     }
 
-    .hoja-progress-fill {
+    .gallery-item img {
+      width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, var(--v3), var(--v4));
-      border-radius: 8px;
-      transition: width .4s ease;
-      width: 0%
+      object-fit: cover;
     }
 
-    @media(max-width:900px) {
-      .grid {
-        grid-template-columns: 1fr 1fr
+    .gallery-item-del {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, .55);
+      border: none;
+      color: #fff;
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 11px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .gallery-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 5px 8px;
+      background: rgba(0, 0, 0, .55);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .gallery-empty {
+      text-align: center;
+      padding: 28px 16px;
+      border: 1.5px dashed var(--border2);
+      border-radius: 10px;
+      color: var(--ink4);
+      margin: 14px 20px;
+    }
+
+    .gallery-empty-ico {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    /* ──── RECENT ACTIVITY ──────────────────────── */
+    .activity-list {
+      padding: 4px 20px 16px;
+    }
+
+    .act-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .act-item:last-child {
+      border-bottom: none;
+    }
+
+    .act-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand-mid);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .act-txt {
+      font-size: 12.5px;
+      color: var(--ink2);
+      flex: 1;
+    }
+
+    .act-txt strong {
+      color: var(--ink);
+    }
+
+    .act-time {
+      font-size: 11px;
+      color: var(--ink4);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ──── MODALS (keep existing logic) ───────── */
+    .modal-ov {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 1000;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px;
+      overflow-y: auto;
+    }
+
+    .modal-ov.open {
+      display: flex;
+    }
+
+    /* ──── OVERLAY SIDEBAR ────────────────────── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .35);
+      z-index: 199;
+    }
+
+    /* ──── RESPONSIVE ──────────────────────────── */
+    @media (max-width: 1100px) {
+      .col-4 {
+        grid-column: span 6;
       }
 
-      .span3 {
-        grid-column: 1/-1
-      }
-
-      .span2 {
-        grid-column: 1/-1
-      }
-
-      .nav-links {
-        display: none
+      .col-3 {
+        grid-column: span 6;
       }
     }
 
-    @media(max-width:600px) {
-      .navbar {
-        padding: 0 16px
+    @media (max-width: 820px) {
+      :root {
+        --nav-w: 0px;
       }
 
-      .contenido {
-        padding: 20px
+      .sidebar {
+        transform: translateX(-240px);
+        --nav-w: 240px;
       }
 
-      .hero {
-        padding: 28px 20px 0
+      .sidebar.open {
+        transform: translateX(0);
       }
 
-      .grid {
-        grid-template-columns: 1fr
+      .sidebar-overlay.open {
+        display: block;
       }
 
-      .span2,
-      .span3 {
-        grid-column: 1/-1
+      .topbar {
+        left: 0;
+        padding: 0 16px;
       }
 
-      .hero-inner {
-        grid-template-columns: 1fr;
-        gap: 16px;
-        padding-bottom: 40px
+      .hamburger {
+        display: flex;
+      }
+
+      .main {
+        padding: 18px 16px;
+        margin-left: 0;
+      }
+
+      .hero-strip {
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 18px;
       }
 
       .hero-stats {
-        gap: 14px
+        gap: 14px;
       }
 
-      .mfila {
-        grid-template-columns: 1fr
+      .hero-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .col-4,
+      .col-6,
+      .col-8,
+      .col-3 {
+        grid-column: span 12;
+      }
+
+      .dashboard-grid {
+        gap: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-av {
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
+      }
+
+      .hero-name {
+        font-size: 18px;
+      }
+
+      .hero-stats {
+        gap: 12px;
+      }
+
+      .hs-val {
+        font-size: 20px;
+      }
+
+      .main {
+        padding: 14px 12px;
       }
     }
   </style>
@@ -2710,65 +2336,148 @@ object-fit:contain;
 
 <body>
 
-  <div class="franja-top"><span></span><span></span><span></span></div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <!-- ── NAVBAR ── -->
-  <nav class="navbar">
-        <div class="nav-left">
-            <a href="index.html"><img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar"></a>
-        </div>
-    <div class="nav-links">
-      <a href="dashboard.php" class="nl on">🏠 Panel</a>
-      <a href="Empleo.php" class="nl">💼 Empleos</a>
-      <a href="talentos.php" class="nl">🌟 Talentos</a>
-      <a href="empresas.php" class="nl">🏢 Empresas</a>
-      <a href="negocios.php" class="nl">🏪 Negocios</a>
-      <a href="servicios.php" class="nl">🎧 Eventos</a>
-      <a href="chat.php" class="nl">💬 Chat<?php if ($chatNoLeidos > 0): ?><span
-            class="nl-dot"></span><?php endif; ?></a>
-      <a href="convocatorias.php" class="nl">📢 Convocatorias</a>
-      <a href="buscar.php" class="nl">🔍 Buscar</a>
-      <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
-        <a href="#" class="nl" onclick="abrirPublicarVacante();return false;" style="color:var(--v2)">➕ Publicar
-          vacante</a>
-      <?php elseif ($tipo === 'candidato' || $subTipo === 'servicio' || !empty($talento['precio_desde'])): ?>
-        <a href="#" class="nl" onclick="abrirHoja();return false;" style="color:var(--a4)">📄 Mi CV</a>
-      <?php endif; ?>
+  <!-- ──── SIDEBAR ──────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="Imagenes/quibdo_desco_new.png" alt="QuibdóConecta">
+      <div>
+        <div class="sidebar-logo-txt">QuibdóConecta</div>
+        <div class="sidebar-logo-sub">Conectando el Chocó</div>
+      </div>
     </div>
-    <div class="nav-right">
-      <div class="nav-nombre"><?= htmlspecialchars($usuario['nombre']) ?></div>
-      <div class="nav-notif" id="navNotif" title="Notificaciones">
-        🔔<span class="notif-dot" id="notifDot"></span>
-        <div class="notif-panel" id="notifPanel">
-          <div class="notif-head">🔔 Notificaciones</div>
-          <div id="notifLista">
-            <div class="notif-empty">Cargando…</div>
+
+    <div class="sidebar-user">
+      <div class="su-av" id="sidebarAvatar" onclick="abrirModal()" title="Editar foto">
+        <?php if ($fotoUrl): ?><img src="<?= $fotoUrl ?>" alt="Foto"><?php else: ?><?= $inicial ?><?php endif; ?>
+      </div>
+      <div>
+        <div class="su-name" id="sidebarNombre"><?= htmlspecialchars($usuario['nombre']) ?></div>
+        <div class="su-role">
+          <?php if ($tipo === 'empresa'): ?>🏢 Empresa
+          <?php elseif ($tipo === 'negocio'): ?>🏪 Negocio
+          <?php elseif ($subTipo === 'servicio'): ?>🎧 Servicios
+          <?php else: ?>👤 Candidato<?php endif; ?>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Principal</div>
+        <a href="dashboard.php" class="nav-item active">
+          <span class="ni-ico">🏠</span> Panel
+        </a>
+        <a href="chat.php" class="nav-item">
+          <span class="ni-ico">💬</span> Mensajes
+          <?php if ($chatNoLeidos > 0): ?><span class="ni-badge"><?= $chatNoLeidos ?></span><?php endif; ?>
+        </a>
+        <a href="buscar.php" class="nav-item">
+          <span class="ni-ico">🔍</span> Buscar
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Directorio</div>
+        <a href="Empleo.php" class="nav-item"><span class="ni-ico">💼</span> Empleos</a>
+        <a href="talentos.php" class="nav-item"><span class="ni-ico">🌟</span> Talentos</a>
+        <a href="empresas.php" class="nav-item"><span class="ni-ico">🏢</span> Empresas</a>
+        <a href="negocios.php" class="nav-item"><span class="ni-ico">🏪</span> Negocios</a>
+        <a href="servicios.php" class="nav-item"><span class="ni-ico">🎧</span> Eventos</a>
+        <a href="convocatorias.php" class="nav-item"><span class="ni-ico">📢</span> Convocatorias</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Mi cuenta</div>
+        <a href="verificar_cuenta.php" class="nav-item"><span class="ni-ico">🪪</span> Verificación</a>
+        <a href="Ayuda.html" class="nav-item"><span class="ni-ico">❓</span> Ayuda</a>
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <?php if (!empty($datosPlan)): ?>
+        <div class="sidebar-plan">
+          <div class="sp-label">Plan activo</div>
+          <div class="sp-name"><?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
+          <a href="empresas.php#planes" class="sp-btn">✦ Mejorar plan</a>
+        </div>
+      <?php endif; ?>
+      <a href="Php/logout.php" class="nav-salir">
+        <span>🚪</span> Cerrar sesión
+      </a>
+    </div>
+  </aside>
+
+  <!-- ──── TOPBAR ──────────────────────────────────────────────── -->
+  <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-title">Mi <span>Panel</span></div>
+    <div class="topbar-actions">
+      <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
+        <button class="btn-primary" onclick="abrirPublicarVacante()" style="display:flex;align-items:center;gap:5px">
+          <span>➕</span> Publicar vacante
+        </button>
+      <?php elseif ($tipo === 'candidato' || $subTipo === 'servicio'): ?>
+        <button class="btn-primary" onclick="abrirHoja()" style="display:flex;align-items:center;gap:5px">
+          <span>📄</span> Mi CV
+        </button>
+      <?php endif; ?>
+      <div style="position:relative">
+        <div class="tb-btn" id="navNotif" onclick="toggleNotif()" title="Notificaciones">
+          🔔<div class="tb-dot" id="notifDot" style="display:none"></div>
+          <div class="tb-notif-panel" id="notifPanel">
+            <div class="tnp-head">🔔 Notificaciones</div>
+            <div class="tnp-body">
+              <div id="notifLista">
+                <div class="tnp-empty">Cargando…</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="nav-av" id="navAvatar" onclick="abrirModal()" title="Editar perfil">
-        <?php if ($fotoUrl): ?><img src="<?= $fotoUrl ?>" alt="Foto"
-            style="width:100%;height:100%;object-fit:cover"><?php else: ?><?= $inicial ?><?php endif; ?>
-      </div>
-      <a href="Php/logout.php" class="nav-salir">Salir</a>
     </div>
-  </nav>
+  </div>
 
-  <!-- ── HERO ── -->
-  <div class="hero">
-    <div class="hero-tipo-borde"></div>
-    <div class="hero-inner">
-      <!-- Avatar -->
-      <div class="hero-av" id="heroAvatar" onclick="abrirModal()" title="Cambiar foto">
-        <?php if ($fotoUrl): ?>
-          <img src="<?= $fotoUrl ?>" alt="Foto" style="width:100%;height:100%;object-fit:cover">
-        <?php else: ?>
-          <?= $inicial ?>
-        <?php endif; ?>
+  <!-- ──── MAIN ──────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- ALERT -->
+    <?php if (!$tieneVerificado): ?>
+      <?php if ($estadoVerif === 'pendiente'): ?>
+        <div class="alert-bar ap">
+          <div class="a-ico">⏳</div>
+          <div class="a-txt"><strong>Documentos en revisión</strong><span>El administrador está revisando tu
+              documento.</span></div>
+        </div>
+      <?php elseif ($estadoVerif === 'rechazado'): ?>
+        <div class="alert-bar ar">
+          <div class="a-ico">❌</div>
+          <div class="a-txt"><strong>Verificación
+              rechazada</strong><span><?= $notaRechazo ?: 'Intenta subir el documento con mejor calidad.' ?></span></div><a
+            href="verificar_cuenta.php" class="a-btn">Reintentar</a>
+        </div>
+      <?php else: ?>
+        <div class="alert-bar as">
+          <div class="a-ico">🪪</div>
+          <div class="a-txt"><strong>Verifica tu identidad</strong><span>Sube tu documento y obtén el badge
+              verificado.</span></div><a href="verificar_cuenta.php" class="a-btn">Verificar ahora</a>
+        </div>
+      <?php endif; ?>
+    <?php else: ?>
+      <div class="alert-bar av">
+        <div class="a-ico">✅</div>
+        <div class="a-txt"><strong>Cuenta verificada</strong><span>Los empleadores ven tu badge de verificación.</span>
+        </div>
       </div>
+    <?php endif; ?>
 
-      <!-- Info -->
-      <div>
+    <!-- HERO STRIP -->
+    <div class="hero-strip">
+      <div class="hero-av" id="heroAvatar" onclick="abrirModal()" title="Cambiar foto">
+        <?php if ($fotoUrl): ?><img src="<?= $fotoUrl ?>" alt="Foto"><?php else: ?><?= $inicial ?><?php endif; ?>
+      </div>
+      <div class="hero-info">
         <div class="hero-chips">
           <span class="hchip hc-tipo"><?= $tc['label'] ?></span>
           <?php if ($tieneVerificado): ?><span class="hchip hc-v">✓ Verificado</span><?php endif; ?>
@@ -2776,896 +2485,686 @@ object-fit:contain;
           <?php if ($tieneTop): ?><span class="hchip hc-top">👑 Top</span><?php endif; ?>
           <?php if ($tieneDestacado): ?><span class="hchip hc-dest">🏅 Destacado</span><?php endif; ?>
         </div>
-        <div class="hero-nombre">
+        <div class="hero-name" id="dNombreHero">
           ¡Hola, <em><?= htmlspecialchars($usuario['nombre']) ?></em>!
         </div>
         <div class="hero-sub">
           <?php if ($tipo === 'empresa' && $nombreEmpresa): ?>
-            <strong><?= $nombreEmpresa ?></strong><?php if ($sectorEmp): ?> · <?= $sectorEmp ?><?php endif; ?>
-            <?php if ($ciudad): ?> · <?= $ciudad ?><?php endif; ?>
+            <?= $nombreEmpresa ?>  <?php if ($sectorEmp): ?> · <?= $sectorEmp ?><?php endif; ?><?php if ($ciudad): ?> ·
+              <?= $ciudad ?>  <?php endif; ?>
           <?php elseif ($tipo === 'negocio' && $nombreNegocio): ?>
-            <strong><?= $nombreNegocio ?></strong><?php if ($catNeg): ?> · <?= $catNeg ?><?php endif; ?>
-          <?php elseif ($subTipo === 'servicio' && $profesionTipo): ?>
-            <strong><?= $profesionTipo ?></strong><?php if ($ciudad): ?> · <?= $ciudad ?><?php endif; ?>
+            <?= $nombreNegocio ?>  <?php if ($catNeg): ?> · <?= $catNeg ?><?php endif; ?>
           <?php elseif (!empty($talento['profesion'])): ?>
-            <strong><?= htmlspecialchars($talento['profesion']) ?></strong>
-            <?php if ($ciudad): ?> · <?= $ciudad ?><?php endif; ?>
+            <?= htmlspecialchars($talento['profesion']) ?>  <?php if ($ciudad): ?> · <?= $ciudad ?><?php endif; ?>
           <?php else: ?>
-            <?php echo $tipo === 'empresa' ? 'Conecta con el talento del Chocó.' : 'Completa tu perfil para conectar con oportunidades.'; ?>
+            <?= $tipo === 'empresa' ? 'Conecta con el talento del Chocó.' : 'Completa tu perfil para conectar con oportunidades.' ?>
           <?php endif; ?>
         </div>
       </div>
-
-      <!-- Stats + bandera -->
-      <div>
-        <div class="hero-stats">
-          <div class="hs">
-            <div class="hs-val"><?= $pct ?>%</div>
-            <div class="hs-lab">Perfil</div>
-          </div>
-          <div class="hs">
-            <div class="hs-val"><?= $chatNoLeidos ?></div>
-            <div class="hs-lab">Mensajes</div>
-          </div>
-          <?php if ($tipo === 'empresa'): ?>
-            <div class="hs">
-              <div class="hs-val"><?= $vacantesActivas ?></div>
-              <div class="hs-lab">Vacantes</div>
-            </div>
-          <?php elseif ($subTipo === 'servicio'): ?>
-            <div class="hs">
-              <div class="hs-val">
-                <?= $talento['calificacion'] ? number_format((float) $talento['calificacion'], 1) : '—' ?>
-              </div>
-              <div class="hs-lab">Calif.</div>
-            </div>
-          <?php else: ?>
-            <div class="hs">
-              <div class="hs-val">0</div>
-              <div class="hs-lab">Postulac.</div>
-            </div>
-          <?php endif; ?>
+      <div class="hero-stats">
+        <div class="hs">
+          <div class="hs-val"><?= $pct ?>%</div>
+          <div class="hs-lab">Perfil</div>
         </div>
-        <!-- Bandera del Chocó -->
-        <div style="display:flex;justify-content:flex-end;margin-top:14px">
-          <div class="bandera-dash">
-            <div class="banda banda-v"></div>
-            <div class="banda banda-a"></div>
-            <div class="banda banda-r"></div>
-          </div>
+        <div class="hs">
+          <div class="hs-val"><?= $chatNoLeidos ?></div>
+          <div class="hs-lab">Mensajes</div>
         </div>
+        <?php if ($tipo === 'empresa'): ?>
+          <div class="hs">
+            <div class="hs-val"><?= $vacantesActivas ?></div>
+            <div class="hs-lab">Vacantes</div>
+          </div>
+        <?php elseif ($subTipo === 'servicio'): ?>
+          <div class="hs">
+            <div class="hs-val"><?= $talento['calificacion'] ? number_format((float) $talento['calificacion'], 1) : '—' ?>
+            </div>
+            <div class="hs-lab">Calific.</div>
+          </div>
+        <?php else: ?>
+          <div class="hs">
+            <div class="hs-val">0</div>
+            <div class="hs-lab">Postulac.</div>
+          </div>
+        <?php endif; ?>
+      </div>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="abrirModal()">✏️ Editar perfil</button>
+        <a href="<?= $tipo === 'empresa' ? 'empresas.php#u' . $usuario['id'] : ($tipo === 'negocio' ? 'negocios.php#u' . $usuario['id'] : ($subTipo === 'servicio' ? 'servicios.php' : 'talentos.php')) ?>"
+          class="btn-secondary">🌐 Ver en directorio</a>
       </div>
     </div>
-    <div class="hero-deco"><?= $tc['deco'] ?></div>
-  </div>
 
-  <!-- ── CONTENIDO ── -->
-  <div class="contenido">
+    <!-- DASHBOARD GRID -->
+    <div class="dashboard-grid">
 
-    <!-- ALERTAS -->
-    <?php if (!$tieneVerificado): ?>
-      <?php if ($estadoVerif === 'pendiente'): ?>
-        <div class="alerta ap">
-          <div class="a-ico">⏳</div>
-          <div class="a-txt"><strong>Documentos en revisión</strong><span>El administrador está revisando tu
-              documento.</span></div>
+      <!-- ── MÉTRICAS ── -->
+      <?php if ($tipo === 'empresa'): ?>
+        <div class="col-4">
+          <div class="metric-card" onclick="abrirPublicarVacante()" style="cursor:pointer">
+            <div class="mc-ico g">💼</div>
+            <div>
+              <div class="mc-val"><?= $vacantesActivas ?></div>
+              <div class="mc-lab">Vacantes activas</div>
+              <div class="mc-sub">Publicar nueva →</div>
+            </div>
+          </div>
         </div>
-      <?php elseif ($estadoVerif === 'rechazado'): ?>
-        <div class="alerta ar">
-          <div class="a-ico">❌</div>
-          <div class="a-txt"><strong>Verificación
-              rechazada</strong><span><?= $notaRechazo ?: 'Intenta subir el documento con mejor calidad.' ?></span></div><a
-            href="verificar_cuenta.php" class="a-btn">Reintentar</a>
+        <div class="col-4">
+          <div class="metric-card" onclick="location.href='talentos.php'" style="cursor:pointer">
+            <div class="mc-ico a">👥</div>
+            <div>
+              <div class="mc-val">0</div>
+              <div class="mc-lab">Candidatos</div>
+              <div class="mc-sub">Ver talentos →</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="metric-card" onclick="location.href='chat.php'" style="cursor:pointer">
+            <div class="mc-ico o">💬</div>
+            <div>
+              <div class="mc-val"><?= $chatNoLeidos ?></div>
+              <div class="mc-lab">Mensajes</div>
+              <div class="mc-sub">Ir al chat →</div>
+            </div>
+          </div>
+        </div>
+      <?php elseif ($tipo === 'negocio'): ?>
+        <div class="col-4">
+          <div class="metric-card">
+            <div class="mc-ico g">🏪</div>
+            <div>
+              <div class="mc-val"><?= $vistasTotal ?></div>
+              <div class="mc-lab">Vistas al negocio</div>
+              <div class="mc-sub" onclick="location.href='negocios.php'">
+                <?= $vistas7dias > 0 ? '+' . $vistas7dias . ' esta semana' : 'Ver directorio →' ?></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="metric-card" onclick="location.href='chat.php'" style="cursor:pointer">
+            <div class="mc-ico o">💬</div>
+            <div>
+              <div class="mc-val"><?= $chatNoLeidos ?></div>
+              <div class="mc-lab">Mensajes</div>
+              <div class="mc-sub">Ver chat →</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="metric-card" onclick="abrirModal()" style="cursor:pointer">
+            <div class="mc-ico m">⭐</div>
+            <div>
+              <div class="mc-val"><?= $pct ?>%</div>
+              <div class="mc-lab">Perfil completado</div>
+              <div class="mc-sub"><?= $pct < 100 ? 'Mejorar →' : '¡Perfecto! ✓' ?></div>
+            </div>
+          </div>
+        </div>
+      <?php elseif ($subTipo === 'servicio'): ?>
+        <div class="col-4">
+          <div class="metric-card">
+            <div class="mc-ico g">🎧</div>
+            <div>
+              <div class="mc-val">
+                <?= $talento['precio_desde'] ? '$' . number_format((float) $talento['precio_desde'], 0, ',', '.') : '—' ?></div>
+              <div class="mc-lab">Precio desde</div>
+              <div class="mc-sub" onclick="location.href='servicios.php'">Ver servicios →</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="metric-card">
+            <div class="mc-ico a">⭐</div>
+            <div>
+              <div class="mc-val">
+                <?= $talento['calificacion'] ? number_format((float) $talento['calificacion'], 1) : '0' ?>/5</div>
+              <div class="mc-lab">Calificación</div>
+              <div class="mc-sub">Reseñas →</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="metric-card" onclick="location.href='chat.php'" style="cursor:pointer">
+            <div class="mc-ico o">💬</div>
+            <div>
+              <div class="mc-val"><?= $chatNoLeidos ?></div>
+              <div class="mc-lab">Mensajes</div>
+              <div class="mc-sub">Ir al chat →</div>
+            </div>
+          </div>
         </div>
       <?php else: ?>
-        <div class="alerta as">
-          <div class="a-ico">🪪</div>
-          <div class="a-txt"><strong>Verifica tu identidad</strong><span>Sube tu documento y obtén el badge
-              verificado.</span></div><a href="verificar_cuenta.php" class="a-btn">Verificar ahora</a>
-        </div>
-      <?php endif; ?>
-    <?php else: ?>
-      <div class="alerta av">
-        <div class="a-ico">✅</div>
-        <div class="a-txt"><strong>Cuenta verificada</strong><span>Los empleadores ven tu badge de verificación.</span>
-        </div>
-      </div>
-    <?php endif; ?>
-
-    <div class="grid">
-
-      <!-- ── MÉTRICAS SEGÚN TIPO ── -->
-      <?php if ($tipo === 'empresa'): ?>
-        <div class="card mini">
-          <div class="m-ico ig">💼</div>
-          <div>
-            <div class="m-val"><?= $vacantesActivas ?></div>
-            <div class="m-lab">Vacantes activas</div>
-            <div class="m-sub" onclick="abrirPublicarVacante()">Publicar →</div>
-          </div>
-        </div>
-        <div class="card mini">
-          <div class="m-ico ia">👥</div>
-          <div>
-            <div class="m-val">0</div>
-            <div class="m-lab">Candidatos</div>
-            <div class="m-sub" onclick="location.href='talentos.php'">Ver talentos →</div>
-          </div>
-        </div>
-        <div class="card mini" onclick="location.href='chat.php'" style="cursor:pointer">
-          <div class="m-ico io">💬</div>
-          <div>
-            <div class="m-val"><?= $chatNoLeidos ?></div>
-            <div class="m-lab">Mensajes</div>
-            <div class="m-sub">Ir al chat →</div>
-          </div>
-        </div>
-
-      <?php elseif ($tipo === 'negocio' || ($extras['tipo_negocio_reg'] ?? '')): ?>
-        <div class="card mini">
-          <div class="m-ico ig">🏪</div>
-          <div>
-            <div class="m-val"><?= $vistasTotal ?></div>
-            <div class="m-lab">Vistas al negocio</div>
-            <div class="m-sub" onclick="location.href='negocios.php'">
-              <?= $vistas7dias > 0 ? "+" . $vistas7dias . " esta semana" : "Ver directorio →" ?>
+        <div class="col-4">
+          <div class="metric-card">
+            <div class="mc-ico g">📋</div>
+            <div>
+              <div class="mc-val">0</div>
+              <div class="mc-lab">Postulaciones</div>
+              <div class="mc-sub">Empieza hoy →</div>
             </div>
           </div>
         </div>
-        <div class="card mini">
-          <div class="m-ico io">💬</div>
-          <div>
-            <div class="m-val"><?= $chatNoLeidos ?></div>
-            <div class="m-lab">Mensajes</div>
-            <div class="m-sub" onclick="location.href='chat.php'">Ver chat →</div>
-          </div>
-        </div>
-        <div class="card mini">
-          <div class="m-ico im">⭐</div>
-          <div>
-            <div class="m-val"><?= $pct ?>%</div>
-            <div class="m-lab">Perfil completado</div>
-            <div class="m-sub" onclick="abrirModal()"><?= $pct < 100 ? 'Mejorar →' : '¡Perfecto! ✓' ?></div>
-          </div>
-        </div>
-
-      <?php elseif ($subTipo === 'servicio' || !empty($talento['precio_desde'])): ?>
-        <div class="card mini">
-          <div class="m-ico ig">🎧</div>
-          <div>
-            <div class="m-val">
-              <?= $talento['precio_desde'] ? '$' . number_format((float) $talento['precio_desde'], 0, ',', '.') : '—' ?>
+        <div class="col-4">
+          <div class="metric-card" onclick="location.href='chat.php'" style="cursor:pointer">
+            <div class="mc-ico o">💬</div>
+            <div>
+              <div class="mc-val"><?= $chatNoLeidos ?></div>
+              <div class="mc-lab">Mensajes</div>
+              <div class="mc-sub">Ir al chat →</div>
             </div>
-            <div class="m-lab">Precio desde</div>
-            <div class="m-sub" onclick="location.href='servicios.php'">Ver servicios →</div>
           </div>
         </div>
-        <div class="card mini">
-          <div class="m-ico io">⭐</div>
-          <div>
-            <div class="m-val">
-              <?= $talento['calificacion'] ? number_format((float) $talento['calificacion'], 1) : '0' ?>/5
+        <div class="col-4">
+          <div class="metric-card" onclick="abrirModal()" style="cursor:pointer">
+            <div class="mc-ico m">⭐</div>
+            <div>
+              <div class="mc-val"><?= $pct ?>%</div>
+              <div class="mc-lab">Perfil completado</div>
+              <div class="mc-sub"><?= $pct < 100 ? 'Mejorar →' : '¡Perfecto! ✓' ?></div>
             </div>
-            <div class="m-lab">Calificación</div>
-            <div class="m-sub">Reseñas →</div>
-          </div>
-        </div>
-        <div class="card mini" onclick="location.href='chat.php'" style="cursor:pointer">
-          <div class="m-ico io">💬</div>
-          <div>
-            <div class="m-val"><?= $chatNoLeidos ?></div>
-            <div class="m-lab">Mensajes</div>
-            <div class="m-sub">Ir al chat →</div>
-          </div>
-        </div>
-
-      <?php else:  ?>
-        <div class="card mini">
-          <div class="m-ico ig">📋</div>
-          <div>
-            <div class="m-val">0</div>
-            <div class="m-lab">Postulaciones</div>
-            <div class="m-sub">Empieza hoy →</div>
-          </div>
-        </div>
-        <div class="card mini" onclick="location.href='chat.php'" style="cursor:pointer">
-          <div class="m-ico io">💬</div>
-          <div>
-            <div class="m-val"><?= $chatNoLeidos ?></div>
-            <div class="m-lab">Mensajes</div>
-            <div class="m-sub">Ir al chat →</div>
-          </div>
-        </div>
-        <div class="card mini">
-          <div class="m-ico io">⭐</div>
-          <div>
-            <div class="m-val"><?= $pct ?>%</div>
-            <div class="m-lab">Perfil completado</div>
-            <div class="m-sub" onclick="abrirModal()"><?= $pct < 100 ? 'Mejorar →' : '¡Perfecto! ✓' ?></div>
           </div>
         </div>
       <?php endif; ?>
 
-      <div class="card" style="display:flex;flex-direction:column">
-        <div class="cp-head">
-          <div class="cp-av" id="cpAvatar" onclick="abrirModal()">
-            <?php if ($fotoUrl): ?><img src="<?= $fotoUrl ?>" alt="Foto"
-                style="width:100%;height:100%;object-fit:cover;border-radius:18px"><?php else: ?><?= $inicial ?><?php endif; ?>
+      <!-- ── PERFIL CARD ── -->
+      <div class="col-4">
+        <div class="card" style="height:100%">
+          <div class="card-header">
+            <div class="card-title">👤 Mi perfil</div>
+            <button class="btn-secondary" onclick="abrirModal()" style="padding:5px 12px;font-size:12px">Editar</button>
           </div>
-          <div class="cp-nom" id="dNombre">
-            <?= $tipo === 'empresa' ? $nombreEmpresa : ($tipo === 'negocio' ? $nombreNegocio : $nombreCompleto) ?>
-          </div>
-          <div class="cp-pro" id="dProfesion">
-            <?php if ($tipo === 'empresa'): ?>
-              <?= $sectorEmp ?: 'Sector no definido' ?>
-            <?php elseif ($tipo === 'negocio'): ?>
-              <?= $catNeg ?: 'Categoría no definida' ?>
-            <?php elseif ($subTipo === 'servicio'): ?>
-              <?= $profesionTipo ?: 'Servicio para eventos' ?>
-            <?php else: ?>
-              <?= !empty($talento['profesion']) ? htmlspecialchars($talento['profesion']) : ($profesionTipo ?: 'Sin profesión') ?>
-            <?php endif; ?>
-          </div>
-        </div>
-        <div class="cp-body">
-          <div class="cp-fil"><span class="cp-ico">📍</span><span
-              id="dCiudad"><?= $ciudad ?: 'Ciudad no registrada' ?></span></div>
-          <div class="cp-fil"><span class="cp-ico">📞</span><span
-              id="dTelefono"><?= $telefono ?: 'Teléfono no registrado' ?></span></div>
-          <div class="cp-fil"><span class="cp-ico">✉️</span><span><?= $correo ?></span></div>
-          <?php if ($tipo === 'empresa' && !empty($extras['nit'] ?? $ep['nit'] ?? '')): ?>
-            <div class="cp-fil"><span class="cp-ico">🏛️</span><span>NIT:
-                <?= htmlspecialchars($extras['nit'] ?? $ep['nit'] ?? '') ?></span></div>
-          <?php endif; ?>
-          <?php if ($tipo === 'negocio' && !empty($extras['whatsapp_neg'] ?? $np['whatsapp'] ?? '')): ?>
-            <div class="cp-fil"><span class="cp-ico">💬</span><span>WhatsApp:
-                <?= htmlspecialchars($extras['whatsapp_neg'] ?? $np['whatsapp'] ?? '') ?></span></div>
-          <?php endif; ?>
-          <?php if ($subTipo === 'servicio' && !empty($talento['precio_desde'])): ?>
-            <div class="cp-fil"><span class="cp-ico">💰</span><span>Desde
-                $<?= number_format((float) $talento['precio_desde'], 0, ',', '.') ?></span></div>
-          <?php endif; ?>
-          <div class="cp-fil"><span class="cp-ico">📅</span><span><?= $fechaRegistro ?></span></div>
-          <?php if (!empty($badgesHTML)): ?>
-            <div style="margin-top:8px"><?= $badgesHTML ?></div>
-          <?php endif; ?>
-        </div>
-
-        <!-- Toggle visibilidad -->
-        <?php if ($tipo === 'candidato' || $subTipo === 'servicio'): ?>
-          <?php
-            // Determinar si el plan tiene acceso al toggle de visibilidad (verde_selva en adelante)
-            $planPrioridad = PLAN_PRIORIDAD[$planActual] ?? 0;
-            $tieneAccesoVisibilidad = $planPrioridad >= 2; // verde_selva=2, amarillo_oro=3, azul_profundo=4, demo=5
-          ?>
-          <div style="padding:0 22px">
-            <?php if ($tieneAccesoVisibilidad): ?>
-            <div class="vis-row">
-              <div>
-                <div class="vis-lab">Visible en <?= $subTipo === 'servicio' ? 'Servicios' : 'Talentos' ?></div>
-                <div class="vis-sub">Aparece en el directorio público</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <span id="pvBadge"
-                  class="pv-chip <?= ($talento['visible'] ?? 0) ? 'ok' : 'off' ?>"><?= ($talento['visible'] ?? 0) ? '🟢 Visible' : '🟡 Oculto' ?></span>
-                <label class="tog"><input type="checkbox" <?= ($talento['visible'] ?? 0) ? 'checked' : '' ?>
-                    onchange="toggleVis(this.checked)"><span class="tog-sl"></span></label>
+          <div class="profile-card">
+            <div class="pc-av" id="cpAvatar" onclick="abrirModal()">
+              <?php if ($fotoUrl): ?><img src="<?= $fotoUrl ?>" alt="Foto"><?php else: ?><?= $inicial ?><?php endif; ?>
+            </div>
+            <div class="pc-name" id="dNombre">
+              <?= $tipo === 'empresa' ? $nombreEmpresa : ($tipo === 'negocio' ? $nombreNegocio : $nombreCompleto) ?>
+            </div>
+            <div class="pc-role" id="dProfesion">
+              <?php if ($tipo === 'empresa'): ?>  <?= $sectorEmp ?: 'Sector no definido' ?>
+              <?php elseif ($tipo === 'negocio'): ?>  <?= $catNeg ?: 'Categoría no definida' ?>
+              <?php elseif ($subTipo === 'servicio'): ?>  <?= $profesionTipo ?: 'Servicio para eventos' ?>
+              <?php else: ?>  <?= !empty($talento['profesion']) ? htmlspecialchars($talento['profesion']) : ($profesionTipo ?: 'Sin profesión') ?>
+              <?php endif; ?>
+            </div>
+            <div class="pc-rows">
+              <div class="pc-row"><span class="pc-row-ico">📍</span><span
+                  id="dCiudad"><?= $ciudad ?: 'Ciudad no registrada' ?></span></div>
+              <div class="pc-row"><span class="pc-row-ico">📞</span><span
+                  id="dTelefono"><?= $telefono ?: 'Teléfono no registrado' ?></span></div>
+              <div class="pc-row"><span class="pc-row-ico">✉️</span><span><?= $correo ?></span></div>
+              <?php if (!empty($badgesHTML)): ?>
+                <div style="margin-top:6px"><?= $badgesHTML ?></div><?php endif; ?>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-header"><span>Perfil completado</span><span id="pctLabel"><?= $pct ?>%</span></div>
+              <div class="prog-track">
+                <div class="prog-fill" id="progBar" style="width:0%"></div>
               </div>
             </div>
-            <?php else: ?>
-            <div class="vis-row" style="opacity:.75">
-              <div>
-                <div class="vis-lab">Visible en <?= $subTipo === 'servicio' ? 'Servicios' : 'Talentos' ?></div>
-                <div class="vis-sub" style="color:#e65100">🔒 Disponible desde el plan <strong>Verde Selva</strong></div>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <a href="empresas.php#planes" style="font-size:11px;font-weight:700;color:#2e7d32;text-decoration:none;background:rgba(46,125,50,.1);padding:5px 10px;border-radius:8px;white-space:nowrap">✦ Mejorar plan</a>
-              </div>
-            </div>
-            <?php endif; ?>
-          </div>
-        <?php elseif ($tipo === 'empresa'): ?>
-          <div style="padding:0 22px">
-            <div class="vis-row">
-              <div>
-                <div class="vis-lab">Visible en Empresas</div>
-                <div class="vis-sub">Aparece en el directorio público</div>
-              </div>
-              <span
-                class="pv-chip <?= ($ep['visible_admin'] ?? 1) ? 'ok' : 'off' ?>"><?= ($ep['visible_admin'] ?? 1) ? '🟢 Visible' : '🟡 Oculto' ?></span>
-            </div>
-          </div>
-        <?php elseif ($tipo === 'negocio'): ?>
-          <div style="padding:0 22px">
-            <div class="vis-row">
-              <div>
-                <div class="vis-lab">Visible en Negocios</div>
-                <div class="vis-sub">Aparece en el directorio público</div>
-              </div>
-              <span
-                class="pv-chip <?= ($np['visible_admin'] ?? 1) ? 'ok' : 'off' ?>"><?= ($np['visible_admin'] ?? 1) ? '🟢 Visible' : '🟡 Oculto' ?></span>
-            </div>
-          </div>
-        <?php endif; ?>
 
-        <!-- Progreso -->
-        <div class="prog-w" style="margin:10px 0">
-          <div class="prog-h"><span>Perfil completado</span><span id="pctLabel"><?= $pct ?>%</span></div>
-          <div class="prog-t">
-            <div class="prog-f" id="progBar" style="width:0%"></div>
-          </div>
-        </div>
-
-        <button class="btn-edit" onclick="abrirModal()">✏️ Editar mi perfil</button>
-        <a href="<?= $tipo === 'empresa' ? 'empresas.php#u' . $usuario['id'] : ($tipo === 'negocio' ? 'negocios.php#u' . $usuario['id'] : ($subTipo === 'servicio' ? 'servicios.php' : 'talentos.php')) ?>"
-          class="btn-sec">🌐 Ver mi perfil en directorio</a>
-        <a href="perfil.php?id=<?= $usuario['id'] ?>&tipo=<?= urlencode($tipo) ?>"
-          class="btn-sec" style="margin-top:6px;">👤 Ver mi perfil público</a>
-      </div>
-      <!-- ── ACCIONES RÁPIDAS (span 3) ── -->
-      <div class="card span3">
-        <div class="ca-tit">⚡ Acciones rápidas</div>
-        <div class="ac-row">
-          <?php if ($tipo === 'empresa'): ?>
-            <a href="#" class="ac" onclick="abrirPublicarVacante();return false;"
-              style="border-color:rgba(39,168,85,.3);background:rgba(39,168,85,.06)">
-              <div class="ac-ico">➕</div>
-              <div class="ac-tit" style="color:var(--v2)">Publicar vacante</div>
-              <div class="ac-desc">Nueva oferta de empleo</div>
-            </a>
-            <a href="talentos.php" class="ac">
-              <div class="ac-ico">🌟</div>
-              <div class="ac-tit">Ver talentos</div>
-              <div class="ac-desc">Buscar candidatos</div>
-            </a>
-            <a href="empresas.php" class="ac">
-              <div class="ac-ico">🏢</div>
-              <div class="ac-tit">Mi empresa</div>
-              <div class="ac-desc">Ver en directorio</div>
-            </a>
-          <?php elseif ($tipo === 'negocio'): ?>
-            <a href="#" class="ac" onclick="abrirPublicarVacante();return false;"
-              style="border-color:rgba(39,168,85,.3);background:rgba(39,168,85,.06)">
-              <div class="ac-ico">➕</div>
-              <div class="ac-tit" style="color:var(--v2)">Publicar vacante</div>
-              <div class="ac-desc">Nueva oferta de empleo</div>
-            </a>
-            <a href="negocios.php" class="ac">
-              <div class="ac-ico">🏪</div>
-              <div class="ac-tit">Mi negocio</div>
-              <div class="ac-desc">Ver en directorio</div>
-            </a>
-            <a href="Empleo.html" class="ac">
-              <div class="ac-ico">💼</div>
-              <div class="ac-tit">Ver empleos</div>
-              <div class="ac-desc">Oportunidades</div>
-            </a>
-          <?php elseif ($subTipo === 'servicio' || !empty($talento['precio_desde'])): ?>
-            <a href="servicios.php" class="ac">
-              <div class="ac-ico">🎧</div>
-              <div class="ac-tit">Mis servicios</div>
-              <div class="ac-desc">Ver en directorio</div>
-            </a>
-            <a href="#" class="ac" onclick="abrirHoja();return false;"
-              style="border-color:rgba(255,211,77,.2);background:rgba(255,211,77,.05)">
-              <div class="ac-ico">📄</div>
-              <div class="ac-tit" style="color:var(--a4)">Mi Hoja de Vida</div>
-              <div class="ac-desc">Actualiza tu CV</div>
-            </a>
-            <a href="Empleo.html" class="ac">
-              <div class="ac-ico">💼</div>
-              <div class="ac-tit">Ver empleos</div>
-              <div class="ac-desc">Vacantes del Chocó</div>
-            </a>
-          <?php else:  ?>
-            <a href="Empleo.html" class="ac">
-              <div class="ac-ico">🔍</div>
-              <div class="ac-tit">Buscar empleo</div>
-              <div class="ac-desc">Vacantes del Chocó</div>
-            </a>
-            <a href="#" class="ac" onclick="abrirHoja();return false;"
-              style="border-color:rgba(255,211,77,.2);background:rgba(255,211,77,.05)">
-              <div class="ac-ico">📄</div>
-              <div class="ac-tit" style="color:var(--a4)">Mi Hoja de Vida</div>
-              <div class="ac-desc">Actualiza tu CV</div>
-            </a>
-            <a href="talentos.php" class="ac">
-              <div class="ac-ico">🌟</div>
-              <div class="ac-tit">Talentos</div>
-              <div class="ac-desc">Profesionales locales</div>
-            </a>
-          <?php endif; ?>
-          <a href="chat.php" class="ac">
-            <div class="ac-ico">💬</div>
-            <div class="ac-tit">Mensajes</div>
-            <?php if ($chatNoLeidos > 0): ?><span class="ac-badge"><?= $chatNoLeidos ?> sin leer</span><?php else: ?>
-              <div class="ac-desc">Sin nuevos</div><?php endif; ?>
-          </a>
-          <a href="verificar_cuenta.php" class="ac">
-            <div class="ac-ico">🪪</div>
-            <div class="ac-tit">Verificación</div>
-            <div class="ac-desc"><?= $tieneVerificado ? '✅ Verificado' : 'Subir doc.' ?></div>
-          </a>
-          <a href="convocatorias.php" class="ac">
-            <div class="ac-ico">📢</div>
-            <div class="ac-tit">Convocatorias</div>
-            <div class="ac-desc">Sector público</div>
-          </a>
-          <a href="empresas.php" class="ac">
-            <div class="ac-ico">🏢</div>
-            <div class="ac-tit">Empresas</div>
-            <div class="ac-desc">Directorio</div>
-          </a>
-          <a href="negocios.php" class="ac">
-            <div class="ac-ico">🏪</div>
-            <div class="ac-tit">Negocios</div>
-            <div class="ac-desc">Locales & Emprendedores</div>
-          </a>
-          <a href="servicios.php" class="ac">
-            <div class="ac-ico">🎧</div>
-            <div class="ac-tit">Eventos</div>
-            <div class="ac-desc">DJs, fotógrafos...</div>
-          </a>
-          <a href="Ayuda.html" class="ac">
-            <div class="ac-ico">❓</div>
-            <div class="ac-tit">Ayuda</div>
-            <div class="ac-desc">Soporte</div>
-          </a>
-        </div>
-      </div>
-
-      <!-- ── QUIÉN ME VIO + PLAN (span3) ── -->
-      <?php if (!empty($visitantesRecientes) || $maxVisitantes === 0): ?>
-      <div class="card span3" style="border:1.5px solid #e0e0e0">
-        <!-- Encabezado -->
-        <div style="padding:18px 22px 14px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px">
-          <span style="font-size:18px">👁️</span>
-          <span style="font-size:13px;font-weight:700;color:#37474f;text-transform:uppercase;letter-spacing:1px">Quién visitó tu perfil</span>
-        </div>
-
-        <?php if ($maxVisitantes === 0): ?>
-          <!-- Sin acceso — plan bajo -->
-          <div style="padding:30px 22px;text-align:center">
-            <div style="font-size:42px;margin-bottom:10px">🔒</div>
-            <div style="font-size:14px;color:#546e7a;margin-bottom:14px">
-              Esta función está disponible desde el plan <strong style="color:#f9a825">Amarillo Oro</strong>.
-            </div>
-            <a href="empresas.php#precios" style="display:inline-block;padding:9px 22px;background:#f9a825;color:#fff;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(249,168,37,.3)">
-              Ver planes →
-            </a>
-          </div>
-        <?php else: ?>
-          <!-- Con acceso — mostrar visitantes -->
-          <div style="padding:16px 22px;display:flex;flex-wrap:wrap;gap:12px">
-            <?php foreach ($visitantesRecientes as $vis): ?>
-              <?php
-                $inicial = strtoupper(substr($vis['nombre'] ?? '?', 0, 1));
-                $colores = ['#43a047','#fb8c00','#1e88e5','#e91e63','#8e24aa'];
-                $col = $colores[abs(crc32($vis['visitante_id'] ?? 0)) % 5];
-                $bgCol = $col . '18';
-              ?>
-              <div style="display:flex;align-items:center;gap:10px;background:#f8f9fa;border:1px solid #e8eaf0;border-radius:12px;padding:10px 14px;min-width:170px;max-width:240px">
-                <div style="width:36px;height:36px;border-radius:50%;background:<?= $bgCol ?>;border:2px solid <?= $col ?>;display:flex;align-items:center;justify-content:center;font-weight:800;color:<?= $col ?>;font-size:15px;flex-shrink:0"><?= $inicial ?></div>
+            <?php if ($tipo === 'candidato' || $subTipo === 'servicio'): ?>
+              <?php $planPrioridad = PLAN_PRIORIDAD[$planActual] ?? 0;
+              $tieneAccesoVisibilidad = $planPrioridad >= 2; ?>
+              <div class="vis-row">
                 <div>
-                  <div style="font-size:13px;font-weight:700;color:#212121;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px"><?= htmlspecialchars(trim(($vis['nombre'] ?? '') . ' ' . ($vis['apellido'] ?? ''))) ?></div>
-                  <div style="font-size:11px;color:#78909c;margin-top:2px"><?= ucfirst($vis['tipo'] ?? '') ?> · <?= date('d M', strtotime($vis['creado_en'])) ?></div>
+                  <div class="vis-label">Visible en <?= $subTipo === 'servicio' ? 'Servicios' : 'Talentos' ?></div>
+                  <?php if (!$tieneAccesoVisibilidad): ?>
+                    <div class="vis-sub" style="color:#e65100">🔒 Desde el plan Verde Selva</div><?php else: ?>
+                    <div class="vis-sub">Aparece en el directorio</div><?php endif; ?>
                 </div>
-              </div>
-            <?php endforeach; ?>
-            <?php if (empty($visitantesRecientes)): ?>
-              <div style="color:#90a4ae;font-size:13px;padding:10px 0">Aún nadie ha visitado tu perfil.</div>
-            <?php endif; ?>
-          </div>
-        <?php endif; ?>
-      </div>
-      <?php endif; ?>
-
-      <!-- ── INDICADOR DE PLAN ACTIVO (span3) ── -->
-      <?php if (!empty($datosPlan)): ?>
-      <?php
-        $usados   = $datosPlan['usados'] ?? [];
-        $cfg      = $datosPlan['config'] ?? [];
-        $showBars = [
-          'mensajes'     => ['💬', 'Mensajes'],
-          'aplicaciones' => ['📋', 'Aplicaciones'],
-          'vacantes'     => ['💼', 'Vacantes'],
-        ];
-      ?>
-      <div class="card span3" style="background:linear-gradient(135deg,#f0faf4,#e8f5e9);border:1.5px solid #a5d6a7">
-        <div style="padding:22px 26px">
-
-          <!-- Fila superior -->
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:20px">
-            <div style="display:flex;align-items:center;gap:14px">
-              <div style="width:44px;height:44px;border-radius:14px;background:#2e7d32;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">⭐</div>
-              <div>
-                <div style="font-size:10px;font-weight:700;color:#558b6e;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:3px">Plan activo</div>
-                <div style="font-size:22px;font-weight:800;color:#1b5e20;line-height:1.1"><?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
-              </div>
-            </div>
-            <a href="empresas.php#planes" style="display:inline-flex;align-items:center;gap:6px;padding:11px 22px;background:#2e7d32;color:#fff;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;box-shadow:0 3px 12px rgba(46,125,50,.3)">
-              ✦ Mejorar plan
-            </a>
-          </div>
-
-          <!-- Barras de uso -->
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px">
-            <?php foreach ($showBars as $key => [$ico, $label]): ?>
-              <?php
-                $limite   = $cfg[$key] ?? 0;
-                if ($limite === 0) continue;
-                $usado    = $usados[$key] ?? 0;
-                $esInf    = ($limite === -1);
-                $pctBar   = $esInf ? 12 : min(100, ($usado / max(1, $limite)) * 100);
-                $color    = $pctBar >= 90 ? '#e53935' : ($pctBar >= 70 ? '#fb8c00' : '#43a047');
-                $bgCard   = $pctBar >= 90 ? '#fff5f5' : ($pctBar >= 70 ? '#fff8f0' : '#f9fbe7');
-                $bdCard   = $pctBar >= 90 ? '#ef9a9a' : ($pctBar >= 70 ? '#ffcc80' : '#c5e1a5');
-                $numColor = $pctBar >= 90 ? '#c62828' : ($pctBar >= 70 ? '#e65100' : '#2e7d32');
-                $limTxt   = $esInf ? '∞' : $limite;
-              ?>
-              <div style="background:<?= $bgCard ?>;border:1px solid <?= $bdCard ?>;border-radius:14px;padding:16px">
-                <div style="font-size:12px;font-weight:600;color:#546e7a;margin-bottom:8px"><?= $ico ?> <?= $label ?></div>
-                <div style="font-size:22px;font-weight:800;color:<?= $numColor ?>;line-height:1;margin-bottom:10px">
-                  <?= $usado ?><span style="font-size:14px;font-weight:500;color:#90a4ae"> / <?= $limTxt ?></span>
-                </div>
-                <div style="height:7px;background:rgba(0,0,0,.07);border-radius:6px">
-                  <div style="height:7px;width:<?= $pctBar ?>%;background:<?= $color ?>;border-radius:6px;transition:.4s"></div>
-                </div>
-                <?php if (!$esInf && $pctBar >= 70): ?>
-                  <div style="font-size:10px;color:<?= $numColor ?>;margin-top:7px;font-weight:700">
-                    <?= $pctBar >= 90 ? '⚠️ Límite alcanzado' : '⚡ Casi en el límite' ?>
-                  </div>
+                <?php if ($tieneAccesoVisibilidad): ?>
+                  <label class="tog"><input type="checkbox" <?= ($talento['visible'] ?? 0) ? 'checked' : '' ?>
+                      onchange="toggleVis(this.checked)"><span class="tog-sl"></span></label>
+                <?php else: ?>
+                  <a href="empresas.php#planes"
+                    style="font-size:11px;font-weight:700;color:var(--brand);background:var(--brand-light);padding:5px 10px;border-radius:8px">✦
+                    Mejorar</a>
                 <?php endif; ?>
               </div>
-            <?php endforeach; ?>
+            <?php elseif ($tipo === 'empresa'): ?>
+              <div class="vis-row">
+                <div>
+                  <div class="vis-label">Visible en Empresas</div>
+                  <div class="vis-sub">Directorio público</div>
+                </div>
+                <span
+                  class="pv-chip <?= ($ep['visible_admin'] ?? 1) ? 'ok' : 'off' ?>"><?= ($ep['visible_admin'] ?? 1) ? '🟢 Visible' : '🟡 Oculto' ?></span>
+              </div>
+            <?php elseif ($tipo === 'negocio'): ?>
+              <div class="vis-row">
+                <div>
+                  <div class="vis-label">Visible en Negocios</div>
+                  <div class="vis-sub">Directorio público</div>
+                </div>
+                <span
+                  class="pv-chip <?= ($np['visible_admin'] ?? 1) ? 'ok' : 'off' ?>"><?= ($np['visible_admin'] ?? 1) ? '🟢 Visible' : '🟡 Oculto' ?></span>
+              </div>
+            <?php endif; ?>
           </div>
-
         </div>
       </div>
+
+      <!-- ── ACCIONES RÁPIDAS ── -->
+      <div class="col-8">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⚡ Acciones rápidas</div>
+          </div>
+          <div class="actions-grid">
+            <?php if ($tipo === 'empresa'): ?>
+              <a href="#" class="action-item" onclick="abrirPublicarVacante();return false;"
+                style="border-color:rgba(39,168,85,.3);background:rgba(39,168,85,.04)">
+                <span class="ai-ico">➕</span><span class="ai-label" style="color:var(--brand)">Publicar vacante</span>
+              </a>
+              <a href="talentos.php" class="action-item"><span class="ai-ico">🌟</span><span
+                  class="ai-label">Talentos</span></a>
+              <a href="empresas.php" class="action-item"><span class="ai-ico">🏢</span><span class="ai-label">Mi
+                  empresa</span></a>
+            <?php elseif ($tipo === 'negocio'): ?>
+              <a href="#" class="action-item" onclick="abrirPublicarVacante();return false;"
+                style="border-color:rgba(39,168,85,.3);background:rgba(39,168,85,.04)">
+                <span class="ai-ico">➕</span><span class="ai-label" style="color:var(--brand)">Publicar vacante</span>
+              </a>
+              <a href="negocios.php" class="action-item"><span class="ai-ico">🏪</span><span class="ai-label">Mi
+                  negocio</span></a>
+              <a href="Empleo.php" class="action-item"><span class="ai-ico">💼</span><span class="ai-label">Ver
+                  empleos</span></a>
+            <?php elseif ($subTipo === 'servicio' || !empty($talento['precio_desde'])): ?>
+              <a href="servicios.php" class="action-item"><span class="ai-ico">🎧</span><span class="ai-label">Mis
+                  servicios</span></a>
+              <a href="#" class="action-item" onclick="abrirHoja();return false;"
+                style="border-color:rgba(255,211,77,.25);background:rgba(255,211,77,.06)">
+                <span class="ai-ico">📄</span><span class="ai-label" style="color:#b77d00">Mi Hoja de Vida</span>
+              </a>
+              <a href="Empleo.php" class="action-item"><span class="ai-ico">💼</span><span class="ai-label">Ver
+                  empleos</span></a>
+            <?php else: ?>
+              <a href="Empleo.php" class="action-item"><span class="ai-ico">🔍</span><span class="ai-label">Buscar
+                  empleo</span></a>
+              <a href="#" class="action-item" onclick="abrirHoja();return false;"
+                style="border-color:rgba(255,211,77,.25);background:rgba(255,211,77,.06)">
+                <span class="ai-ico">📄</span><span class="ai-label" style="color:#b77d00">Mi Hoja de Vida</span>
+              </a>
+              <a href="talentos.php" class="action-item"><span class="ai-ico">🌟</span><span
+                  class="ai-label">Talentos</span></a>
+            <?php endif; ?>
+            <a href="chat.php" class="action-item">
+              <span class="ai-ico">💬</span><span class="ai-label">Mensajes</span>
+              <?php if ($chatNoLeidos > 0): ?><span class="ai-badge"><?= $chatNoLeidos ?></span><?php endif; ?>
+            </a>
+            <a href="verificar_cuenta.php" class="action-item"><span class="ai-ico">🪪</span><span
+                class="ai-label">Verificación</span><span
+                class="ai-sub"><?= $tieneVerificado ? '✅ Activo' : 'Pendiente' ?></span></a>
+            <a href="convocatorias.php" class="action-item"><span class="ai-ico">📢</span><span
+                class="ai-label">Convocatorias</span></a>
+            <a href="empresas.php" class="action-item"><span class="ai-ico">🏢</span><span
+                class="ai-label">Empresas</span></a>
+            <a href="negocios.php" class="action-item"><span class="ai-ico">🏪</span><span
+                class="ai-label">Negocios</span></a>
+            <a href="servicios.php" class="action-item"><span class="ai-ico">🎧</span><span
+                class="ai-label">Eventos</span></a>
+            <a href="Ayuda.html" class="action-item"><span class="ai-ico">❓</span><span
+                class="ai-label">Ayuda</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── QUIÉN ME VIO ── -->
+      <?php if (!empty($visitantesRecientes) || $maxVisitantes === 0): ?>
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">👁️ Quién visitó tu perfil</div>
+            </div>
+            <?php if ($maxVisitantes === 0): ?>
+              <div style="text-align:center;padding:28px 20px">
+                <div style="font-size:36px;margin-bottom:8px">🔒</div>
+                <div style="font-size:13px;color:var(--ink3);margin-bottom:12px">Disponible desde el plan <strong
+                    style="color:var(--accent)">Amarillo Oro</strong>.</div>
+                <a href="empresas.php#precios" class="btn-primary" style="display:inline-flex">Ver planes →</a>
+              </div>
+            <?php else: ?>
+              <div class="visitor-grid">
+                <?php if (empty($visitantesRecientes)): ?>
+                  <div style="color:var(--ink4);font-size:13px;padding:10px">Aún nadie ha visitado tu perfil.</div>
+                <?php else: ?>
+                  <?php foreach ($visitantesRecientes as $vis):
+                    $vi = strtoupper(substr($vis['nombre'] ?? '?', 0, 1));
+                    $cols = ['#43a047', '#fb8c00', '#1e88e5', '#e91e63', '#8e24aa'];
+                    $col = $cols[abs(crc32($vis['visitante_id'] ?? 0)) % 5];
+                    ?>
+                    <div class="visitor-card">
+                      <div class="vc-av" style="background:<?= $col ?>22;color:<?= $col ?>;border:2px solid <?= $col ?>">
+                        <?= $vi ?></div>
+                      <div>
+                        <div class="vc-name"><?= htmlspecialchars(trim(($vis['nombre'] ?? '') . ' ' . ($vis['apellido'] ?? ''))) ?>
+                        </div>
+                        <div class="vc-meta"><?= ucfirst($vis['tipo'] ?? '') ?> ·
+                          <?= date('d M', strtotime($vis['creado_en'])) ?></div>
+                      </div>
+                    </div>
+                  <?php endforeach; ?>
+                <?php endif; ?>
+              </div>
+            <?php endif; ?>
+          </div>
+        </div>
       <?php endif; ?>
 
-            <!-- ── LISTA EMPLEOS / VACANTES / TALENTOS ── -->
-      <div class="card span2">
-        <div class="ce-head">
-          <div class="ce-tit">
-            <?php if ($tipo === 'empresa'): ?>📋 Historial de vacantes
-            <?php elseif ($subTipo === 'servicio'): ?>🎧 Mis géneros / especialidades
-            <?php else: ?>💼 Empleos sugeridos<?php endif; ?>
-          </div>
-          <a href="#" class="ce-ver" <?= $tipo === 'empresa' ? 'onclick="abrirPublicarVacante();return false;"' : 'href="Empleo.html"' ?>>
-            <?= $tipo === 'empresa' ? 'Publicar nueva →' : 'Ver todos →' ?>
-          </a>
-        </div>
-
-        <?php if ($tipo === 'empresa' && !empty($historialVacantes)): ?>
-          <div class="ce-list">
-            <?php foreach ($historialVacantes as $v): ?>
-              <?php
-              
-              $horas = (time() - strtotime($v['creado_en'])) / 3600;
-              $esPendiente = !$v['activo'] && $horas < 72;
-              $estadoLabel = $v['activo']
-                ? '<span style="color:#16a34a;font-weight:700">✅ Activa</span>'
-                : ($esPendiente
-                  ? '<span style="color:#d97706;font-weight:700">⏳ Pendiente aprobación</span>'
-                  : '<span style="color:#6b8f74;font-weight:700">🔒 Cerrada</span>');
-              $modalidad = htmlspecialchars(ucfirst($v['modalidad'] ?? $v['tipo_contrato'] ?? ''));
-              ?>
-              <div class="hist-item">
-                <div class="hdot <?= $v['activo'] ? 'act' : ($esPendiente ? 'pen' : 'cer') ?>"></div>
-                <div style="flex:1;min-width:0">
-                  <div class="hnom"><?= htmlspecialchars($v['titulo']) ?></div>
-                  <div class="hmeta">
-                    📍 <?= htmlspecialchars($v['ciudad'] ?? 'Quibdó') ?>
-                    <?= $modalidad ? ' · ' . $modalidad : '' ?>
-                    · <?= $estadoLabel ?>
-                  </div>
-                </div>
-                <div class="hfecha"><?= date('d/m/Y', strtotime($v['creado_en'])) ?></div>
-              </div>
-            <?php endforeach; ?>
-          </div>
-        <?php elseif ($tipo === 'empresa'): ?>
-          <div style="text-align:center;padding:32px 20px;color:var(--ink3)">
-            <div style="font-size:40px;margin-bottom:10px">💼</div>
-            <div style="font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:6px">Aún no has publicado vacantes
+      <!-- ── PLAN ── -->
+      <?php if (!empty($datosPlan)): ?>
+        <?php $usados = $datosPlan['usados'] ?? [];
+        $cfg = $datosPlan['config'] ?? []; ?>
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">⭐ Plan <?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
+              <a href="empresas.php#planes" class="btn-primary" style="padding:7px 16px;font-size:12px">✦ Mejorar plan</a>
             </div>
-            <a href="#" onclick="abrirPublicarVacante()"
-              style="display:inline-block;margin-top:12px;padding:10px 22px;background:var(--v3);color:white;border-radius:10px;text-decoration:none;font-weight:800;font-size:13px">➕
-              Publicar primera vacante</a>
-          </div>
-        <?php elseif ($subTipo === 'servicio' && !empty($talento['generos'])): ?>
-          <div class="ce-list">
-            <?php foreach (array_slice(array_filter(array_map('trim', explode(',', $talento['generos']))), 0, 6) as $g): ?>
-              <div class="ce-item">
-                <div class="ce-ico">🎵</div>
-                <div class="ce-info">
-                  <div class="ce-nom"><?= htmlspecialchars($g) ?></div>
-                </div>
-              </div>
-            <?php endforeach; ?>
-          </div>
-        <?php else: ?>
-          <?php if (!empty($vacantesDisponibles)): ?>
-            <div class="ce-list">
-              <?php
-              $catIcons = ['Tecnología' => '💻', 'Diseño' => '🎨', 'Música' => '🎵', 'Administración' => '📊', 'Salud' => '🏥', 'Educación' => '📚', 'Comercio' => '🛒', 'Construcción' => '🏗️', 'Legal' => '⚖️'];
-              ?>
-              <?php foreach ($vacantesDisponibles as $v): ?>
-                <?php
-                $cat = $v['categoria'] ?? '';
-                $ico = $catIcons[$cat] ?? '💼';
-                $ciudad = htmlspecialchars($v['ciudad'] ?? 'Quibdó');
-                $salario = !empty($v['salario_texto']) ? htmlspecialchars($v['salario_texto']) : '';
-                $meta = $ciudad . ($salario ? ' · ' . $salario : '');
-                $modalidad = htmlspecialchars(ucfirst($v['modalidad'] ?? $v['tipo_contrato'] ?? 'Tiempo completo'));
+            <div class="plan-grid">
+              <?php foreach (['mensajes' => ['💬', 'Mensajes'], 'aplicaciones' => ['📋', 'Aplicaciones'], 'vacantes' => ['💼', 'Vacantes']] as $key => [$ico, $label]):
+                $lim = $cfg[$key] ?? 0;
+                if (!$lim)
+                  continue;
+                $usado = $usados[$key] ?? 0;
+                $esInf = ($lim === -1);
+                $pctBar = $esInf ? 12 : min(100, ($usado / max(1, $lim)) * 100);
+                $fillCls = $pctBar >= 90 ? 'high' : ($pctBar >= 70 ? 'mid' : 'low');
                 ?>
-                <div class="ce-item">
-                  <div class="ce-ico"><?= $ico ?></div>
-                  <div class="ce-info" onclick="location.href='Empleo.php'" style="cursor:pointer;flex:1">
-                    <div class="ce-nom"><?= htmlspecialchars($v['titulo']) ?></div>
-                    <div class="ce-emp"><?= htmlspecialchars($v['empresa'] ?? 'Empresa') ?></div>
-                    <div class="ce-met">📍 <?= $meta ?></div>
+                <div class="plan-bar">
+                  <div class="pb-label"><?= $ico ?>     <?= $label ?></div>
+                  <div class="pb-count"><?= $usado ?><span> / <?= $esInf ? '∞' : $lim ?></span></div>
+                  <div class="pb-track">
+                    <div class="pb-fill <?= $fillCls ?>" style="width:<?= $pctBar ?>%"></div>
                   </div>
-                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
-                    <span class="ce-badge"><?= $modalidad ?></span>
-                    <button onclick="abrirModalSolicitud(<?= (int)$v['id'] ?>, '<?= addslashes(htmlspecialchars($v['titulo'])) ?>', '<?= addslashes(htmlspecialchars($v['empresa'] ?? 'Empresa')) ?>')"
-                      style="padding:5px 14px;background:linear-gradient(135deg,#1f9d55,#2ecc71);color:white;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
-                      🚀 Solicitar
-                    </button>
+                  <?php if (!$esInf && $pctBar >= 70): ?>
+                    <div class="pb-warn"><?= $pctBar >= 90 ? '⚠️ Límite alcanzado' : '⚡ Casi en el límite' ?></div>
+                  <?php endif; ?>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        </div>
+      <?php endif; ?>
+
+      <!-- ── VACANTES / EMPLEOS ── -->
+      <div class="col-8">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <?php if ($tipo === 'empresa'): ?>📋 Historial de vacantes
+              <?php elseif ($subTipo === 'servicio'): ?>🎵 Géneros / especialidades
+              <?php else: ?>💼 Empleos sugeridos<?php endif; ?>
+            </div>
+            <a href="#" class="card-link" <?= $tipo === 'empresa' ? 'onclick="abrirPublicarVacante();return false;"' : 'href="Empleo.php"' ?>>
+              <?= $tipo === 'empresa' ? 'Publicar nueva →' : 'Ver todos →' ?>
+            </a>
+          </div>
+          <?php if ($tipo === 'empresa' && !empty($historialVacantes)): ?>
+            <div class="job-list">
+              <?php foreach ($historialVacantes as $v):
+                $horas = (time() - strtotime($v['creado_en'])) / 3600;
+                $esPendiente = !$v['activo'] && $horas < 72;
+                $dotCls = $v['activo'] ? 'act' : ($esPendiente ? 'pen' : 'cer');
+                ?>
+                <div class="job-item">
+                  <div class="job-dot <?= $dotCls ?>"></div>
+                  <div class="job-info">
+                    <div class="job-name"><?= htmlspecialchars($v['titulo']) ?></div>
+                    <div class="job-meta">📍
+                      <?= htmlspecialchars($v['ciudad'] ?? 'Quibdó') ?>    <?= isset($v['modalidad']) ? ' · ' . ucfirst($v['modalidad']) : '' ?>
+                    </div>
+                  </div>
+                  <div class="job-date"><?= date('d/m/Y', strtotime($v['creado_en'])) ?></div>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          <?php elseif ($tipo === 'empresa'): ?>
+            <div class="job-empty">
+              <div class="job-empty-ico">💼</div>
+              <div class="job-empty-txt">Aún no has publicado vacantes</div><button class="btn-primary"
+                onclick="abrirPublicarVacante()" style="margin-top:10px">➕ Publicar primera vacante</button>
+            </div>
+          <?php elseif ($subTipo === 'servicio' && !empty($talento['generos'])): ?>
+            <div class="job-list">
+              <?php foreach (array_slice(array_filter(array_map('trim', explode(',', $talento['generos']))), 0, 6) as $g): ?>
+                <div class="job-item">
+                  <div class="job-dot act"></div>
+                  <div class="job-info">
+                    <div class="job-name">🎵 <?= htmlspecialchars($g) ?></div>
                   </div>
                 </div>
               <?php endforeach; ?>
             </div>
           <?php else: ?>
-            <div style="text-align:center;padding:32px 20px;color:var(--ink3)">
-              <div style="font-size:40px;margin-bottom:10px">🔍</div>
-              <div style="font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:6px">No hay vacantes activas por
-                ahora</div>
-              <div style="font-size:13px;color:var(--ink3);margin-bottom:14px">Vuelve pronto — publicamos nuevas ofertas
-                cada semana</div>
-              <a href="Empleo.html"
-                style="display:inline-block;padding:10px 22px;background:var(--v3);color:white;border-radius:10px;text-decoration:none;font-weight:800;font-size:13px">🔍
-                Explorar empleos</a>
-            </div>
-          <?php endif; ?>
-        <?php endif; ?>
-      </div>
-
-      <!-- ── PERFIL CARD ── -->
-      
-
-      <!-- ── ACTIVIDAD RECIENTE ── -->
-      <div class="card span2">
-        <div class="cact-tit">🕐 Actividad reciente</div>
-        <div class="act-list">
-          <div class="act-it">
-            <div class="act-pt pv">🎉</div>
-            <div class="act-tx">
-              <div class="act-n">¡Cuenta creada!</div>
-              <div class="act-f"><?= $fechaRegistro ?></div>
-            </div>
-          </div>
-          <div class="act-it">
-            <div class="act-pt pa">👀</div>
-            <div class="act-tx">
-              <div class="act-n">Exploraste empleos</div>
-              <div class="act-f">Hoy</div>
-            </div>
-          </div>
-          <?php if ($tieneVerificado): ?>
-            <div class="act-it">
-              <div class="act-pt pv">✅</div>
-              <div class="act-tx">
-                <div class="act-n">Cuenta verificada</div>
-                <div class="act-f">Badge asignado</div>
+            <?php if (!empty($vacantesDisponibles)): ?>
+              <div class="job-list">
+                <?php foreach ($vacantesDisponibles as $v): ?>
+                  <div class="job-item">
+                    <div class="job-dot act"></div>
+                    <div class="job-info">
+                      <div class="job-name"><?= htmlspecialchars($v['titulo']) ?></div>
+                      <div class="job-meta">📍
+                        <?= htmlspecialchars($v['ciudad'] ?? 'Quibdó') ?>      <?= !empty($v['salario_texto']) ? ' · ' . htmlspecialchars($v['salario_texto']) : '' ?>
+                      </div>
+                    </div>
+                    <a href="Empleo.php" class="card-link" style="font-size:11px;flex-shrink:0">Ver →</a>
+                  </div>
+                <?php endforeach; ?>
               </div>
-            </div>
-          <?php endif; ?>
-          <?php if ($tipo === 'empresa' && $vacantesActivas > 0): ?>
-            <div class="act-it">
-              <div class="act-pt ig">💼</div>
-              <div class="act-tx">
-                <div class="act-n"><?= $vacantesActivas ?> vacante<?= $vacantesActivas > 1 ? 's' : '' ?>
-                  activa<?= $vacantesActivas > 1 ? 's' : '' ?></div>
-                <div class="act-f">Empresa activa</div>
+            <?php else: ?>
+              <div class="job-empty">
+                <div class="job-empty-ico">🔍</div>
+                <div class="job-empty-txt">No hay empleos disponibles ahora</div><a href="Empleo.php" class="btn-primary"
+                  style="display:inline-flex;margin-top:10px">Explorar empleos</a>
               </div>
-            </div>
-          <?php endif; ?>
-          <?php if (!empty($talento['precio_desde'])): ?>
-            <div class="act-it">
-              <div class="act-pt po">🎧</div>
-              <div class="act-tx">
-                <div class="act-n">Servicio configurado</div>
-                <div class="act-f">Apareces en Eventos</div>
-              </div>
-            </div>
+            <?php endif; ?>
           <?php endif; ?>
         </div>
       </div>
 
-    </div><!-- /grid -->
+      <!-- ── ACTIVIDAD RECIENTE ── -->
+      <div class="col-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📌 Actividad reciente</div>
+          </div>
+          <div class="activity-list">
+            <?php if (!empty($actReciente)): ?>
+              <?php foreach (array_slice($actReciente, 0, 5) as $act): ?>
+                <div class="act-item">
+                  <div class="act-dot"></div>
+                  <div class="act-txt"><?= htmlspecialchars($act['texto'] ?? $act['accion'] ?? 'Actividad') ?></div>
+                  <div class="act-time"><?= isset($act['creado_en']) ? date('d/m', strtotime($act['creado_en'])) : '' ?>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <div style="text-align:center;padding:20px 10px;color:var(--ink4);font-size:13px">
+                <div style="font-size:24px;margin-bottom:6px">📋</div>
+                Sin actividad reciente
+              </div>
+            <?php endif; ?>
+          </div>
+        </div>
+      </div>
 
+    </div><!-- /dashboard-grid -->
+
+    <!-- ══ GALERÍA + PERFIL EXTENDIDO ══ -->
     <?php if ($tipo === 'candidato' || $subTipo === 'servicio'): ?>
       <?php
       $tieneSelvaVerde = tieneBadge($badgesUsuario, 'Selva Verde');
       $limiteGaleria = $tieneSelvaVerde ? PHP_INT_MAX : 15;
       $puedeSubir = $galeriaTotal < $limiteGaleria;
       ?>
-      <!-- ══ GALERÍA DE EVIDENCIAS ══════════════════════════════════ -->
-      <div
-        style="margin-top:18px;background:var(--card);border:1px solid rgba(39,168,85,.2);border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(39,168,85,.07)">
-        <div
-          style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-          <div>
-            <div
-              style="font-size:12px;font-weight:800;color:#6b8f74;text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">
-              📸 Galería de evidencias</div>
-            <div style="font-size:12px;color:#3a5a42">
-              Fotos y videos de tus servicios para que los clientes vean tu trabajo.
+      <div style="margin-top:18px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              📸 Galería de evidencias
               <?php if (!$tieneSelvaVerde): ?>
-                <strong style="color:<?= $galeriaTotal >= 15 ? '#dc2626' : '#374151' ?>"><?= $galeriaTotal ?>/15
-                  usados</strong>
+                <span
+                  style="font-size:11px;font-weight:500;color:<?= $galeriaTotal >= 15 ? 'var(--danger)' : 'var(--ink4)' ?>"><?= $galeriaTotal ?>/15
+                  usados</span>
               <?php else: ?>
                 <span
-                  style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:20px;font-weight:700;font-size:12px">🌿
-                  Selva Verde — Ilimitado</span>
+                  style="font-size:11px;background:#dcfce7;color:#166534;padding:2px 9px;border-radius:20px;font-weight:700">🌿
+                  Ilimitado</span>
               <?php endif; ?>
             </div>
+            <?php if ($puedeSubir): ?>
+              <button onclick="abrirModalEvidencia()" class="btn-primary" style="padding:7px 14px;font-size:12px">➕
+                Subir</button>
+            <?php endif; ?>
           </div>
-          <?php if ($puedeSubir): ?>
-            <button onclick="abrirModalEvidencia()"
-              style="padding:7px 14px;background:linear-gradient(135deg,#1a7a3c,#27a855);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
-              ➕ Subir
-            </button>
+          <?php if (empty($galeriaItems)): ?>
+            <div class="gallery-empty">
+              <div class="gallery-empty-ico">📷</div>
+              <div style="font-size:13px;font-weight:600;margin-bottom:4px">Aún no tienes evidencias subidas</div>
+              <div style="font-size:12px">Sube fotos o videos de tu trabajo para atraer más clientes.</div>
+            </div>
           <?php else: ?>
-            <div
-              style="padding:10px 16px;background:#fef3c7;border:1px solid #fde68a;border-radius:10px;font-size:13px;color:#92400e">
-              🌿 <strong>Límite alcanzado.</strong>
-              <a href="mailto:soporte@quibdoconecta.co" style="color:#1f9d55;font-weight:700">Activa Selva Verde</a> para
-              ilimitado.
+            <div class="gallery-grid" id="galeriaGrid">
+              <?php foreach ($galeriaItems as $gi):
+                $isVideo = $gi['tipo'] === 'video';
+                $thumb = $isVideo && $gi['url_video'] ? 'https://img.youtube.com/vi/' . getYoutubeId($gi['url_video']) . '/mqdefault.jpg' : ($gi['archivo'] ? 'uploads/galeria/' . htmlspecialchars($gi['archivo']) : '');
+                ?>
+                <div class="gallery-item" id="gitem-<?= $gi['id'] ?>">
+                  <?php if ($isVideo && $gi['url_video']): ?>
+                    <a href="<?= htmlspecialchars($gi['url_video']) ?>" target="_blank"
+                      style="display:block;height:100%;position:relative">
+                      <?php if ($thumb): ?><img src="<?= $thumb ?>" loading="lazy"><?php endif; ?>
+                      <div
+                        style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3)">
+                        <span style="font-size:28px">▶️</span></div>
+                    </a>
+                  <?php elseif ($gi['archivo']): ?>
+                    <?php if ($isVideo): ?>
+                      <video src="uploads/galeria/<?= htmlspecialchars($gi['archivo']) ?>"
+                        style="width:100%;height:100%;object-fit:cover" controls preload="none"></video>
+                    <?php else: ?>
+                      <img src="uploads/galeria/<?= htmlspecialchars($gi['archivo']) ?>" loading="lazy"
+                        onclick="verImagenGaleria('uploads/galeria/<?= htmlspecialchars($gi['archivo']) ?>','<?= htmlspecialchars($gi['titulo'] ?? '') ?>')">
+                    <?php endif; ?>
+                  <?php endif; ?>
+                  <?php if ($gi['titulo']): ?>
+                    <div class="gallery-caption"><?= htmlspecialchars($gi['titulo']) ?></div><?php endif; ?>
+                  <button onclick="eliminarEvidencia(<?= $gi['id'] ?>,this)" class="gallery-item-del">🗑</button>
+                </div>
+              <?php endforeach; ?>
             </div>
           <?php endif; ?>
         </div>
-
-        <?php if (empty($galeriaItems)): ?>
-          <div
-            style="text-align:center;padding:24px 16px;border:1.5px dashed rgba(39,168,85,.25);border-radius:10px;color:#6b8f74">
-            <div style="font-size:32px;margin-bottom:8px">📷</div>
-            <div style="font-size:13px;font-weight:600;margin-bottom:4px">Aún no tienes evidencias subidas</div>
-            <div style="font-size:12px">Sube fotos o videos de tu trabajo para atraer más clientes.</div>
-          </div>
-        <?php else: ?>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px" id="galeriaGrid">
-            <?php foreach ($galeriaItems as $gi):
-              $isVideo = $gi['tipo'] === 'video';
-              $thumb = $isVideo && $gi['url_video']
-                ? 'https://img.youtube.com/vi/' . getYoutubeId($gi['url_video']) . '/mqdefault.jpg'
-                : ($gi['archivo'] ? 'uploads/galeria/' . htmlspecialchars($gi['archivo']) : '');
-              ?>
-              <div
-                style="position:relative;border-radius:10px;overflow:hidden;background:#f9fafb;border:1px solid #e5e7eb;aspect-ratio:1"
-                id="gitem-<?= $gi['id'] ?>">
-                <?php if ($isVideo && $gi['url_video']): ?>
-                  <a href="<?= htmlspecialchars($gi['url_video']) ?>" target="_blank"
-                    style="display:block;height:100%;position:relative">
-                    <?php if ($thumb): ?><img src="<?= $thumb ?>" style="width:100%;height:100%;object-fit:cover"
-                        loading="lazy"><?php endif; ?>
-                    <div
-                      style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3)">
-                      <span style="font-size:32px">▶️</span>
-                    </div>
-                  </a>
-                <?php elseif ($gi['archivo']): ?>
-                  <?php if ($isVideo): ?>
-                    <video src="uploads/galeria/<?= htmlspecialchars($gi['archivo']) ?>"
-                      style="width:100%;height:100%;object-fit:cover" controls preload="none"></video>
-                  <?php else: ?>
-                    <img src="uploads/galeria/<?= htmlspecialchars($gi['archivo']) ?>"
-                      style="width:100%;height:100%;object-fit:cover;cursor:pointer" loading="lazy"
-                      onclick="verImagenGaleria('uploads/galeria/<?= htmlspecialchars($gi['archivo']) ?>','<?= htmlspecialchars($gi['titulo'] ?? '') ?>')">
-                  <?php endif; ?>
-                <?php endif; ?>
-                <?php if ($gi['titulo']): ?>
-                  <div
-                    style="position:absolute;bottom:0;left:0;right:0;padding:6px 8px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                    <?= htmlspecialchars($gi['titulo']) ?>
-                  </div>
-                <?php endif; ?>
-                <button onclick="eliminarEvidencia(<?= $gi['id'] ?>,this)"
-                  style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);border:none;color:#fff;border-radius:6px;padding:4px 7px;font-size:11px;cursor:pointer;line-height:1">🗑</button>
-              </div>
-            <?php endforeach; ?>
-          </div>
-        <?php endif; ?>
       </div>
     <?php endif; ?>
 
     <?php if ($tipo === 'candidato' || $subTipo === 'servicio' || !empty($talento['precio_desde'])): ?>
-      <!-- ══ SECCIONES DE PERFIL EXTENDIDO ══════════════════════ -->
-      <div style="max-width:1200px;margin:0 auto;padding:0 36px 28px">
+      <div style="margin-top:16px">
 
-        <!-- ── EDUCACIÓN ── -->
+        <!-- EDUCACIÓN -->
         <div class="psec" id="psec-educacion">
           <div class="psec-head">
-            <span class="psec-tit">🎓 Educación</span>
+            <div class="psec-title">🎓 Educación</div>
             <div class="psec-btns">
               <button class="psec-btn" title="Agregar" onclick="abrirFormEdu()">＋</button>
               <button class="psec-btn" title="Editar" onclick="abrirFormEdu()">✏️</button>
             </div>
           </div>
-          <div class="psec-list" id="edu-list">
-            <div style="text-align:center;padding:18px 0;color:#6b8f74;font-size:12px">
-              <div style="font-size:24px;margin-bottom:6px">🎓</div>
-              Agrega tu educación para que las empresas conozcan tu formación.
-              <br><button onclick="abrirFormEdu()"
-                style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
-                Agregar educación</button>
+          <div class="psec-body">
+            <div class="psec-list" id="edu-list">
+              <div class="psec-empty">
+                <div class="psec-empty-ico">🎓</div>
+                Agrega tu educación para que las empresas conozcan tu formación.
+                <br><button onclick="abrirFormEdu()" class="btn-dashed">+ Agregar educación</button>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- ── LICENCIAS Y CERTIFICACIONES ── -->
+        <!-- LICENCIAS Y CERTIFICACIONES -->
         <div class="psec" id="psec-cert">
           <div class="psec-head">
-            <span class="psec-tit">🏅 Licencias y certificaciones</span>
+            <div class="psec-title">🏅 Licencias y certificaciones</div>
             <div class="psec-btns">
               <button class="psec-btn" title="Agregar" onclick="abrirFormCert()">＋</button>
               <button class="psec-btn" title="Editar" onclick="abrirFormCert()">✏️</button>
             </div>
           </div>
-          <div class="psec-list" id="cert-list">
-            <div style="text-align:center;padding:18px 0;color:#6b8f74;font-size:12px">
-              <div style="font-size:24px;margin-bottom:6px">🏅</div>
-              Agrega tus certificaciones y cursos para destacar tus habilidades.
-              <br><button onclick="abrirFormCert()"
-                style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
-                Agregar certificación</button>
+          <div class="psec-body">
+            <div class="psec-list" id="cert-list">
+              <div class="psec-empty">
+                <div class="psec-empty-ico">🏅</div>
+                Agrega tus certificaciones y cursos para destacar tus habilidades.
+                <br><button onclick="abrirFormCert()" class="btn-dashed">+ Agregar certificación</button>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- ── APTITUDES ── -->
+        <!-- APTITUDES -->
         <div class="psec" id="psec-apt">
           <div class="psec-head">
-            <span class="psec-tit">⚡ Aptitudes</span>
+            <div class="psec-title">⚡ Aptitudes</div>
             <div class="psec-btns">
               <button class="psec-btn" title="Agregar" onclick="abrirFormApt()">＋</button>
               <button class="psec-btn" title="Editar" onclick="abrirFormApt()">✏️</button>
             </div>
           </div>
-          <div class="psec-list" id="apt-list">
-            <?php
-            $skills = trim($talento['skills'] ?? '');
-            if ($skills):
-              $grupos = [];
-              foreach (array_filter(array_map('trim', explode(',', $skills))) as $sk) {
-                $grupos[] = $sk;
-              }
-              ?>
-              <div class="apt-grupo">
-                <div class="apt-items">
-                  <?php foreach ($grupos as $sk): ?>
-                    <span class="apt-chip"><span class="apt-chip-ico">🌿</span><?= htmlspecialchars($sk) ?></span>
+          <div class="psec-body">
+            <div class="psec-list" id="apt-list">
+              <?php $skills = trim($talento['skills'] ?? '');
+              if ($skills): ?>
+                <div class="apt-chips">
+                  <?php foreach (array_filter(array_map('trim', explode(',', $skills))) as $sk): ?>
+                    <span class="apt-chip"><span>🌿</span><?= htmlspecialchars($sk) ?></span>
                   <?php endforeach; ?>
                 </div>
-              </div>
-            <?php else: ?>
-              <div style="text-align:center;padding:30px 0;color:var(--ink3);font-size:13px">
-                <div style="font-size:32px;margin-bottom:8px">⚡</div>
-                Agrega tus aptitudes y habilidades clave.
-                <br><button onclick="abrirFormApt()"
-                  style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">+
-                  Agregar aptitudes</button>
-              </div>
-            <?php endif; ?>
+              <?php else: ?>
+                <div class="psec-empty">
+                  <div class="psec-empty-ico">⚡</div>
+                  Agrega tus aptitudes y habilidades clave.
+                  <br><button onclick="abrirFormApt()" class="btn-dashed">+ Agregar aptitudes</button>
+                </div>
+              <?php endif; ?>
+            </div>
           </div>
         </div>
 
       </div>
     <?php endif; ?>
 
-  </div><!-- /contenido -->
+    <!-- JS: sidebar + notif toggle -->
+    <script>
+      function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('sidebarOverlay').classList.toggle('open');
+      }
+      function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('open');
+      }
+      function toggleNotif() {
+        document.getElementById('notifPanel').classList.toggle('open');
+      }
+      document.addEventListener('click', function (e) {
+        const n = document.getElementById('navNotif');
+        if (n && !n.contains(e.target)) document.getElementById('notifPanel').classList.remove('open');
+      });
+      // Animate progress bar on load
+      window.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+          const bar = document.getElementById('progBar');
+          if (bar) bar.style.width = '<?= $pct ?>%';
+        }, 300);
+      });
+    </script>
+
+  </main>
+
 
   <!-- ══ MODAL PUBLICAR VACANTE (empresa y negocio) ══ -->
   <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
@@ -3895,27 +3394,39 @@ object-fit:contain;
         <!-- Banner -->
         <div class="msec">Banner de perfil</div>
         <div style="margin-bottom:18px">
-          <div id="bannerZone" style="position:relative;height:120px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);cursor:pointer;overflow:hidden;border-radius:14px;border:1.5px dashed rgba(39,168,85,.3)" onclick="document.getElementById('bannerInput').click()" title="Cambiar banner">
+          <div id="bannerZone"
+            style="position:relative;height:120px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);cursor:pointer;overflow:hidden;border-radius:14px;border:1.5px dashed rgba(39,168,85,.3)"
+            onclick="document.getElementById('bannerInput').click()" title="Cambiar banner">
             <?php if ($bannerUrl): ?>
-              <img id="bannerImg" src="<?= $bannerUrl ?>" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:12px">
+              <img id="bannerImg" src="<?= $bannerUrl ?>"
+                style="width:100%;height:100%;object-fit:cover;display:block;border-radius:12px">
             <?php else: ?>
-              <div id="bannerPlaceholder" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#81c784">
+              <div id="bannerPlaceholder"
+                style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#81c784">
                 <div style="font-size:28px">🖼️</div>
                 <div style="font-size:12px;font-weight:600">Clic para subir banner</div>
                 <div style="font-size:10px;opacity:.7">1200×300 px · JPG/PNG/WEBP · máx 5 MB</div>
               </div>
             <?php endif; ?>
-            <div style="position:absolute;inset:0;background:rgba(0,0,0,0);transition:.2s;display:flex;align-items:center;justify-content:center;border-radius:12px"
-                 onmouseover="this.style.background='rgba(0,0,0,.3)';this.querySelector('span').style.opacity='1'"
-                 onmouseout="this.style.background='rgba(0,0,0,0)';this.querySelector('span').style.opacity='0'">
-              <span style="opacity:0;color:#fff;font-size:12px;font-weight:700;background:rgba(0,0,0,.5);padding:6px 14px;border-radius:20px;transition:.2s">✏️ Cambiar banner</span>
+            <div
+              style="position:absolute;inset:0;background:rgba(0,0,0,0);transition:.2s;display:flex;align-items:center;justify-content:center;border-radius:12px"
+              onmouseover="this.style.background='rgba(0,0,0,.3)';this.querySelector('span').style.opacity='1'"
+              onmouseout="this.style.background='rgba(0,0,0,0)';this.querySelector('span').style.opacity='0'">
+              <span
+                style="opacity:0;color:#fff;font-size:12px;font-weight:700;background:rgba(0,0,0,.5);padding:6px 14px;border-radius:20px;transition:.2s">✏️
+                Cambiar banner</span>
             </div>
           </div>
           <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">
-            <input type="file" id="bannerInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="subirBanner(this)">
-            <button onclick="document.getElementById('bannerInput').click()" type="button" style="padding:7px 14px;border-radius:10px;background:rgba(39,168,85,.1);color:var(--v2);border:1.5px solid rgba(39,168,85,.25);font-size:12px;font-weight:700;cursor:pointer">🖼️ Cambiar banner</button>
+            <input type="file" id="bannerInput" accept="image/jpeg,image/png,image/webp" style="display:none"
+              onchange="subirBanner(this)">
+            <button onclick="document.getElementById('bannerInput').click()" type="button"
+              style="padding:7px 14px;border-radius:10px;background:rgba(39,168,85,.1);color:var(--v2);border:1.5px solid rgba(39,168,85,.25);font-size:12px;font-weight:700;cursor:pointer">🖼️
+              Cambiar banner</button>
             <?php if ($bannerUrl): ?>
-            <button id="btnEliminarBannerModal" onclick="eliminarBanner()" type="button" style="padding:7px 14px;border-radius:10px;background:transparent;color:#e74c3c;border:1.5px solid #e74c3c;font-size:12px;font-weight:700;cursor:pointer">🗑 Quitar</button>
+              <button id="btnEliminarBannerModal" onclick="eliminarBanner()" type="button"
+                style="padding:7px 14px;border-radius:10px;background:transparent;color:#e74c3c;border:1.5px solid #e74c3c;font-size:12px;font-weight:700;cursor:pointer">🗑
+                Quitar</button>
             <?php endif; ?>
           </div>
           <div id="bannerMsg" style="font-size:12px;color:#e53935;margin-top:6px;display:none"></div>
@@ -3951,14 +3462,20 @@ object-fit:contain;
         <!-- ── MODAL CROP BANNER ── -->
         <div class="crop-modal" id="cropBannerModal" style="display:none">
           <div class="crop-inner" style="max-width:680px">
-            <div style="font-size:16px;font-weight:800;color:#2e7d32;margin-bottom:14px;text-align:center">🖼️ Encuadra tu banner</div>
-            <div style="position:relative;width:100%;height:220px;overflow:hidden;border-radius:12px;background:#000;display:flex;align-items:center;justify-content:center">
+            <div style="font-size:16px;font-weight:800;color:#2e7d32;margin-bottom:14px;text-align:center">🖼️ Encuadra
+              tu banner</div>
+            <div
+              style="position:relative;width:100%;height:220px;overflow:hidden;border-radius:12px;background:#000;display:flex;align-items:center;justify-content:center">
               <img id="cropBannerImg" style="max-width:100%;display:block">
             </div>
-            <p style="font-size:12px;color:#78909c;text-align:center;margin:10px 0">Arrastra y haz zoom para encuadrar · Proporción 4:1 (ideal para banners)</p>
+            <p style="font-size:12px;color:#78909c;text-align:center;margin:10px 0">Arrastra y haz zoom para encuadrar ·
+              Proporción 4:1 (ideal para banners)</p>
             <div style="display:flex;gap:10px;margin-top:6px">
-              <button onclick="cancelarCropBanner()" style="flex:1;padding:11px;border-radius:10px;border:1px solid #e0e0e0;background:#f5f5f5;font-size:13px;font-weight:700;cursor:pointer;color:#546e7a">Cancelar</button>
-              <button onclick="confirmarCropBanner()" id="btnConfirmarCropBanner" style="flex:2;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#2e7d32,#43a047);color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅ Usar este banner</button>
+              <button onclick="cancelarCropBanner()"
+                style="flex:1;padding:11px;border-radius:10px;border:1px solid #e0e0e0;background:#f5f5f5;font-size:13px;font-weight:700;cursor:pointer;color:#546e7a">Cancelar</button>
+              <button onclick="confirmarCropBanner()" id="btnConfirmarCropBanner"
+                style="flex:2;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#2e7d32,#43a047);color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅
+                Usar este banner</button>
             </div>
           </div>
         </div>
@@ -4109,7 +3626,7 @@ object-fit:contain;
   </div>
 
   <script>
-    
+
     function abrirModal() { document.getElementById('modalEditar').classList.add('open') }
     function cerrarModal() { document.getElementById('modalEditar').classList.remove('open') }
     document.getElementById('modalEditar').addEventListener('click', e => { if (e.target === document.getElementById('modalEditar')) cerrarModal() });
@@ -4162,7 +3679,7 @@ object-fit:contain;
     });
 
     <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
-      
+
       function abrirPublicarVacante() { document.getElementById('modalPublicarVacante').classList.add('open'); vacProgress(); }
       function cerrarPublicarVacante() { document.getElementById('modalPublicarVacante').classList.remove('open'); }
       document.getElementById('modalPublicarVacante').addEventListener('click', e => { if (e.target === document.getElementById('modalPublicarVacante')) cerrarPublicarVacante(); });
@@ -4195,7 +3712,7 @@ object-fit:contain;
     <?php endif; ?>
 
     <?php if ($tipo !== 'empresa' && $tipo !== 'negocio'): ?>
-      
+
       function abrirHoja() { document.getElementById('modalHoja').classList.add('open'); hojaProgress(); }
       function cerrarHoja() { document.getElementById('modalHoja').classList.remove('open'); }
       document.getElementById('modalHoja').addEventListener('click', e => { if (e.target === document.getElementById('modalHoja')) cerrarHoja(); });
@@ -4359,9 +3876,9 @@ object-fit:contain;
           document.getElementById('dNombre').textContent = j.nombre + (j.apellido ? ' ' + j.apellido : '');
           const dc = document.getElementById('dCiudad'); if (dc) dc.textContent = j.ciudad || 'Ciudad no registrada';
           const dt = document.getElementById('dTelefono'); if (dt) dt.textContent = document.getElementById('editTelefono').value.trim() || 'Teléfono no registrado';
-          
+
           if (j.profesion) { const dp = document.querySelector('.hero-pro'); if (dp) dp.textContent = j.profesion; }
-          
+
           const fotoPreviewEl = document.getElementById('fotoPreview');
           if (fotoPreviewEl) {
             const imgEl = fotoPreviewEl.querySelector('img');
@@ -4502,7 +4019,7 @@ object-fit:contain;
       document.getElementById('lbox-titulo').textContent = titulo || '';
       lbox.style.display = 'flex';
     }
-    
+
     const STORE_KEY = 'qc_perfil_<?= $usuario["id"] ?>';
     let perfilData = { educacion: [], certificaciones: [], aptitudes_bland: '', aptitudes_idiomas: '' };
     try {
@@ -4636,7 +4153,7 @@ object-fit:contain;
       try {
         const fd = new FormData();
         fd.append('_action', 'guardar_certificaciones');
-        
+
         const itemsSync = perfilData.certificaciones.map(c => {
           const archEs64 = c.archivo && c.archivo.startsWith('data:');
           return { ...c, archivo: archEs64 ? '' : (c.archivo || ''), archivoNom: archEs64 ? c.archivoNom : (c.archivoNom || '') };
@@ -4711,7 +4228,7 @@ object-fit:contain;
       perfilData.aptitudes_bland = bland;
       perfilData.aptitudes_idiomas = idiomas;
       savePerfilData();
-      
+
       try {
         const fdApt = new FormData();
         fdApt.append('_action', 'guardar_aptitudes_extra');
@@ -4719,7 +4236,7 @@ object-fit:contain;
         fdApt.append('aptitudes_idiomas', idiomas);
         fetch('dashboard.php', { method: 'POST', body: fdApt }).catch(() => { });
       } catch (e) { }
-      
+
       // Usar guardar_aptitudes_extra para las habilidades técnicas también
       try {
         const fdSkills = new FormData();
@@ -4929,190 +4446,190 @@ object-fit:contain;
   </div>
 
   <script>
-  
-  let _solEmpId = 0;
 
-  function abrirModalSolicitud(empleoId, titulo, empresa) {
-    _solEmpId = empleoId;
-    const msg = document.getElementById('sol-msg');
-    const sub = document.getElementById('sol-subtitulo');
-    const yaApl = document.getElementById('sol-ya-aplicado');
-    const acciones = document.getElementById('sol-acciones');
-    const txtArea = document.getElementById('sol-mensaje');
-    if (sub) sub.textContent = '📋 ' + titulo + ' · ' + empresa;
-    if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
-    if (yaApl) yaApl.style.display = 'none';
-    if (acciones) acciones.style.display = '';
-    if (txtArea) txtArea.value = '';
-    document.getElementById('modal-solicitud-vacante').classList.add('open');
-  }
+    let _solEmpId = 0;
 
-  function cerrarModalSolicitud() {
-    document.getElementById('modal-solicitud-vacante').classList.remove('open');
-  }
+    function abrirModalSolicitud(empleoId, titulo, empresa) {
+      _solEmpId = empleoId;
+      const msg = document.getElementById('sol-msg');
+      const sub = document.getElementById('sol-subtitulo');
+      const yaApl = document.getElementById('sol-ya-aplicado');
+      const acciones = document.getElementById('sol-acciones');
+      const txtArea = document.getElementById('sol-mensaje');
+      if (sub) sub.textContent = '📋 ' + titulo + ' · ' + empresa;
+      if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+      if (yaApl) yaApl.style.display = 'none';
+      if (acciones) acciones.style.display = '';
+      if (txtArea) txtArea.value = '';
+      document.getElementById('modal-solicitud-vacante').classList.add('open');
+    }
 
-  async function enviarSolicitudVacante() {
-    const msg = document.getElementById('sol-msg');
-    const btn = document.getElementById('sol-btn-enviar');
-    const mensaje = document.getElementById('sol-mensaje').value.trim();
-    if (!_solEmpId) return;
-    btn.disabled = true;
-    btn.textContent = 'Enviando…';
-    msg.style.display = 'none';
-    try {
-      const fd = new FormData();
-      fd.append('_action', 'solicitar_vacante');
-      fd.append('empleo_id', _solEmpId);
-      fd.append('mensaje', mensaje);
-      const r = await fetch('dashboard.php', { method: 'POST', body: fd });
-      const j = await r.json();
-      if (j.ok) {
-        msg.textContent = j.msg || '✅ ¡Solicitud enviada correctamente!';
-        msg.className = 'mmsg success';
-        msg.style.display = 'block';
-        document.getElementById('sol-acciones').style.display = 'none';
-        document.getElementById('sol-ya-aplicado').style.display = 'block';
-        setTimeout(cerrarModalSolicitud, 2200);
-      } else if (j.ya_aplicado) {
-        document.getElementById('sol-ya-aplicado').style.display = 'block';
-        document.getElementById('sol-acciones').style.display = 'none';
-      } else {
-        msg.textContent = j.msg || '❌ Error al enviar solicitud.';
+    function cerrarModalSolicitud() {
+      document.getElementById('modal-solicitud-vacante').classList.remove('open');
+    }
+
+    async function enviarSolicitudVacante() {
+      const msg = document.getElementById('sol-msg');
+      const btn = document.getElementById('sol-btn-enviar');
+      const mensaje = document.getElementById('sol-mensaje').value.trim();
+      if (!_solEmpId) return;
+      btn.disabled = true;
+      btn.textContent = 'Enviando…';
+      msg.style.display = 'none';
+      try {
+        const fd = new FormData();
+        fd.append('_action', 'solicitar_vacante');
+        fd.append('empleo_id', _solEmpId);
+        fd.append('mensaje', mensaje);
+        const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (j.ok) {
+          msg.textContent = j.msg || '✅ ¡Solicitud enviada correctamente!';
+          msg.className = 'mmsg success';
+          msg.style.display = 'block';
+          document.getElementById('sol-acciones').style.display = 'none';
+          document.getElementById('sol-ya-aplicado').style.display = 'block';
+          setTimeout(cerrarModalSolicitud, 2200);
+        } else if (j.ya_aplicado) {
+          document.getElementById('sol-ya-aplicado').style.display = 'block';
+          document.getElementById('sol-acciones').style.display = 'none';
+        } else {
+          msg.textContent = j.msg || '❌ Error al enviar solicitud.';
+          msg.className = 'mmsg error';
+          msg.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = '🚀 Enviar solicitud';
+        }
+      } catch (e) {
+        msg.textContent = '❌ Error de conexión. Intenta de nuevo.';
         msg.className = 'mmsg error';
         msg.style.display = 'block';
         btn.disabled = false;
         btn.textContent = '🚀 Enviar solicitud';
       }
-    } catch (e) {
-      msg.textContent = '❌ Error de conexión. Intenta de nuevo.';
-      msg.className = 'mmsg error';
-      msg.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = '🚀 Enviar solicitud';
     }
-  }
 
-  document.getElementById('modal-solicitud-vacante').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModalSolicitud();
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') cerrarModalSolicitud();
-  });
+    document.getElementById('modal-solicitud-vacante').addEventListener('click', function (e) {
+      if (e.target === this) cerrarModalSolicitud();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') cerrarModalSolicitud();
+    });
 
-  let cropperBannerInstance = null;
+    let cropperBannerInstance = null;
 
-  function subirBanner(input) {
-    const file = input.files[0];
-    if (!file) return;
-    input.value = '';
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.getElementById('cropBannerImg');
-      if (cropperBannerInstance) { cropperBannerInstance.destroy(); cropperBannerInstance = null; }
-      img.src = e.target.result;
-      document.getElementById('cropBannerModal').style.display = 'flex';
-      img.onload = () => {
-        cropperBannerInstance = new Cropper(img, {
-          aspectRatio: 4,
-          viewMode: 1,
-          dragMode: 'move',
-          autoCropArea: 1,
-          cropBoxResizable: false,
-          cropBoxMovable: false,
-          toggleDragModeOnDblclick: false,
-          background: false,
-          responsive: true
-        });
+    function subirBanner(input) {
+      const file = input.files[0];
+      if (!file) return;
+      input.value = '';
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.getElementById('cropBannerImg');
+        if (cropperBannerInstance) { cropperBannerInstance.destroy(); cropperBannerInstance = null; }
+        img.src = e.target.result;
+        document.getElementById('cropBannerModal').style.display = 'flex';
+        img.onload = () => {
+          cropperBannerInstance = new Cropper(img, {
+            aspectRatio: 4,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 1,
+            cropBoxResizable: false,
+            cropBoxMovable: false,
+            toggleDragModeOnDblclick: false,
+            background: false,
+            responsive: true
+          });
+        };
       };
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function cancelarCropBanner() {
-    document.getElementById('cropBannerModal').style.display = 'none';
-    if (cropperBannerInstance) { cropperBannerInstance.destroy(); cropperBannerInstance = null; }
-  }
-
-  async function confirmarCropBanner() {
-    if (!cropperBannerInstance) return;
-    const btn = document.getElementById('btnConfirmarCropBanner');
-    btn.textContent = '⏳ Guardando…'; btn.disabled = true;
-    const msg = document.getElementById('bannerMsg');
-
-    const canvas = cropperBannerInstance.getCroppedCanvas({ width: 1200, height: 300, imageSmoothingQuality: 'high' });
-
-    const dataUrl = canvas.toDataURL('image/jpeg', .92);
-    const zone = document.getElementById('bannerZone');
-    let img = document.getElementById('bannerImg');
-    const ph = document.getElementById('bannerPlaceholder');
-    if (ph) ph.style.display = 'none';
-    if (!img) {
-      img = document.createElement('img');
-      img.id = 'bannerImg';
-      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0';
-      zone.insertBefore(img, zone.firstChild);
+      reader.readAsDataURL(file);
     }
-    img.src = dataUrl;
 
-    document.getElementById('cropBannerModal').style.display = 'none';
-    if (cropperBannerInstance) { cropperBannerInstance.destroy(); cropperBannerInstance = null; }
+    function cancelarCropBanner() {
+      document.getElementById('cropBannerModal').style.display = 'none';
+      if (cropperBannerInstance) { cropperBannerInstance.destroy(); cropperBannerInstance = null; }
+    }
 
-    canvas.toBlob(async blob => {
+    async function confirmarCropBanner() {
+      if (!cropperBannerInstance) return;
+      const btn = document.getElementById('btnConfirmarCropBanner');
+      btn.textContent = '⏳ Guardando…'; btn.disabled = true;
+      const msg = document.getElementById('bannerMsg');
+
+      const canvas = cropperBannerInstance.getCroppedCanvas({ width: 1200, height: 300, imageSmoothingQuality: 'high' });
+
+      const dataUrl = canvas.toDataURL('image/jpeg', .92);
+      const zone = document.getElementById('bannerZone');
+      let img = document.getElementById('bannerImg');
+      const ph = document.getElementById('bannerPlaceholder');
+      if (ph) ph.style.display = 'none';
+      if (!img) {
+        img = document.createElement('img');
+        img.id = 'bannerImg';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0';
+        zone.insertBefore(img, zone.firstChild);
+      }
+      img.src = dataUrl;
+
+      document.getElementById('cropBannerModal').style.display = 'none';
+      if (cropperBannerInstance) { cropperBannerInstance.destroy(); cropperBannerInstance = null; }
+
+      canvas.toBlob(async blob => {
+        const fd = new FormData();
+        fd.append('_action', 'subir_banner');
+        fd.append('banner', new File([blob], 'banner.jpg', { type: 'image/jpeg' }));
+        try {
+          const r = await fetch('dashboard.php', { method: 'POST', body: fd });
+          const j = await r.json();
+          if (!j.ok) {
+            msg.textContent = '❌ ' + (j.msg || 'Error al subir banner');
+            msg.style.display = 'block';
+          } else {
+            msg.style.display = 'none';
+            if (!zone.querySelector('.btn-quitar-banner')) {
+              const qbtn = document.createElement('button');
+              qbtn.className = 'btn-quitar-banner';
+              qbtn.textContent = '🗑 Quitar';
+              qbtn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;z-index:5';
+              qbtn.onclick = (e) => { e.stopPropagation(); eliminarBanner(); };
+              zone.appendChild(qbtn);
+            }
+          }
+        } catch (e) {
+          msg.textContent = '❌ Error de conexión.';
+          msg.style.display = 'block';
+        }
+        btn.textContent = '✅ Usar este banner'; btn.disabled = false;
+      }, 'image/jpeg', .92);
+    }
+
+    async function eliminarBanner() {
+      if (!confirm('¿Quitar el banner?')) return;
       const fd = new FormData();
-      fd.append('_action', 'subir_banner');
-      fd.append('banner', new File([blob], 'banner.jpg', { type: 'image/jpeg' }));
+      fd.append('_action', 'eliminar_banner');
       try {
         const r = await fetch('dashboard.php', { method: 'POST', body: fd });
         const j = await r.json();
-        if (!j.ok) {
-          msg.textContent = '❌ ' + (j.msg || 'Error al subir banner');
-          msg.style.display = 'block';
-        } else {
-          msg.style.display = 'none';
-          if (!zone.querySelector('.btn-quitar-banner')) {
-            const qbtn = document.createElement('button');
-            qbtn.className = 'btn-quitar-banner';
-            qbtn.textContent = '🗑 Quitar';
-            qbtn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;z-index:5';
-            qbtn.onclick = (e) => { e.stopPropagation(); eliminarBanner(); };
-            zone.appendChild(qbtn);
-          }
-        }
-      } catch(e) {
-        msg.textContent = '❌ Error de conexión.';
-        msg.style.display = 'block';
-      }
-      btn.textContent = '✅ Usar este banner'; btn.disabled = false;
-    }, 'image/jpeg', .92);
-  }
+        if (j.ok) {
+          const img = document.getElementById('bannerImg');
+          if (img) img.remove();
+          const zone = document.getElementById('bannerZone');
 
-  async function eliminarBanner() {
-    if (!confirm('¿Quitar el banner?')) return;
-    const fd = new FormData();
-    fd.append('_action', 'eliminar_banner');
-    try {
-      const r = await fetch('dashboard.php', { method: 'POST', body: fd });
-      const j = await r.json();
-      if (j.ok) {
-        const img = document.getElementById('bannerImg');
-        if (img) img.remove();
-        const zone = document.getElementById('bannerZone');
-        
-        let ph = zone.querySelector('#bannerPlaceholder');
-        if (!ph) {
-          ph = document.createElement('div');
-          ph.id = 'bannerPlaceholder';
-          ph.style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#81c784';
-          ph.innerHTML = '<div style="font-size:36px">🖼️</div><div style="font-size:13px;font-weight:600">Haz clic para subir tu banner</div><div style="font-size:11px;opacity:.7">Recomendado: 1200 × 300 px · JPG, PNG, WEBP · máx 5 MB</div>';
-          zone.insertBefore(ph, zone.firstChild);
-        } else {
-          ph.style.display = 'flex';
+          let ph = zone.querySelector('#bannerPlaceholder');
+          if (!ph) {
+            ph = document.createElement('div');
+            ph.id = 'bannerPlaceholder';
+            ph.style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#81c784';
+            ph.innerHTML = '<div style="font-size:36px">🖼️</div><div style="font-size:13px;font-weight:600">Haz clic para subir tu banner</div><div style="font-size:11px;opacity:.7">Recomendado: 1200 × 300 px · JPG, PNG, WEBP · máx 5 MB</div>';
+            zone.insertBefore(ph, zone.firstChild);
+          } else {
+            ph.style.display = 'flex';
+          }
+
+          zone.querySelectorAll('.btn-quitar-banner, button').forEach(b => b.remove());
         }
-        
-        zone.querySelectorAll('.btn-quitar-banner, button').forEach(b => b.remove());
-      }
-    } catch(e) {}
-  }
+      } catch (e) { }
+    }
   </script>
 
   <!-- Widget de sesión activa — QuibdóConecta -->
