@@ -868,10 +868,10 @@ if ($subTipo === 'servicio') {
       display: flex;
       flex-direction: column;
       position: fixed;
-      top: var(--top-h);
+      top: 0;
       left: 0;
       bottom: 0;
-      z-index: 200;
+      z-index: 150;
       transition: transform .3s ease;
       overflow-y: auto;
     }
@@ -1076,12 +1076,12 @@ if ($subTipo === 'servicio') {
       border-bottom: 1px solid var(--border);
       position: fixed;
       top: 0;
-      left: 0;
+      left: var(--nav-w);
       right: 0;
-      z-index: 300;
+      z-index: 250;
       display: flex;
       align-items: center;
-      padding: 0 28px 0 calc(var(--nav-w) + 16px);
+      padding: 0 28px;
       gap: 16px;
     }
 
@@ -2268,11 +2268,16 @@ if ($subTipo === 'servicio') {
       .sidebar {
         transform: translateX(-240px);
         top: 0;
-        --nav-w: 240px;
+        z-index: 350;
+        width: 240px;
       }
 
       .sidebar.open {
         transform: translateX(0);
+      }
+
+      .sidebar-overlay {
+        z-index: 340;
       }
 
       .sidebar-overlay.open {
@@ -2280,7 +2285,9 @@ if ($subTipo === 'servicio') {
       }
 
       .topbar {
+        left: 0;
         padding: 0 16px;
+        z-index: 300;
       }
 
       .topbar-logo {
@@ -3608,10 +3615,10 @@ if ($subTipo === 'servicio') {
             <?php endif; ?>
           </div>
           <?php if (empty($galeriaItems)): ?>
-            <div class="gallery-empty">
+            <div class="gallery-empty" style="padding:10px 16px;margin:8px 14px">
               <div class="gallery-empty-ico">📷</div>
-              <div style="font-size:13px;font-weight:600;margin-bottom:4px">Aún no tienes evidencias subidas</div>
-              <div style="font-size:12px">Sube fotos o videos de tu trabajo para atraer más clientes.</div>
+              <div style="font-size:12px;font-weight:600;margin-bottom:2px">Aún no tienes evidencias subidas</div>
+              <div style="font-size:11px">Sube fotos o videos de tu trabajo para atraer más clientes.</div>
             </div>
           <?php else: ?>
             <div class="gallery-grid" id="galeriaGrid">
@@ -3661,12 +3668,13 @@ if ($subTipo === 'servicio') {
               <button class="psec-btn" title="Editar" onclick="abrirFormEdu()">✏️</button>
             </div>
           </div>
-          <div class="psec-body">
+          <div class="psec-body" style="padding:8px 16px 10px">
             <div class="psec-list" id="edu-list">
-              <div class="psec-empty">
+              <div class="psec-empty" style="padding:8px 0 4px">
                 <div class="psec-empty-ico">🎓</div>
                 Agrega tu educación para que las empresas conozcan tu formación.
-                <br><button onclick="abrirFormEdu()" class="btn-dashed">+ Agregar educación</button>
+                <br><button onclick="abrirFormEdu()" class="btn-dashed"
+                  style="margin-top:8px;padding:6px 16px;font-size:12px">+ Agregar educación</button>
               </div>
             </div>
           </div>
@@ -3681,12 +3689,13 @@ if ($subTipo === 'servicio') {
               <button class="psec-btn" title="Editar" onclick="abrirFormCert()">✏️</button>
             </div>
           </div>
-          <div class="psec-body">
+          <div class="psec-body" style="padding:8px 16px 10px">
             <div class="psec-list" id="cert-list">
-              <div class="psec-empty">
+              <div class="psec-empty" style="padding:8px 0 4px">
                 <div class="psec-empty-ico">🏅</div>
                 Agrega tus certificaciones y cursos para destacar tus habilidades.
-                <br><button onclick="abrirFormCert()" class="btn-dashed">+ Agregar certificación</button>
+                <br><button onclick="abrirFormCert()" class="btn-dashed"
+                  style="margin-top:8px;padding:6px 16px;font-size:12px">+ Agregar certificación</button>
               </div>
             </div>
           </div>
