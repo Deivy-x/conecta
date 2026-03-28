@@ -43,16 +43,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db->prepare("UPDATE usuarios SET nombre=?, telefono=?, ciudad=? WHERE id=?")
       ->execute([$nombreEmp, $telefonoEmp, $ciudad, $usuario['id']]);
 
-    $existeStmt = $db->prepare("SELECT id FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+    $existeStmt = $db->prepare("SELECT id, logo FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
     $existeStmt->execute([$usuario['id']]);
-    $filaExistente = $existeStmt->fetchColumn();
+    $filaExistente = $existeStmt->fetch();
+    $filaId = $filaExistente ? $filaExistente['id'] : null;
+    // Preservar el logo actual para no perderlo al guardar otros datos
+    $logoActual = $filaExistente ? ($filaExistente['logo'] ?? '') : '';
 
-    if ($filaExistente) {
+    if ($filaId) {
       $db->prepare("UPDATE perfiles_empresa SET nombre_empresa=?,sector=?,nit=?,descripcion=?,sitio_web=?,telefono_empresa=?,municipio=?,actualizado_en=NOW() WHERE usuario_id=? ORDER BY id DESC LIMIT 1")
         ->execute([$nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio, $usuario['id']]);
     } else {
-      $db->prepare("INSERT INTO perfiles_empresa (usuario_id,nombre_empresa,sector,nit,descripcion,sitio_web,telefono_empresa,municipio) VALUES (?,?,?,?,?,?,?,?)")
-        ->execute([$usuario['id'], $nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio]);
+      // Al insertar una fila nueva, incluir el logo para no perderlo
+      $db->prepare("INSERT INTO perfiles_empresa (usuario_id,nombre_empresa,sector,nit,descripcion,sitio_web,telefono_empresa,municipio,logo) VALUES (?,?,?,?,?,?,?,?,?)")
+        ->execute([$usuario['id'], $nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio, $logoActual]);
     }
     echo json_encode(['ok' => true, 'nombre_empresa' => $nombreEmp, 'sector' => $sector, 'ciudad' => $ciudad]);
     exit;
@@ -2527,7 +2531,8 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           </div>
           <?php if (!empty($badgesHTML)): ?>
             <div style="padding:10px 20px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;flex-wrap:wrap;gap:4px">
-              <?= $badgesHTML ?></div><?php endif; ?>
+              <?= $badgesHTML ?>
+            </div><?php endif; ?>
           <div class="dash-drop-menu">
             <a href="dashboard_empresa.php" class="dash-drop-link"><span class="dash-dl-icon">🏠</span> Mi panel</a>
             <a href="chat.php" class="dash-drop-link">
@@ -2594,7 +2599,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           </div>
           <div class="hero-name" id="dNombreHero">¡Hola, <em><?= $nombreEmpresa ?></em>!</div>
           <div class="hero-sub">
-            <?php if ($sector): ?>  <?= $sector ?><?php endif; ?>
+            <?php if ($sector): ?>   <?= $sector ?><?php endif; ?>
             <?php if ($ciudad): ?> · 📍 <?= $ciudad ?><?php endif; ?>
             <?php if (!$sector && !$ciudad): ?>Gestiona tus vacantes y conecta con el talento del Chocó.<?php endif; ?>
           </div>
@@ -2653,7 +2658,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
         <div class="banner-name-wrap">
           <div class="banner-empresa-name" id="dNombreEmp"><?= $nombreEmpresa ?></div>
           <div class="banner-empresa-sub">
-            <?php if ($sector): ?>  <?= htmlspecialchars($sector) ?><?php endif; ?>
+            <?php if ($sector): ?>   <?= htmlspecialchars($sector) ?><?php endif; ?>
             <?php if ($ciudad): ?> · 📍 <?= $ciudad ?><?php endif; ?>
           </div>
         </div>
@@ -2827,7 +2832,8 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
                     <div class="pb-fill <?= $fillCls ?>" style="width:<?= $pctBar ?>%"></div>
                   </div>
                   <?php if (!$esInf && $pctBar >= 70): ?>
-                    <div class="pb-warn"><?= $pctBar >= 90 ? '⚠️ Límite alcanzado' : '⚡ Casi en el límite' ?></div><?php endif; ?>
+                    <div class="pb-warn"><?= $pctBar >= 90 ? '⚠️ Límite alcanzado' : '⚡ Casi en el límite' ?></div>
+                  <?php endif; ?>
                 </div>
               <?php endforeach; ?>
             </div>
@@ -3433,4 +3439,4 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
   <script src="js/sesion_widget.js"></script>
 </body>
 
-</html>
+</html>   
