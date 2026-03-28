@@ -58,7 +58,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $db->prepare("INSERT INTO perfiles_empresa (usuario_id,nombre_empresa,sector,nit,descripcion,sitio_web,telefono_empresa,municipio,logo) VALUES (?,?,?,?,?,?,?,?,?)")
         ->execute([$usuario['id'], $nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio, $logoActual]);
     }
-    echo json_encode(['ok' => true, 'nombre_empresa' => $nombreEmp, 'sector' => $sector, 'ciudad' => $ciudad]);
+    // Releer el logo actual desde la BD para devolverlo al frontend y que no lo pierda
+    $logoStmt = $db->prepare("SELECT logo FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+    $logoStmt->execute([$usuario['id']]);
+    $logoGuardado = $logoStmt->fetchColumn() ?: '';
+    $logoUrlResp = $logoGuardado ? (str_starts_with($logoGuardado, 'http') ? $logoGuardado : 'uploads/logos/' . $logoGuardado) : '';
+    echo json_encode(['ok' => true, 'nombre_empresa' => $nombreEmp, 'sector' => $sector, 'ciudad' => $ciudad, 'logo' => $logoUrlResp]);
     exit;
   }
 
@@ -2531,8 +2536,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           </div>
           <?php if (!empty($badgesHTML)): ?>
             <div style="padding:10px 20px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;flex-wrap:wrap;gap:4px">
-              <?= $badgesHTML ?>
-            </div><?php endif; ?>
+              <?= $badgesHTML ?></div><?php endif; ?>
           <div class="dash-drop-menu">
             <a href="dashboard_empresa.php" class="dash-drop-link"><span class="dash-dl-icon">🏠</span> Mi panel</a>
             <a href="chat.php" class="dash-drop-link">
@@ -2599,7 +2603,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           </div>
           <div class="hero-name" id="dNombreHero">¡Hola, <em><?= $nombreEmpresa ?></em>!</div>
           <div class="hero-sub">
-            <?php if ($sector): ?>   <?= $sector ?><?php endif; ?>
+            <?php if ($sector): ?>  <?= $sector ?><?php endif; ?>
             <?php if ($ciudad): ?> · 📍 <?= $ciudad ?><?php endif; ?>
             <?php if (!$sector && !$ciudad): ?>Gestiona tus vacantes y conecta con el talento del Chocó.<?php endif; ?>
           </div>
@@ -2658,7 +2662,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
         <div class="banner-name-wrap">
           <div class="banner-empresa-name" id="dNombreEmp"><?= $nombreEmpresa ?></div>
           <div class="banner-empresa-sub">
-            <?php if ($sector): ?>   <?= htmlspecialchars($sector) ?><?php endif; ?>
+            <?php if ($sector): ?>  <?= htmlspecialchars($sector) ?><?php endif; ?>
             <?php if ($ciudad): ?> · 📍 <?= $ciudad ?><?php endif; ?>
           </div>
         </div>
@@ -2832,8 +2836,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
                     <div class="pb-fill <?= $fillCls ?>" style="width:<?= $pctBar ?>%"></div>
                   </div>
                   <?php if (!$esInf && $pctBar >= 70): ?>
-                    <div class="pb-warn"><?= $pctBar >= 90 ? '⚠️ Límite alcanzado' : '⚡ Casi en el límite' ?></div>
-                  <?php endif; ?>
+                    <div class="pb-warn"><?= $pctBar >= 90 ? '⚠️ Límite alcanzado' : '⚡ Casi en el límite' ?></div><?php endif; ?>
                 </div>
               <?php endforeach; ?>
             </div>
@@ -3314,6 +3317,11 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           ['dNombreEmp', 'dNombreHero', 'dNombreCard'].forEach(id => { const el = document.getElementById(id); if (el && id === 'dNombreHero') el.innerHTML = '¡Hola, <em>' + j.nombre_empresa + '</em>!'; else if (el) el.textContent = j.nombre_empresa });
           const ds = document.getElementById('dSector'); if (ds) ds.textContent = j.sector || 'Sector no definido';
           const dc = document.getElementById('dCiudad'); if (dc) dc.textContent = j.ciudad || 'Ciudad no registrada';
+          // Restaurar logo en todos los avatares si el servidor lo devuelve
+          if (j.logo) {
+            const imgTag = `<img src="${j.logo}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
+            ['logoPreview', 'heroAvatar', 'cpAvatar', 'cpAvatarCard', 'sidebarAvatar', 'dashAvatarImg'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = imgTag });
+          }
           setTimeout(cerrarModal, 1600);
         } else { mostrarMsg(j.msg || 'Error al guardar.', 'error') }
       } catch (e) { mostrarMsg('Error de conexión.', 'error') }
@@ -3439,4 +3447,4 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
   <script src="js/sesion_widget.js"></script>
 </body>
 
-</html>   
+</html>
