@@ -1,16 +1,14 @@
-
 (function () {
   'use strict';
+  if (document.querySelector('.sidebar')) return;
 
   const WIDGET_CSS = `
-    
     .qc-user-widget {
       display: flex;
       align-items: center;
       gap: 10px;
       position: relative;
     }
-
     .qc-notif-bell {
       position: relative;
       width: 38px;
@@ -54,7 +52,6 @@
       0%,100% { box-shadow: 0 0 0 0 rgba(231,76,60,.4); }
       50% { box-shadow: 0 0 0 5px rgba(231,76,60,0); }
     }
-
     .qc-avatar-btn {
       display: flex;
       align-items: center;
@@ -77,7 +74,6 @@
       border-color: #1f9d55;
       box-shadow: 0 4px 20px rgba(31,157,85,.22);
     }
-
     .qc-avatar-img {
       width: 32px;
       height: 32px;
@@ -101,7 +97,6 @@
       object-fit: cover;
       display: block;
     }
-
     .qc-avatar-info {
       display: flex;
       flex-direction: column;
@@ -132,7 +127,6 @@
     .qc-avatar-btn.open .qc-avatar-arrow {
       transform: rotate(180deg);
     }
-
     .qc-online-dot {
       width: 7px;
       height: 7px;
@@ -146,7 +140,6 @@
       0%,100% { box-shadow: 0 0 0 0 rgba(46,204,113,.4); }
       60% { box-shadow: 0 0 0 6px rgba(46,204,113,0); }
     }
-
     .qc-dropdown {
       position: absolute;
       top: calc(100% + 10px);
@@ -168,7 +161,6 @@
       transform: translateY(0) scale(1);
       pointer-events: all;
     }
-
     .qc-drop-header {
       padding: 18px 20px 14px;
       background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
@@ -199,12 +191,12 @@
       border-radius: 50%;
       object-fit: cover;
     }
-    .qc-drop-user-info .qc-drop-nombre {
+    .qc-drop-nombre {
       font-size: 15px;
       font-weight: 700;
       color: #111;
     }
-    .qc-drop-user-info .qc-drop-tipo {
+    .qc-drop-tipo {
       font-size: 11px;
       color: #1f9d55;
       font-weight: 600;
@@ -212,7 +204,7 @@
       letter-spacing: .5px;
       margin-top: 1px;
     }
-    .qc-drop-user-info .qc-drop-correo {
+    .qc-drop-correo {
       font-size: 11px;
       color: #999;
       margin-top: 2px;
@@ -221,7 +213,6 @@
       white-space: nowrap;
       max-width: 145px;
     }
-
     .qc-drop-badges {
       display: flex;
       flex-wrap: wrap;
@@ -236,7 +227,6 @@
       border-radius: 20px;
       line-height: 1;
     }
-
     .qc-drop-menu {
       padding: 8px 0;
     }
@@ -262,7 +252,7 @@
       color: #1f9d55;
       padding-left: 24px;
     }
-    .qc-drop-link .qc-dl-icon {
+    .qc-dl-icon {
       width: 28px;
       height: 28px;
       border-radius: 8px;
@@ -278,7 +268,7 @@
       background: rgba(31,157,85,.1);
       transform: scale(1.1);
     }
-    .qc-drop-link .qc-dl-badge {
+    .qc-dl-badge {
       margin-left: auto;
       background: #e74c3c;
       color: white;
@@ -287,13 +277,11 @@
       padding: 2px 6px;
       border-radius: 12px;
     }
-
     .qc-drop-sep {
       height: 1px;
       background: rgba(0,0,0,.06);
       margin: 4px 0;
     }
-
     .qc-drop-logout {
       color: #e74c3c !important;
     }
@@ -304,7 +292,6 @@
       background: #fff5f5 !important;
       color: #c0392b !important;
     }
-
     .qc-widget-skeleton {
       width: 130px;
       height: 38px;
@@ -317,7 +304,6 @@
       0% { background-position: -400px 0 }
       100% { background-position: 400px 0 }
     }
-
     @media (max-width: 768px) {
       .qc-avatar-info { display: none; }
       .qc-avatar-btn { padding: 5px; }
@@ -332,22 +318,22 @@
     'candidato': '👤 Candidato',
     'artista': '🎵 Artista',
     'chef': '🍽️ Chef',
+    'negocio': '🏪 Negocio',
+    'servicio': '🎧 Servicios',
   };
 
   const TIPO_DASHBOARD = {
     'admin': 'gestion-qbc-2025.php',
     'empresa': 'dashboard_empresa.php',
+    'negocio': 'dashboard_negocios.php',
+    'servicio': 'dashboard_servicios.php',
     'talento': 'dashboard.php',
     'candidato': 'dashboard.php',
     'artista': 'dashboard.php',
     'chef': 'dashboard.php',
   };
 
-  let _usuario = null;
-  let _notifs  = null;
-
   function init() {
-    
     const style = document.createElement('style');
     style.textContent = WIDGET_CSS;
     document.head.appendChild(style);
@@ -358,172 +344,132 @@
     navRight.innerHTML = '<div class="qc-widget-skeleton"></div>';
 
     fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' })
-      .then(r => r.json())
-      .then(data => {
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
         if (data.ok && data.usuario) {
-          _usuario = data.usuario;
-          renderWidget(navRight);
+          renderWidget(navRight, data.usuario);
           cargarNotificaciones();
         } else {
-          
-          restoreAuthButtons(navRight);
+          navRight.innerHTML = '<a href="inicio_sesion.php" class="login">Iniciar sesión</a><a href="registro.php" class="register">Registrarse</a>';
         }
+        actualizarMenuMovil(data.ok ? data.usuario : null);
       })
-      .catch(() => restoreAuthButtons(navRight));
-
-    actualizarMenuMovil();
+      .catch(function () {
+        navRight.innerHTML = '<a href="inicio_sesion.php" class="login">Iniciar sesión</a><a href="registro.php" class="register">Registrarse</a>';
+      });
   }
 
-  function restoreAuthButtons(navRight) {
-    navRight.innerHTML = `
-      <a href="inicio_sesion.php" class="login">Iniciar sesión</a>
-      <a href="registro.php" class="register">Registrarse</a>
-    `;
+  function obtenerIniciales(nombre, apellido) {
+    var n = (nombre || '').trim();
+    var a = (apellido || '').trim();
+    if (n && a) return (n[0] + a[0]).toUpperCase();
+    if (n) {
+      var parts = n.split(' ');
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      return (n[0] || 'U').toUpperCase();
+    }
+    return 'U';
   }
 
-  function renderWidget(navRight) {
-    const u = _usuario;
-    const iniciales = obtenerIniciales(u.nombre, u.apellido);
-    const tipoLabel = TIPO_LABEL[u.tipo] || ('👤 ' + capitalizar(u.tipo || 'Usuario'));
+  function escHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
 
-    navRight.innerHTML = `
-      <div class="qc-user-widget">
-        <!-- Campana de mensajes -->
-        <a href="chat.php" class="qc-notif-bell" id="qcNotifBell" title="Mensajes">
-          💬
-          <span class="qc-notif-badge" id="qcNotifBadge" style="display:none">0</span>
-        </a>
+  function renderWidget(navRight, u) {
+    var iniciales = obtenerIniciales(u.nombre, u.apellido);
+    var tipoLabel = TIPO_LABEL[u.tipo] || ('👤 ' + (u.tipo || 'Usuario'));
+    var dashboard = TIPO_DASHBOARD[u.tipo] || 'dashboard.php';
 
-        <!-- Botón avatar + nombre -->
-        <div class="qc-avatar-btn" id="qcAvatarBtn" role="button" aria-expanded="false" aria-haspopup="true">
-          <div class="qc-avatar-img" id="qcAvatarImg">
-            ${u.foto
-              ? `<img src="${u.foto}" alt="${escHtml(u.nombre)}">`
-              : `<span>${iniciales}</span>`
-            }
-          </div>
-          <div class="qc-avatar-info">
-            <span class="qc-avatar-nombre">${escHtml(u.nombre?.split(' ')[0] || 'Usuario')}</span>
-            <span class="qc-avatar-sub">
-              <span class="qc-online-dot"></span>
-              En línea
-              <span class="qc-avatar-arrow">▾</span>
-            </span>
-          </div>
-        </div>
+    navRight.innerHTML = '<div class="qc-user-widget">'
+      + '<a href="chat.php" class="qc-notif-bell" id="qcNotifBell" title="Mensajes">💬'
+      + '<span class="qc-notif-badge" id="qcNotifBadge" style="display:none">0</span>'
+      + '</a>'
+      + '<div class="qc-avatar-btn" id="qcAvatarBtn">'
+      + '<div class="qc-avatar-img">'
+      + (u.foto ? '<img src="' + escHtml(u.foto) + '" alt="">' : '<span>' + iniciales + '</span>')
+      + '</div>'
+      + '<div class="qc-avatar-info">'
+      + '<span class="qc-avatar-nombre">' + escHtml((u.nombre || '').split(' ')[0]) + '</span>'
+      + '<span class="qc-avatar-sub"><span class="qc-online-dot"></span>En línea<span class="qc-avatar-arrow">▾</span></span>'
+      + '</div>'
+      + '</div>'
+      + '<div class="qc-dropdown" id="qcDropdown">'
+      + '<div class="qc-drop-header">'
+      + '<div class="qc-drop-avatar-big">'
+      + (u.foto ? '<img src="' + escHtml(u.foto) + '" alt="">' : '<span>' + iniciales + '</span>')
+      + '</div>'
+      + '<div>'
+      + '<div class="qc-drop-nombre">' + escHtml((u.nombre || '') + (u.apellido ? ' ' + u.apellido : '')) + '</div>'
+      + '<div class="qc-drop-tipo">' + escHtml(u.profesion || tipoLabel) + '</div>'
+      + '<div class="qc-drop-correo">' + escHtml(u.correo || '') + '</div>'
+      + '</div>'
+      + '</div>'
+      + '<div class="qc-drop-badges" id="qcDropBadges"></div>'
+      + '<div class="qc-drop-menu">'
+      + '<a href="' + dashboard + '" class="qc-drop-link"><span class="qc-dl-icon">🏠</span>Mi panel</a>'
+      + '<a href="chat.php" class="qc-drop-link" id="qcChatLink"><span class="qc-dl-icon">💬</span>Mensajes<span class="qc-dl-badge" id="qcChatBadge" style="display:none">0</span></a>'
+      + (u.tipo === 'empresa' || u.tipo === 'admin' ? '<a href="Publicar-empleo.html" class="qc-drop-link"><span class="qc-dl-icon">📢</span>Publicar empleo</a>' : '')
+      + (u.tipo === 'admin' ? '<a href="gestion-qbc-2025.php" class="qc-drop-link"><span class="qc-dl-icon">⚙️</span>Administración</a>' : '')
+      + '<div class="qc-drop-sep"></div>'
+      + '<button class="qc-drop-link qc-drop-logout" id="qcLogoutBtn"><span class="qc-dl-icon">🚪</span>Cerrar sesión</button>'
+      + '</div>'
+      + '</div>'
+      + '</div>';
 
-        <!-- Dropdown -->
-        <div class="qc-dropdown" id="qcDropdown" role="menu">
-          <!-- Header con info del usuario -->
-          <div class="qc-drop-header">
-            <div class="qc-drop-avatar-big" id="qcDropAvatar">
-              ${u.foto
-                ? `<img src="${u.foto}" alt="${escHtml(u.nombre)}">`
-                : `<span>${iniciales}</span>`
-              }
-            </div>
-            <div class="qc-drop-user-info">
-              <div class="qc-drop-nombre">${escHtml((u.nombre || '') + (u.apellido ? ' ' + u.apellido : ''))}</div>
-              <div class="qc-drop-tipo">${u.profesion ? escHtml(u.profesion) : tipoLabel}</div>
-              <div class="qc-drop-correo" title="${escHtml(u.correo || '')}">${escHtml(u.correo || '')}</div>
-            </div>
-          </div>
+    var btn = document.getElementById('qcAvatarBtn');
+    var drop = document.getElementById('qcDropdown');
 
-          <!-- Badges -->
-          <div class="qc-drop-badges" id="qcDropBadges"></div>
-
-          <!-- Menú -->
-          <div class="qc-drop-menu">
-            <a href="${TIPO_DASHBOARD[u.tipo] || 'dashboard.php'}" class="qc-drop-link">
-              <span class="qc-dl-icon">🏠</span>
-              Mi panel
-            </a>
-            <a href="perfil.php?id=${u.id}&tipo=${u.tipo}" class="qc-drop-link">
-              <span class="qc-dl-icon">👤</span>
-              Ver mi perfil
-            </a>
-            <a href="chat.php" class="qc-drop-link" id="qcChatLink">
-              <span class="qc-dl-icon">💬</span>
-              Mensajes
-              <span class="qc-dl-badge" id="qcChatBadge" style="display:none">0</span>
-            </a>
-            ${u.tipo === 'empresa' || u.tipo === 'admin' ? `
-            <a href="Publicar-empleo.html" class="qc-drop-link">
-              <span class="qc-dl-icon">📢</span>
-              Publicar empleo
-            </a>` : ''}
-            ${u.tipo === 'admin' ? `
-            <a href="gestion-qbc-2025.php" class="qc-drop-link">
-              <span class="qc-dl-icon">⚙️</span>
-              Administración
-            </a>` : ''}
-            <div class="qc-drop-sep"></div>
-            <button class="qc-drop-link qc-drop-logout" id="qcLogoutBtn">
-              <span class="qc-dl-icon">🚪</span>
-              Cerrar sesión
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    const btn   = document.getElementById('qcAvatarBtn');
-    const drop  = document.getElementById('qcDropdown');
-    const logoutBtn = document.getElementById('qcLogoutBtn');
-
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', function (e) {
       e.stopPropagation();
-      const isOpen = drop.classList.contains('visible');
+      var isOpen = drop.classList.contains('visible');
       drop.classList.toggle('visible', !isOpen);
       btn.classList.toggle('open', !isOpen);
-      btn.setAttribute('aria-expanded', !isOpen);
     });
 
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', function (e) {
       if (!btn.contains(e.target) && !drop.contains(e.target)) {
         drop.classList.remove('visible');
         btn.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
       }
     });
 
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         drop.classList.remove('visible');
         btn.classList.remove('open');
       }
     });
 
-    logoutBtn.addEventListener('click', cerrarSesion);
+    document.getElementById('qcLogoutBtn').addEventListener('click', function () {
+      window.location.href = 'Php/logout.php';
+    });
   }
 
   function cargarNotificaciones() {
     fetch('api_usuario.php?action=notificaciones', { credentials: 'same-origin' })
-      .then(r => r.json())
-      .then(data => {
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
         if (!data.ok) return;
-        const n = data.notificaciones;
-        _notifs = n;
-
-        const count = n.mensajes_noLeidos || 0;
-        const bell  = document.getElementById('qcNotifBadge');
-        const chatB = document.getElementById('qcChatBadge');
+        var n = data.notificaciones;
+        var count = n.mensajes_noLeidos || 0;
+        var bell = document.getElementById('qcNotifBadge');
+        var chatB = document.getElementById('qcChatBadge');
         if (count > 0) {
-          if (bell)  { bell.textContent = count > 99 ? '99+' : count; bell.style.display = 'flex'; }
+          if (bell) { bell.textContent = count > 99 ? '99+' : count; bell.style.display = 'flex'; }
           if (chatB) { chatB.textContent = count > 99 ? '99+' : count; chatB.style.display = 'inline-block'; }
         }
-
         renderBadgesDropdown(n.badges || []);
       })
-      .catch(() => {});
+      .catch(function () { });
   }
 
   function renderBadgesDropdown(badges) {
-    const container = document.getElementById('qcDropBadges');
+    var container = document.getElementById('qcDropBadges');
     if (!container) return;
     if (!badges.length) { container.style.display = 'none'; return; }
 
-    const colores = {
+    var colores = {
       'Verificado': { bg: '#e8f5e9', color: '#1f9d55' },
       'Usuario Verificado': { bg: '#e8f5e9', color: '#1f9d55' },
       'Empresa Verificada': { bg: '#e8f5e9', color: '#1f9d55' },
@@ -533,83 +479,46 @@
       'Destacado': { bg: '#fef9c3', color: '#b45309' },
     };
 
-    container.innerHTML = badges.slice(0, 5).map(b => {
-      const c = colores[b.nombre] || { bg: b.color + '22', color: b.color || '#666' };
-      return `<span class="qc-dbadge" style="background:${c.bg};color:${c.color}">${b.emoji || ''} ${b.nombre}</span>`;
+    container.innerHTML = badges.slice(0, 5).map(function (b) {
+      var c = colores[b.nombre] || { bg: (b.color || '#666') + '22', color: b.color || '#666' };
+      return '<span class="qc-dbadge" style="background:' + c.bg + ';color:' + c.color + '">'
+        + (b.emoji || '') + ' ' + escHtml(b.nombre) + '</span>';
     }).join('');
   }
 
-  function actualizarMenuMovil() {
-    
-    fetch('api_usuario.php?action=perfil', { credentials: 'same-origin' })
-      .then(r => r.json())
-      .then(data => {
-        if (!data.ok) return;
-        const u = data.usuario;
-        const mobileAuth = document.querySelector('.mobile-auth');
-        if (!mobileAuth) return;
+  function actualizarMenuMovil(u) {
+    var mobileAuth = document.querySelector('.mobile-auth');
+    if (!mobileAuth) return;
 
-        const dashboard = TIPO_DASHBOARD[u.tipo] || 'dashboard.php';
-        const iniciales = obtenerIniciales(u.nombre, u.apellido);
-
-        mobileAuth.innerHTML = `
-          <div style="display:flex;flex-direction:column;gap:10px;width:100%;padding:4px 0;">
-            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:14px;border:1px solid rgba(31,157,85,.15);">
-              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1f9d55,#2ecc71);display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-size:15px;flex-shrink:0;overflow:hidden;">
-                ${u.foto ? `<img src="${u.foto}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : iniciales}
-              </div>
-              <div>
-                <div style="font-size:15px;font-weight:700;color:#111;">${escHtml(u.nombre || 'Usuario')}</div>
-                <div style="font-size:12px;color:#1f9d55;font-weight:600;">${TIPO_LABEL[u.tipo] || ''}</div>
-              </div>
-              <div style="margin-left:auto;display:flex;align-items:center;gap:5px;">
-                <div style="width:8px;height:8px;border-radius:50%;background:#2ecc71;"></div>
-                <span style="font-size:11px;color:#888;">En línea</span>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px;">
-              <a href="${dashboard}" style="flex:1;text-align:center;padding:10px;border-radius:25px;background:#1f9d55;color:white;font-weight:600;font-size:14px;text-decoration:none;">Mi Panel</a>
-              <a href="perfil.php?id=${u.id}&tipo=${u.tipo}" style="flex:1;text-align:center;padding:10px;border-radius:25px;background:#2563eb;color:white;font-weight:600;font-size:14px;text-decoration:none;">Mi Perfil</a>
-              <button onclick="cerrarSesionQC()" style="flex:1;text-align:center;padding:10px;border-radius:25px;border:2px solid #e74c3c;color:#e74c3c;font-weight:600;font-size:14px;background:none;cursor:pointer;font-family:inherit;">Salir</button>
-            </div>
-          </div>
-        `;
-      })
-      .catch(() => {});
-  }
-
-  function cerrarSesion() {
-    
-    const btn = document.getElementById('qcLogoutBtn');
-    if (btn) { btn.innerHTML = '<span class="qc-dl-icon">⏳</span> Cerrando sesión...'; btn.style.opacity = '.6'; }
-
-    window.location.href = 'Php/logout.php';
-  }
-
-  window.cerrarSesionQC = cerrarSesion;
-
-  function obtenerIniciales(nombre, apellido) {
-    const n = (nombre || '').trim();
-    const a = (apellido || '').trim();
-    if (n && a) return (n[0] + a[0]).toUpperCase();
-    if (n) {
-      const parts = n.split(' ');
-      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-      return (n[0] || 'U').toUpperCase();
+    if (!u) {
+      mobileAuth.innerHTML = '<a href="inicio_sesion.php" class="m-login">Iniciar sesión</a><a href="registro.php" class="m-reg">Registrarse</a>';
+      return;
     }
-    return 'U';
+
+    var iniciales = obtenerIniciales(u.nombre, u.apellido);
+    var dashboard = TIPO_DASHBOARD[u.tipo] || 'dashboard.php';
+
+    mobileAuth.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px;width:100%;padding:4px 0;">'
+      + '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:14px;border:1px solid rgba(31,157,85,.15);">'
+      + '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1f9d55,#2ecc71);display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-size:15px;flex-shrink:0;overflow:hidden;">'
+      + (u.foto ? '<img src="' + escHtml(u.foto) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">' : iniciales)
+      + '</div>'
+      + '<div>'
+      + '<div style="font-size:15px;font-weight:700;color:#111;">' + escHtml(u.nombre || 'Usuario') + '</div>'
+      + '<div style="font-size:12px;color:#1f9d55;font-weight:600;">' + escHtml(TIPO_LABEL[u.tipo] || '') + '</div>'
+      + '</div>'
+      + '<div style="margin-left:auto;display:flex;align-items:center;gap:5px;">'
+      + '<div style="width:8px;height:8px;border-radius:50%;background:#2ecc71;"></div>'
+      + '<span style="font-size:11px;color:#888;">En línea</span>'
+      + '</div>'
+      + '</div>'
+      + '<div style="display:flex;gap:8px;">'
+      + '<a href="' + dashboard + '" style="flex:1;text-align:center;padding:10px;border-radius:25px;background:#1f9d55;color:white;font-weight:600;font-size:14px;text-decoration:none;">Mi Panel</a>'
+      + '<button onclick="window.location.href=\'Php/logout.php\'" style="flex:1;text-align:center;padding:10px;border-radius:25px;border:2px solid #e74c3c;color:#e74c3c;font-weight:600;font-size:14px;background:none;cursor:pointer;font-family:inherit;">Salir</button>'
+      + '</div>'
+      + '</div>';
   }
 
-  function escHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function capitalizar(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  // Arrancar cuando el DOM esté listo
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

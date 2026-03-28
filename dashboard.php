@@ -3167,7 +3167,7 @@ if ($subTipo === 'servicio') {
         </button>
       <?php endif; ?>
       <div style="position:relative">
-        <div class="tb-btn" id="navNotif" onclick="toggleNotif()" title="Notificaciones">
+        <div class="tb-btn" id="navNotif" title="Notificaciones">
           🔔<div class="tb-dot" id="notifDot" style="display:none"></div>
           <div class="tb-notif-panel" id="notifPanel">
             <div class="tnp-head">🔔 Notificaciones</div>
@@ -3903,13 +3903,7 @@ if ($subTipo === 'servicio') {
         document.getElementById('sidebar').classList.remove('open');
         document.getElementById('sidebarOverlay').classList.remove('open');
       }
-      function toggleNotif() {
-        document.getElementById('notifPanel').classList.toggle('open');
-      }
-      document.addEventListener('click', function (e) {
-        const n = document.getElementById('navNotif');
-        if (n && !n.contains(e.target)) document.getElementById('notifPanel').classList.remove('open');
-      });
+
       // Animate progress bar on load
       window.addEventListener('DOMContentLoaded', function () {
         setTimeout(function () {
@@ -4681,8 +4675,16 @@ if ($subTipo === 'servicio') {
     const notifBtn = document.getElementById('navNotif');
     const notifPanel = document.getElementById('notifPanel');
     const notifDot = document.getElementById('notifDot');
-    notifBtn.addEventListener('click', e => { e.stopPropagation(); notifPanel.classList.toggle('open'); });
-    document.addEventListener('click', () => notifPanel.classList.remove('open'));
+    notifBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const isOpen = notifPanel.classList.contains('open');
+      notifPanel.classList.toggle('open', !isOpen);
+    });
+    document.addEventListener('click', function (e) {
+      if (!notifBtn.contains(e.target)) {
+        notifPanel.classList.remove('open');
+      }
+    });
 
     function renderNotifs(data) {
       const n = data.notificaciones; let items = []; let urgente = false;
