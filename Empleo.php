@@ -281,11 +281,11 @@ function catIcono($cat, $iconos) {
 <body>
 
 <!-- NAVBAR -->
-<header class="navbar" id="navbar">
-  <div class="nav-left">
-    <img src="Imagenes/QuibConec.png" alt="QuibdóConecta" class="logo">
-    <span class="brand">Quibdó<span>Conecta</span></span>
-  </div>
+
+    <header class="navbar" id="navbar">
+        <div class="nav-left">
+            <img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar">
+        </div>
   <nav class="nav-center">
     <a href="index.html">Inicio</a>
     <a href="Empleo.php" class="active">Empleos</a>
