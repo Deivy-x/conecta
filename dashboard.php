@@ -832,7 +832,7 @@ if ($subTipo === 'servicio') {
       align-items: center;
       justify-content: space-between;
       padding: 0 36px;
-      height: 56px
+      height: 20px
     }
 
     .nav-marca {
