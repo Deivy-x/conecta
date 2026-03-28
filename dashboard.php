@@ -1087,14 +1087,27 @@ if ($subTipo === 'servicio') {
     }
 
     .topbar-logo {
-      display: none;
+      display: flex;
       align-items: center;
       gap: 8px;
       flex-shrink: 0;
     }
 
     .topbar-logo img {
-      height: 28px;
+      height: 30px;
+    }
+
+    .topbar-logo-txt {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--brand);
+      line-height: 1.2;
+    }
+
+    .topbar-logo-sub {
+      font-size: 10px;
+      color: var(--ink4);
+      font-weight: 400;
     }
 
     .topbar-title {
@@ -2295,10 +2308,6 @@ if ($subTipo === 'servicio') {
         z-index: 300;
       }
 
-      .topbar-logo {
-        display: flex;
-      }
-
       .topbar-title {
         display: none;
       }
@@ -3000,6 +3009,10 @@ if ($subTipo === 'servicio') {
     </button>
     <div class="topbar-logo">
       <img src="Imagenes/quibdo_desco_new.png" alt="QuibdóConecta">
+      <div>
+        <div class="topbar-logo-txt">QuibdóConecta</div>
+        <div class="topbar-logo-sub">Conectando el Chocó</div>
+      </div>
     </div>
     <div class="topbar-title">Mi <span>Panel</span></div>
     <div class="topbar-actions">
