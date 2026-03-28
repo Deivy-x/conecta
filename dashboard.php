@@ -820,7 +820,7 @@ if ($subTipo === 'servicio') {
       background: var(--r3)
     }
 .logo-navbar{
-height:75px;
+height:40px;
 width:auto;
 object-fit:contain;
 }
