@@ -40,14 +40,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       ->execute([$nombre, $apellido, $telefono, $ciudad, $usuario['id']]);
     $_SESSION['usuario_nombre'] = $nombre;
     
-    if ($profesion !== '' || $bio !== '' || $skills !== '') {
-      $tpChk = $db->prepare("SELECT id FROM talento_perfil WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
-      $tpChk->execute([$usuario['id']]);
-      $tpRow = $tpChk->fetch();
-      if ($tpRow) {
-        $db->prepare("UPDATE talento_perfil SET profesion=?, bio=?, skills=? WHERE id=?")
-          ->execute([$profesion, $bio, $skills, $tpRow['id']]);
-      } else {
+    // Siempre actualizar talento_perfil para no perder datos existentes del usuario.
+    // Solo sobreescribir campos profesionales si el frontend indicó que estaban visibles (flag _edita_pro=1).
+    $editaPro = ($_POST['_edita_pro'] ?? '0') === '1';
+    $tpChk = $db->prepare("SELECT id, profesion, bio, skills FROM talento_perfil WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
+    $tpChk->execute([$usuario['id']]);
+    $tpRow = $tpChk->fetch();
+    if ($tpRow) {
+      $nuevaProfesion = $editaPro ? $profesion : $tpRow['profesion'];
+      $nuevaBio       = $editaPro ? $bio       : $tpRow['bio'];
+      $nuevaSkills    = $editaPro ? $skills    : $tpRow['skills'];
+      $db->prepare("UPDATE talento_perfil SET profesion=?, bio=?, skills=? WHERE id=?")
+        ->execute([$nuevaProfesion, $nuevaBio, $nuevaSkills, $tpRow['id']]);
+      $profesion = $nuevaProfesion;
+    } else {
+      // Solo crear registro si al menos hay un campo con contenido
+      if ($profesion !== '' || $bio !== '' || $skills !== '') {
         $db->prepare("INSERT INTO talento_perfil (usuario_id, profesion, bio, skills, visible, visible_admin) VALUES (?,?,?,?,0,1)")
           ->execute([$usuario['id'], $profesion, $bio, $skills]);
       }
@@ -2675,7 +2683,7 @@ object-fit:contain;
   <!-- ── NAVBAR ── -->
   <nav class="navbar">
         <div class="nav-left">
-            <a href="index.html"><img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar"></a>
+            <img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar">
         </div>
     <div class="nav-links">
       <a href="dashboard.php" class="nl on">🏠 Panel</a>
@@ -3391,7 +3399,13 @@ object-fit:contain;
 
         <!-- Toggle visibilidad -->
         <?php if ($tipo === 'candidato' || $subTipo === 'servicio'): ?>
+          <?php
+            // Determinar si el plan tiene acceso al toggle de visibilidad (verde_selva en adelante)
+            $planPrioridad = PLAN_PRIORIDAD[$planActual] ?? 0;
+            $tieneAccesoVisibilidad = $planPrioridad >= 2; // verde_selva=2, amarillo_oro=3, azul_profundo=4, demo=5
+          ?>
           <div style="padding:0 22px">
+            <?php if ($tieneAccesoVisibilidad): ?>
             <div class="vis-row">
               <div>
                 <div class="vis-lab">Visible en <?= $subTipo === 'servicio' ? 'Servicios' : 'Talentos' ?></div>
@@ -3404,6 +3418,17 @@ object-fit:contain;
                     onchange="toggleVis(this.checked)"><span class="tog-sl"></span></label>
               </div>
             </div>
+            <?php else: ?>
+            <div class="vis-row" style="opacity:.75">
+              <div>
+                <div class="vis-lab">Visible en <?= $subTipo === 'servicio' ? 'Servicios' : 'Talentos' ?></div>
+                <div class="vis-sub" style="color:#e65100">🔒 Disponible desde el plan <strong>Verde Selva</strong></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <a href="empresas.php#planes" style="font-size:11px;font-weight:700;color:#2e7d32;text-decoration:none;background:rgba(46,125,50,.1);padding:5px 10px;border-radius:8px;white-space:nowrap">✦ Mejorar plan</a>
+              </div>
+            </div>
+            <?php endif; ?>
           </div>
         <?php elseif ($tipo === 'empresa'): ?>
           <div style="padding:0 22px">
@@ -4316,9 +4341,21 @@ object-fit:contain;
       fd.append('apellido', document.getElementById('editApellido')?.value.trim() || '');
       fd.append('telefono', document.getElementById('editTelefono')?.value.trim() || '');
       fd.append('ciudad', document.getElementById('editCiudad')?.value.trim() || '');
-      fd.append('profesion', document.getElementById('editProfesion')?.value.trim() || '');
-      fd.append('bio', document.getElementById('editBio')?.value.trim() || '');
-      fd.append('skills', document.getElementById('editSkills')?.value.trim() || '');
+      // Solo enviar campos pro si los inputs existen en el DOM (candidatos con perfil profesional editable)
+      const _editPro = document.getElementById('editProfesion');
+      const _editBio = document.getElementById('editBio');
+      const _editSkills = document.getElementById('editSkills');
+      if (_editPro && _editBio && _editSkills) {
+        fd.append('_edita_pro', '1');
+        fd.append('profesion', _editPro.value.trim());
+        fd.append('bio', _editBio.value.trim());
+        fd.append('skills', _editSkills.value.trim());
+      } else {
+        fd.append('_edita_pro', '0');
+        fd.append('profesion', '');
+        fd.append('bio', '');
+        fd.append('skills', '');
+      }
       try {
         const r = await fetch('dashboard.php', { method: 'POST', body: fd });
         const j = await r.json();
