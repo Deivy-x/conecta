@@ -868,18 +868,19 @@ if ($subTipo === 'servicio') {
       display: flex;
       flex-direction: column;
       position: fixed;
-      top: 0;
+      top: var(--top-h);
       left: 0;
       bottom: 0;
       z-index: 150;
       transition: transform .3s ease;
       overflow-y: auto;
+      overflow-x: hidden;
     }
 
     .sidebar-logo {
       padding: 14px 18px 12px;
       border-bottom: 1px solid var(--border);
-      display: flex;
+      display: none;
       align-items: center;
       gap: 10px;
     }
@@ -2270,6 +2271,10 @@ if ($subTipo === 'servicio') {
         top: 0;
         z-index: 350;
         width: 240px;
+      }
+
+      .sidebar-logo {
+        display: flex;
       }
 
       .sidebar.open {
