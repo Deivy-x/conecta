@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($action === 'subir_logo') {
     if (!isset($_FILES['logo']) || $_FILES['logo']['error'] !== 0) {
-      echo json_encode(['ok' => false, 'msg' => 'No se recibió ninguna imagen.']);
+      echo json_encode(['ok' => false, 'msg' => 'No se recibio ninguna imagen.']);
       exit;
     }
     $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
@@ -96,30 +96,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       exit;
     }
     if ($_FILES['logo']['size'] > 2 * 1024 * 1024) {
-      echo json_encode(['ok' => false, 'msg' => 'Máximo 2 MB.']);
+      echo json_encode(['ok' => false, 'msg' => 'Maximo 2 MB.']);
       exit;
     }
-    $dir = __DIR__ . '/uploads/logos/';
-    if (!is_dir(__DIR__ . '/uploads/'))
-      @mkdir(__DIR__ . '/uploads/', 0755, true);
-    if (!is_dir($dir))
-      @mkdir($dir, 0755, true);
-    if (!is_dir($dir) || !is_writable($dir)) {
-      echo json_encode(['ok' => false, 'msg' => 'Error: no se puede escribir en uploads/logos/.']);
+    // Subir a Cloudinary (URL permanente, no se pierde con reinicios del servidor)
+    require_once __DIR__ . '/Php/cloudinary_upload.php';
+    $result = cloudinary_upload($_FILES['logo']['tmp_name'], 'quibdoconecta/logos');
+    if (!$result['ok']) {
+      echo json_encode(['ok' => false, 'msg' => 'Error al subir imagen: ' . ($result['msg'] ?? 'desconocido')]);
       exit;
     }
-    $epOld = $db->prepare("SELECT logo FROM perfiles_empresa WHERE usuario_id=? ORDER BY id DESC LIMIT 1");
-    $epOld->execute([$usuario['id']]);
-    $oldLogo = $epOld->fetchColumn();
-    if ($oldLogo && !str_starts_with($oldLogo, 'http') && file_exists($dir . $oldLogo))
-      @unlink($dir . $oldLogo);
-    $nombre = 'emp' . $usuario['id'] . '_' . time() . '.' . $ext;
-    if (move_uploaded_file($_FILES['logo']['tmp_name'], $dir . $nombre)) {
-      $db->prepare("UPDATE perfiles_empresa SET logo=? WHERE usuario_id=? ORDER BY id DESC LIMIT 1")->execute([$nombre, $usuario['id']]);
-      echo json_encode(['ok' => true, 'logo' => 'uploads/logos/' . $nombre]);
-    } else {
-      echo json_encode(['ok' => false, 'msg' => 'Error al mover el archivo.']);
-    }
+    $url = $result['url'];
+    $db->prepare("UPDATE perfiles_empresa SET logo=? WHERE usuario_id=? ORDER BY id DESC LIMIT 1")->execute([$url, $usuario['id']]);
+    echo json_encode(['ok' => true, 'logo' => $url]);
     exit;
   }
 
@@ -2639,7 +2628,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           <div id="bannerPlaceholder"
             style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:rgba(255,255,255,.65)">
             <div style="font-size:28px">🖼️</div>
-            <div style="font-size:12px;font-weight:600">Haz clic pra subir el banner de tu empresa</div>
+            <div style="font-size:12px;font-weight:600">Haz clic para subir el banner de tu empresa</div>
             <div style="font-size:11px;opacity:.7">1200×300 px · JPG/PNG/WEBP · máx 5 MB</div>
           </div>
         <?php endif; ?>
