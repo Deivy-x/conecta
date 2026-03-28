@@ -291,6 +291,12 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
             margin-top: 1px;
         }
 
+.logo-navbar{
+height:75px;
+width:auto;
+object-fit:contain;
+}
+        
         .sb-nav {
             padding: 10px 8px;
             flex: 1;
@@ -1268,9 +1274,10 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
 
     <!-- ═══ SIDEBAR ═══ -->
     <aside class="sidebar">
-        <div class="sb-brand">
-            <img src="Imagenes/Quibdo.png" alt="Logo">
-            <span class="sb-brand-name">Quibdó<em>Conecta</em></span>
+
+    <header class="navbar" id="navbar">
+        <div class="nav-left">
+            <img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar">
         </div>
         <div class="sb-user">
             <div class="sb-ava"><?= $inicial ?></div>
