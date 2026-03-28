@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ->execute([$nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio, $usuario['id']]);
     } else {
       // Al insertar una fila nueva, incluir el logo para no perderlo
-      $db->prepare("INSERT INTO perfiles_empresa (usuario_id,nombre_empresa,sector,nit,descripcion,sitio_web,telefono_empresa,municipio,logo) VALUES (?,?,?,?,?,?,?,?,?)")
+      $db->prepare("INSERT INTO perfiles_empresa (usuario_id,nombre_empresa,sector,nit,descripcion,sitio_web,telefono_empresa,municipio,logo,visible) VALUES (?,?,?,?,?,?,?,?,?,1)")
         ->execute([$usuario['id'], $nombreEmp, $sector, $nit, $descripcion, $sitioWeb, $telefonoEmp, $municipio, $logoActual]);
     }
     // Releer el logo actual desde la BD para devolverlo al frontend y que no lo pierda
@@ -2525,7 +2525,8 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           </div>
           <?php if (!empty($badgesHTML)): ?>
             <div style="padding:10px 20px;border-bottom:1px solid rgba(0,0,0,.05);display:flex;flex-wrap:wrap;gap:4px">
-              <?= $badgesHTML ?></div><?php endif; ?>
+              <?= $badgesHTML ?>
+            </div><?php endif; ?>
           <div class="dash-drop-menu">
             <a href="dashboard_empresa.php" class="dash-drop-link"><span class="dash-dl-icon">🏠</span> Mi panel</a>
             <a href="chat.php" class="dash-drop-link">
@@ -2592,7 +2593,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           </div>
           <div class="hero-name" id="dNombreHero">¡Hola, <em><?= $nombreEmpresa ?></em>!</div>
           <div class="hero-sub">
-            <?php if ($sector): ?>  <?= $sector ?><?php endif; ?>
+            <?php if ($sector): ?>   <?= $sector ?><?php endif; ?>
             <?php if ($ciudad): ?> · 📍 <?= $ciudad ?><?php endif; ?>
             <?php if (!$sector && !$ciudad): ?>Gestiona tus vacantes y conecta con el talento del Chocó.<?php endif; ?>
           </div>
@@ -2651,7 +2652,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
         <div class="banner-name-wrap">
           <div class="banner-empresa-name" id="dNombreEmp"><?= $nombreEmpresa ?></div>
           <div class="banner-empresa-sub">
-            <?php if ($sector): ?>  <?= htmlspecialchars($sector) ?><?php endif; ?>
+            <?php if ($sector): ?>   <?= htmlspecialchars($sector) ?><?php endif; ?>
             <?php if ($ciudad): ?> · 📍 <?= $ciudad ?><?php endif; ?>
           </div>
         </div>
@@ -2825,7 +2826,8 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
                     <div class="pb-fill <?= $fillCls ?>" style="width:<?= $pctBar ?>%"></div>
                   </div>
                   <?php if (!$esInf && $pctBar >= 70): ?>
-                    <div class="pb-warn"><?= $pctBar >= 90 ? '⚠️ Límite alcanzado' : '⚡ Casi en el límite' ?></div><?php endif; ?>
+                    <div class="pb-warn"><?= $pctBar >= 90 ? '⚠️ Límite alcanzado' : '⚡ Casi en el límite' ?></div>
+                  <?php endif; ?>
                 </div>
               <?php endforeach; ?>
             </div>
@@ -3300,7 +3302,13 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
       fd.append('ciudad', document.getElementById('editCiudad').value.trim());
       fd.append('municipio', document.getElementById('editMunicipio').value.trim());
       try {
-        const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd }); const j = await r.json();
+        const r = await fetch('dashboard_empresa.php', { method: 'POST', body: fd });
+        const texto = await r.text();
+        let j;
+        try { j = JSON.parse(texto); } catch (parseErr) {
+          mostrarMsg('Error de sesión. Por favor recarga la página e intenta de nuevo.', 'error');
+          btn.disabled = false; btn.textContent = '💾 Guardar cambios'; return;
+        }
         if (j.ok) {
           mostrarMsg('¡Perfil actualizado correctamente!', 'success');
           ['dNombreEmp', 'dNombreHero', 'dNombreCard'].forEach(id => { const el = document.getElementById(id); if (el && id === 'dNombreHero') el.innerHTML = '¡Hola, <em>' + j.nombre_empresa + '</em>!'; else if (el) el.textContent = j.nombre_empresa });
@@ -3313,7 +3321,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           }
           setTimeout(cerrarModal, 1600);
         } else { mostrarMsg(j.msg || 'Error al guardar.', 'error') }
-      } catch (e) { mostrarMsg('Error de conexión.', 'error') }
+      } catch (e) { mostrarMsg('Error de red. Verifica tu conexión e intenta de nuevo.', 'error') }
       btn.disabled = false; btn.textContent = '💾 Guardar cambios';
     }
 
