@@ -4762,13 +4762,16 @@ if ($action) {
                   Semilla — Gratis</span>
                 <span
                   style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#e8f5ee;color:#1f6b3a">🌿
-                  Verde Selva — <span id="adm-sp-selva">$15.000</span>/mes</span>
+                  Verde Selva — <span id="adm-sp-selva">$12.900</span>/mes</span>
                 <span
                   style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#fdf8e8;color:#b8860b">✦
-                  Amarillo Oro — <span id="adm-sp-oro">$35.000</span>/mes</span>
+                  Amarillo Oro — <span id="adm-sp-oro">$29.900</span>/mes</span>
                 <span
                   style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#e8f0fa;color:#1a3f6f">◆
-                  Azul Profundo — <span id="adm-sp-azul">$55.000</span>/mes</span>
+                  Azul Profundo — <span id="adm-sp-azul">$49.900</span>/mes</span>
+                <span
+                  style="padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;background:#f3e8ff;color:#6d28d9">🏪
+                  Microempresa — <span id="adm-sp-micro">$19.900</span>/mes</span>
               </div>
 
               <!-- Métricas -->
@@ -4829,9 +4832,10 @@ if ($action) {
                     ['id' => 'visitas', 'label' => 'Visitas diarias', 'min' => 50, 'max' => 500, 'step' => 10, 'val' => 100, 'sfx' => '/día'],
                     ['id' => 'empresas', 'label' => 'Empresas registradas', 'min' => 5, 'max' => 100, 'step' => 1, 'val' => 20, 'sfx' => ''],
                     ['id' => 'semilla', 'label' => 'Usuarios plan Semilla', 'min' => 10, 'max' => 500, 'step' => 10, 'val' => 80, 'sfx' => ''],
-                    ['id' => 'pctselva', 'label' => '% empresas Verde Selva', 'min' => 0, 'max' => 100, 'step' => 5, 'val' => 40, 'sfx' => '%'],
-                    ['id' => 'pctoro', 'label' => '% empresas Amarillo Oro', 'min' => 0, 'max' => 60, 'step' => 5, 'val' => 20, 'sfx' => '%'],
+                    ['id' => 'pctselva', 'label' => '% empresas Verde Selva', 'min' => 0, 'max' => 100, 'step' => 5, 'val' => 35, 'sfx' => '%'],
+                    ['id' => 'pctoro', 'label' => '% empresas Amarillo Oro', 'min' => 0, 'max' => 60, 'step' => 5, 'val' => 15, 'sfx' => '%'],
                     ['id' => 'pctazul', 'label' => '% empresas Azul Profundo', 'min' => 0, 'max' => 30, 'step' => 5, 'val' => 5, 'sfx' => '%'],
+                    ['id' => 'pctmicro', 'label' => '% empresas Microempresa', 'min' => 0, 'max' => 50, 'step' => 5, 'val' => 20, 'sfx' => '%'],
                     ['id' => 'comision', 'label' => 'Servicios con comisión/mes', 'min' => 0, 'max' => 30, 'step' => 1, 'val' => 5, 'sfx' => ''],
                     ['id' => 'valorserv', 'label' => 'Valor promedio servicio', 'min' => 50000, 'max' => 500000, 'step' => 10000, 'val' => 150000, 'sfx' => '$'],
                     ['id' => 'destacados', 'label' => 'Perfiles destacados/mes', 'min' => 0, 'max' => 50, 'step' => 1, 'val' => 10, 'sfx' => ''],
@@ -4865,6 +4869,9 @@ if ($action) {
                     <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span
                         style="color:rgba(255,255,255,.5)">Usuarios gratuitos (Semilla)</span><span
                         style="font-weight:700;color:white" id="adm-sm-semilla-n">0</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span
+                        style="color:rgba(255,255,255,.5)">Negocios en Microempresa</span><span
+                        style="font-weight:700;color:white" id="adm-sm-micro-n">0</span></div>
                     <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span
                         style="color:rgba(255,255,255,.5)">Empresas en planes de pago</span><span
                         style="font-weight:700;color:white" id="adm-sm-pago-n">0</span></div>
@@ -7735,9 +7742,9 @@ if ($action) {
         let admSimInited = false;
 
         const admSimEtapas = {
-          1: { selva: 15000, oro: 35000, azul: 55000, info: 'Etapa 1 (meses 1-6): Lanzamiento. Precios de arranque para captar los primeros usuarios y empresas.' },
-          2: { selva: 20000, oro: 45000, azul: 70000, info: 'Etapa 2 (meses 7-9): Crecimiento. Precios ligeramente más altos con mayor base de usuarios establecida.' },
-          3: { selva: 25000, oro: 55000, azul: 85000, info: 'Etapa 3 (meses 10-12): Consolidación. Precios plenos con plataforma validada y reputación en el Chocó.' },
+          1: { selva: 12900, oro: 29900, azul: 49900, micro: 19900, info: 'Etapa 1 (meses 1-6): Lanzamiento. Verde Selva $12.900 · Amarillo Oro $29.900 · Azul Profundo $49.900 · Microempresa $19.900/mes.' },
+          2: { selva: 12900, oro: 29900, azul: 49900, micro: 19900, info: 'Etapa 2 (meses 7-9): Crecimiento. Mismos precios base con mayor base de usuarios establecida en el Chocó.' },
+          3: { selva: 12900, oro: 29900, azul: 49900, micro: 19900, info: 'Etapa 3 (meses 10-12): Consolidación. Plataforma validada con reputación en el Chocó.' },
         };
 
         function admFmt(n) {
@@ -7763,13 +7770,14 @@ if ($action) {
           admSimCalc();
         }
 
-        function admCalcMes(i, emp, pS, pO, pA, serv, valS, dest, ali) {
+        function admCalcMes(i, emp, pS, pO, pA, pM, serv, valS, dest, ali) {
           const factor = 1 + (i * 0.05);
           const e = i < 6 ? admSimEtapas[1] : i < 9 ? admSimEtapas[2] : admSimEtapas[3];
           return Math.round(
             Math.round(emp * factor * pS) * e.selva +
             Math.round(emp * factor * pO) * e.oro +
             Math.round(emp * factor * pA) * e.azul +
+            Math.round(emp * factor * pM) * e.micro +
             serv * valS * 0.075 * factor +
             dest * 30000 * factor +
             ali * 500000
@@ -7784,18 +7792,19 @@ if ($action) {
           const pS = +document.getElementById('adm-ss-pctselva').value / 100;
           const pO = +document.getElementById('adm-ss-pctoro').value / 100;
           const pA = +document.getElementById('adm-ss-pctazul').value / 100;
+          const pM = +document.getElementById('adm-ss-pctmicro').value / 100;
           const serv = +document.getElementById('adm-ss-comision').value;
           const valS = +document.getElementById('adm-ss-valorserv').value;
           const dest = +document.getElementById('adm-ss-destacados').value;
           const ali = +document.getElementById('adm-ss-alianzas').value;
 
-          // Labels
           document.getElementById('adm-sv-visitas').textContent = visitas + '/día';
           document.getElementById('adm-sv-empresas').textContent = empresas;
           document.getElementById('adm-sv-semilla').textContent = semilla;
           document.getElementById('adm-sv-pctselva').textContent = (pS * 100) + '%';
           document.getElementById('adm-sv-pctoro').textContent = (pO * 100) + '%';
           document.getElementById('adm-sv-pctazul').textContent = (pA * 100) + '%';
+          document.getElementById('adm-sv-pctmicro').textContent = (pM * 100) + '%';
           document.getElementById('adm-sv-comision').textContent = serv;
           document.getElementById('adm-sv-valorserv').textContent = admFmt(valS);
           document.getElementById('adm-sv-destacados').textContent = dest;
@@ -7804,26 +7813,31 @@ if ($action) {
           document.getElementById('adm-sp-selva').textContent = admFmt(e.selva);
           document.getElementById('adm-sp-oro').textContent = admFmt(e.oro);
           document.getElementById('adm-sp-azul').textContent = admFmt(e.azul);
+          document.getElementById('adm-sp-micro').textContent = admFmt(e.micro);
           const infoEl = document.getElementById('sim-etapa-info-admin');
           if (infoEl) infoEl.textContent = e.info;
 
           const nS = Math.round(empresas * pS);
           const nO = Math.round(empresas * pO);
           const nA = Math.round(empresas * pA);
-          const nPago = nS + nO + nA;
+          const nM = Math.round(empresas * pM);
+          const nPago = nS + nO + nA + nM;
           const conv = semilla > 0 ? ((nPago / semilla) * 100).toFixed(1) : 0;
 
-          const subS = nS * e.selva, subO = nO * e.oro, subA = nA * e.azul;
+          const subS = nS * e.selva;
+          const subO = nO * e.oro;
+          const subA = nA * e.azul;
+          const subM = nM * e.micro;
           const com = serv * valS * 0.075;
           const dp = dest * 30000;
           const al = ali * 500000;
           const pub = Math.round(visitas * 30 * 0.001) * 20000;
-          const totalMes = subS + subO + subA + com + dp + al + pub;
+          const totalMes = subS + subO + subA + subM + com + dp + al + pub;
 
           const mensuales = [], acumulados = [];
           let acum = 0;
           for (let i = 0; i < 12; i++) {
-            const m = admCalcMes(i, empresas, pS, pO, pA, serv, valS, dest, ali);
+            const m = admCalcMes(i, empresas, pS, pO, pA, pM, serv, valS, dest, ali);
             mensuales.push(m); acum += m; acumulados.push(acum);
           }
 
@@ -7832,6 +7846,7 @@ if ($action) {
           document.getElementById('adm-sm-mejor').textContent = admFmt(mensuales[11]);
           document.getElementById('adm-sm-dia').textContent = admFmt(Math.round(acumulados[11] / 12 / 30));
           document.getElementById('adm-sm-semilla-n').textContent = semilla;
+          document.getElementById('adm-sm-micro-n').textContent = nM;
           document.getElementById('adm-sm-pago-n').textContent = nPago;
           document.getElementById('adm-sm-conv').textContent = conv + '%';
 
@@ -7839,6 +7854,7 @@ if ($action) {
             { label: 'Verde Selva (' + nS + ' emp.)', valor: subS, color: '#1D9E75' },
             { label: 'Amarillo Oro (' + nO + ' emp.)', valor: subO, color: '#BA7517' },
             { label: 'Azul Profundo (' + nA + ' emp.)', valor: subA, color: '#1a3f6f' },
+            { label: 'Microempresa (' + nM + ' neg.)', valor: subM, color: '#7c3aed' },
             { label: 'Comisiones por servicios', valor: com, color: '#534AB7' },
             { label: 'Perfiles destacados', valor: dp, color: '#854F0B' },
             { label: 'Alianzas institucionales', valor: al, color: '#4a7c59' },
