@@ -2054,14 +2054,14 @@ if ($subTipo === 'servicio') {
 
     .psec-empty {
       text-align: center;
-      padding: 24px 16px;
+      padding: 12px 16px;
       color: var(--ink3);
       font-size: 13px;
     }
 
     .psec-empty-ico {
-      font-size: 28px;
-      margin-bottom: 8px;
+      font-size: 22px;
+      margin-bottom: 4px;
     }
 
     .btn-dashed {
@@ -2157,16 +2157,16 @@ if ($subTipo === 'servicio') {
 
     .gallery-empty {
       text-align: center;
-      padding: 28px 16px;
+      padding: 14px 16px;
       border: 1.5px dashed var(--border2);
       border-radius: 10px;
       color: var(--ink4);
-      margin: 14px 20px;
+      margin: 10px 16px;
     }
 
     .gallery-empty-ico {
-      font-size: 28px;
-      margin-bottom: 8px;
+      font-size: 22px;
+      margin-bottom: 4px;
     }
 
     /* ──── RECENT ACTIVITY ──────────────────────── */
@@ -2331,6 +2331,561 @@ if ($subTipo === 'servicio') {
         padding: 14px 12px;
       }
     }
+
+    /* ──── MODALS BOX ──────────────────────────── */
+    .modal-box,
+    .hoja-modal-box {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, .18);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hoja-modal-box {
+      max-width: 680px;
+    }
+
+    .modal-pad {
+      padding: 28px 28px 24px;
+    }
+
+    .mcerrar {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all .18s;
+      font-family: var(--font);
+    }
+
+    .mcerrar:hover {
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .mtit {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .msub {
+      font-size: 13px;
+      color: var(--ink3);
+      margin-bottom: 18px;
+    }
+
+    .msec {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--ink4);
+      margin: 18px 0 10px;
+    }
+
+    .mmsg {
+      display: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .mmsg.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .mmsg.error {
+      background: #fce8e8;
+      color: #b71c1c;
+    }
+
+    .mfila {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .mgr {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .mgr.full {
+      grid-column: 1 / -1;
+    }
+
+    .mgr label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink2);
+    }
+
+    .mgr input,
+    .mgr select,
+    .mgr textarea,
+    .minput {
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border2);
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--surface2);
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color .18s;
+    }
+
+    .mgr input:focus,
+    .mgr select:focus,
+    .mgr textarea:focus,
+    .minput:focus {
+      outline: none;
+      border-color: var(--brand);
+      background: var(--surface);
+    }
+
+    .mlabel {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink2);
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .btn-save {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      border-radius: var(--radius);
+      background: var(--brand);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+      margin-top: 18px;
+      transition: background .2s;
+    }
+
+    .btn-save:hover {
+      background: #16692f;
+    }
+
+    .btn-save:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    /* ──── HOJA DE VIDA / VACANTE PROGRESS ──── */
+    .hoja-progress-track {
+      height: 5px;
+      background: var(--surface3);
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .hoja-progress-fill {
+      height: 5px;
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      border-radius: 5px;
+      width: 0%;
+      transition: width .5s;
+    }
+
+    .hoja-sec {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 18px 0 12px;
+    }
+
+    .hoja-sec-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .hoja-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+
+    .hoja-fila {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .hoja-gr {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .hoja-gr.full {
+      grid-column: 1 / -1;
+    }
+
+    .hoja-gr label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink2);
+    }
+
+    .hoja-gr input,
+    .hoja-gr select,
+    .hoja-gr textarea {
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border2);
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--surface2);
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color .18s;
+    }
+
+    .hoja-gr input:focus,
+    .hoja-gr select:focus,
+    .hoja-gr textarea:focus {
+      outline: none;
+      border-color: var(--brand);
+      background: var(--surface);
+    }
+
+    .hoja-btn-add {
+      display: block;
+      width: 100%;
+      padding: 9px 16px;
+      border-radius: 10px;
+      border: 1.5px dashed var(--border2);
+      background: none;
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: all .2s;
+      margin-bottom: 4px;
+    }
+
+    .hoja-btn-add:hover {
+      background: var(--brand-light);
+      border-color: var(--brand);
+    }
+
+    .hoja-item-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .hoja-item-rm {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--ink4);
+      cursor: pointer;
+      font-size: 13px;
+      font-family: var(--font);
+    }
+
+    .hoja-item-rm:hover {
+      color: var(--danger);
+    }
+
+    /* ──── CROP MODAL ──────────────────────────── */
+    .crop-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .7);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .crop-inner {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, .2);
+    }
+
+    /* ──── PERFIL SECCIONES ITEMS ──────────────── */
+    .psec-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .psec-item:last-child {
+      border-bottom: none;
+    }
+
+    .psec-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--brand-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .psec-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .psec-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .psec-nom {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .psec-sub {
+      font-size: 12px;
+      color: var(--ink3);
+      margin-top: 2px;
+    }
+
+    .psec-meta {
+      font-size: 11px;
+      color: var(--ink4);
+      margin-top: 2px;
+    }
+
+    .psec-credencial {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--brand);
+    }
+
+    .psec-archivo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      padding: 6px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-decoration: none;
+    }
+
+    .psec-arch-name {
+      font-size: 12px;
+      color: var(--ink2);
+    }
+
+    .psec-item-del {
+      background: none;
+      border: none;
+      color: var(--ink4);
+      cursor: pointer;
+      font-size: 14px;
+      flex-shrink: 0;
+      padding: 4px;
+      border-radius: 6px;
+      font-family: var(--font);
+    }
+
+    .psec-item-del:hover {
+      color: var(--danger);
+      background: #fef2f2;
+    }
+
+    .psec-ver-mas {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      background: none;
+      border: none;
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 6px;
+      font-family: var(--font);
+    }
+
+    /* ──── APTITUDES GRUPOS ─────────────────────── */
+    .apt-grupo {
+      margin-bottom: 12px;
+    }
+
+    .apt-nom {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink4);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 6px;
+    }
+
+    .apt-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .apt-chip-ico {
+      margin-right: 3px;
+    }
+
+    /* ──── NOTIF ITEMS ─────────────────────────── */
+    .notif-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--ink2);
+    }
+
+    .notif-item:last-child {
+      border-bottom: none;
+    }
+
+    .notif-ico {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .notif-sub {
+      font-size: 11px;
+      color: var(--ink4);
+      margin-top: 2px;
+    }
+
+    .notif-empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--ink4);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* ──── COMPACT EMPTY STATES (imagen 4) ────── */
+    .psec-empty {
+      text-align: center;
+      padding: 14px 16px;
+      color: var(--ink3);
+      font-size: 13px;
+    }
+
+    .psec-empty-ico {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .gallery-empty {
+      text-align: center;
+      padding: 16px 16px 14px;
+      border: 1.5px dashed var(--border2);
+      border-radius: 10px;
+      color: var(--ink4);
+      margin: 10px 16px;
+    }
+
+    .gallery-empty-ico {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    /* ──── CSS VARS COMPAT (modals use var(--v1) etc.) ─ */
+    :root {
+      --v1: #1a7a3c;
+      --v2: #27a855;
+      --v3: #4caf72;
+      --a1: #f9a825;
+      --a3: #ffd54f;
+      --r2: #1e56d8;
+      --r3: #3b82f6;
+      --vlima: #27a855;
+      --rcielo: #3b82f6;
+      --acrem: #b97a00;
+      --borde: rgba(27, 122, 60, .15);
+      --brd: rgba(27, 122, 60, .15);
+      --ink1: var(--ink);
+      --ink2: #2d3f35;
+      --bg2: var(--surface2);
+      --PLAN_PRIORIDAD: 0;
+    }
+
+    @media (max-width: 600px) {
+
+      .mfila,
+      .hoja-fila {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-pad {
+        padding: 20px 16px 18px;
+      }
+    }
   </style>
 </head>
 
@@ -2490,12 +3045,12 @@ if ($subTipo === 'servicio') {
         </div>
         <div class="hero-sub">
           <?php if ($tipo === 'empresa' && $nombreEmpresa): ?>
-            <?= $nombreEmpresa ?>  <?php if ($sectorEmp): ?> · <?= $sectorEmp ?><?php endif; ?><?php if ($ciudad): ?> ·
-              <?= $ciudad ?>  <?php endif; ?>
+            <?= $nombreEmpresa ?>   <?php if ($sectorEmp): ?> · <?= $sectorEmp ?><?php endif; ?><?php if ($ciudad): ?> ·
+              <?= $ciudad ?>   <?php endif; ?>
           <?php elseif ($tipo === 'negocio' && $nombreNegocio): ?>
-            <?= $nombreNegocio ?>  <?php if ($catNeg): ?> · <?= $catNeg ?><?php endif; ?>
+            <?= $nombreNegocio ?>   <?php if ($catNeg): ?> · <?= $catNeg ?><?php endif; ?>
           <?php elseif (!empty($talento['profesion'])): ?>
-            <?= htmlspecialchars($talento['profesion']) ?>  <?php if ($ciudad): ?> · <?= $ciudad ?><?php endif; ?>
+            <?= htmlspecialchars($talento['profesion']) ?>   <?php if ($ciudad): ?> · <?= $ciudad ?><?php endif; ?>
           <?php else: ?>
             <?= $tipo === 'empresa' ? 'Conecta con el talento del Chocó.' : 'Completa tu perfil para conectar con oportunidades.' ?>
           <?php endif; ?>
@@ -2578,7 +3133,8 @@ if ($subTipo === 'servicio') {
               <div class="mc-val"><?= $vistasTotal ?></div>
               <div class="mc-lab">Vistas al negocio</div>
               <div class="mc-sub" onclick="location.href='negocios.php'">
-                <?= $vistas7dias > 0 ? '+' . $vistas7dias . ' esta semana' : 'Ver directorio →' ?></div>
+                <?= $vistas7dias > 0 ? '+' . $vistas7dias . ' esta semana' : 'Ver directorio →' ?>
+              </div>
             </div>
           </div>
         </div>
@@ -2608,7 +3164,8 @@ if ($subTipo === 'servicio') {
             <div class="mc-ico g">🎧</div>
             <div>
               <div class="mc-val">
-                <?= $talento['precio_desde'] ? '$' . number_format((float) $talento['precio_desde'], 0, ',', '.') : '—' ?></div>
+                <?= $talento['precio_desde'] ? '$' . number_format((float) $talento['precio_desde'], 0, ',', '.') : '—' ?>
+              </div>
               <div class="mc-lab">Precio desde</div>
               <div class="mc-sub" onclick="location.href='servicios.php'">Ver servicios →</div>
             </div>
@@ -2619,7 +3176,8 @@ if ($subTipo === 'servicio') {
             <div class="mc-ico a">⭐</div>
             <div>
               <div class="mc-val">
-                <?= $talento['calificacion'] ? number_format((float) $talento['calificacion'], 1) : '0' ?>/5</div>
+                <?= $talento['calificacion'] ? number_format((float) $talento['calificacion'], 1) : '0' ?>/5
+              </div>
               <div class="mc-lab">Calificación</div>
               <div class="mc-sub">Reseñas →</div>
             </div>
@@ -2683,10 +3241,11 @@ if ($subTipo === 'servicio') {
               <?= $tipo === 'empresa' ? $nombreEmpresa : ($tipo === 'negocio' ? $nombreNegocio : $nombreCompleto) ?>
             </div>
             <div class="pc-role" id="dProfesion">
-              <?php if ($tipo === 'empresa'): ?>  <?= $sectorEmp ?: 'Sector no definido' ?>
-              <?php elseif ($tipo === 'negocio'): ?>  <?= $catNeg ?: 'Categoría no definida' ?>
-              <?php elseif ($subTipo === 'servicio'): ?>  <?= $profesionTipo ?: 'Servicio para eventos' ?>
-              <?php else: ?>  <?= !empty($talento['profesion']) ? htmlspecialchars($talento['profesion']) : ($profesionTipo ?: 'Sin profesión') ?>
+              <?php if ($tipo === 'empresa'): ?>   <?= $sectorEmp ?: 'Sector no definido' ?>
+              <?php elseif ($tipo === 'negocio'): ?>   <?= $catNeg ?: 'Categoría no definida' ?>
+              <?php elseif ($subTipo === 'servicio'): ?>   <?= $profesionTipo ?: 'Servicio para eventos' ?>
+              <?php else: ?>
+                <?= !empty($talento['profesion']) ? htmlspecialchars($talento['profesion']) : ($profesionTipo ?: 'Sin profesión') ?>
               <?php endif; ?>
             </div>
             <div class="pc-rows">
@@ -2820,9 +3379,9 @@ if ($subTipo === 'servicio') {
               <div class="card-title">👁️ Quién visitó tu perfil</div>
             </div>
             <?php if ($maxVisitantes === 0): ?>
-              <div style="text-align:center;padding:28px 20px">
-                <div style="font-size:36px;margin-bottom:8px">🔒</div>
-                <div style="font-size:13px;color:var(--ink3);margin-bottom:12px">Disponible desde el plan <strong
+              <div style="text-align:center;padding:16px 20px">
+                <div style="font-size:28px;margin-bottom:6px">🔒</div>
+                <div style="font-size:13px;color:var(--ink3);margin-bottom:10px">Disponible desde el plan <strong
                     style="color:var(--accent)">Amarillo Oro</strong>.</div>
                 <a href="empresas.php#precios" class="btn-primary" style="display:inline-flex">Ver planes →</a>
               </div>
@@ -2838,12 +3397,15 @@ if ($subTipo === 'servicio') {
                     ?>
                     <div class="visitor-card">
                       <div class="vc-av" style="background:<?= $col ?>22;color:<?= $col ?>;border:2px solid <?= $col ?>">
-                        <?= $vi ?></div>
+                        <?= $vi ?>
+                      </div>
                       <div>
-                        <div class="vc-name"><?= htmlspecialchars(trim(($vis['nombre'] ?? '') . ' ' . ($vis['apellido'] ?? ''))) ?>
+                        <div class="vc-name">
+                          <?= htmlspecialchars(trim(($vis['nombre'] ?? '') . ' ' . ($vis['apellido'] ?? ''))) ?>
                         </div>
                         <div class="vc-meta"><?= ucfirst($vis['tipo'] ?? '') ?> ·
-                          <?= date('d M', strtotime($vis['creado_en'])) ?></div>
+                          <?= date('d M', strtotime($vis['creado_en'])) ?>
+                        </div>
                       </div>
                     </div>
                   <?php endforeach; ?>
@@ -2915,7 +3477,8 @@ if ($subTipo === 'servicio') {
                   <div class="job-info">
                     <div class="job-name"><?= htmlspecialchars($v['titulo']) ?></div>
                     <div class="job-meta">📍
-                      <?= htmlspecialchars($v['ciudad'] ?? 'Quibdó') ?>    <?= isset($v['modalidad']) ? ' · ' . ucfirst($v['modalidad']) : '' ?>
+                      <?= htmlspecialchars($v['ciudad'] ?? 'Quibdó') ?>
+                      <?= isset($v['modalidad']) ? ' · ' . ucfirst($v['modalidad']) : '' ?>
                     </div>
                   </div>
                   <div class="job-date"><?= date('d/m/Y', strtotime($v['creado_en'])) ?></div>
@@ -2948,7 +3511,8 @@ if ($subTipo === 'servicio') {
                     <div class="job-info">
                       <div class="job-name"><?= htmlspecialchars($v['titulo']) ?></div>
                       <div class="job-meta">📍
-                        <?= htmlspecialchars($v['ciudad'] ?? 'Quibdó') ?>      <?= !empty($v['salario_texto']) ? ' · ' . htmlspecialchars($v['salario_texto']) : '' ?>
+                        <?= htmlspecialchars($v['ciudad'] ?? 'Quibdó') ?>
+                        <?= !empty($v['salario_texto']) ? ' · ' . htmlspecialchars($v['salario_texto']) : '' ?>
                       </div>
                     </div>
                     <a href="Empleo.php" class="card-link" style="font-size:11px;flex-shrink:0">Ver →</a>
@@ -3040,7 +3604,8 @@ if ($subTipo === 'servicio') {
                       <?php if ($thumb): ?><img src="<?= $thumb ?>" loading="lazy"><?php endif; ?>
                       <div
                         style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3)">
-                        <span style="font-size:28px">▶️</span></div>
+                        <span style="font-size:28px">▶️</span>
+                      </div>
                     </a>
                   <?php elseif ($gi['archivo']): ?>
                     <?php if ($isVideo): ?>
@@ -4035,10 +4600,10 @@ if ($subTipo === 'servicio') {
       const list = document.getElementById('edu-list');
       if (!list) return;
       if (!perfilData.educacion.length) {
-        list.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--ink3);font-size:13px">
-        <div style="font-size:32px;margin-bottom:8px">🎓</div>
+        list.innerHTML = `<div style="text-align:center;padding:14px 0;color:var(--ink3);font-size:13px">
+        <div style="font-size:24px;margin-bottom:6px">🎓</div>
         Agrega tu educación para que las empresas conozcan tu formación.
-        <br><button onclick="abrirFormEdu()" style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar educación</button>
+        <br><button onclick="abrirFormEdu()" style="margin-top:10px;padding:6px 16px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar educación</button>
       </div>`;
         return;
       }
@@ -4067,10 +4632,10 @@ if ($subTipo === 'servicio') {
       const list = document.getElementById('cert-list');
       if (!list) return;
       if (!perfilData.certificaciones.length) {
-        list.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--ink3);font-size:13px">
-        <div style="font-size:32px;margin-bottom:8px">🏅</div>
+        list.innerHTML = `<div style="text-align:center;padding:14px 0;color:var(--ink3);font-size:13px">
+        <div style="font-size:24px;margin-bottom:6px">🏅</div>
         Agrega tus certificaciones y cursos para destacar tus habilidades.
-        <br><button onclick="abrirFormCert()" style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar certificación</button>
+        <br><button onclick="abrirFormCert()" style="margin-top:10px;padding:6px 16px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar certificación</button>
       </div>`;
         return;
       }
@@ -4108,10 +4673,10 @@ if ($subTipo === 'servicio') {
       const bland = perfilData.aptitudes_bland ? perfilData.aptitudes_bland.split(',').map(s => s.trim()).filter(Boolean) : [];
       const idiomas = perfilData.aptitudes_idiomas ? perfilData.aptitudes_idiomas.split(',').map(s => s.trim()).filter(Boolean) : [];
       if (!tec.length && !bland.length && !idiomas.length) {
-        list.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--ink3);font-size:13px">
-        <div style="font-size:32px;margin-bottom:8px">⚡</div>
+        list.innerHTML = `<div style="text-align:center;padding:14px 0;color:var(--ink3);font-size:13px">
+        <div style="font-size:24px;margin-bottom:6px">⚡</div>
         Agrega tus aptitudes y habilidades clave.
-        <br><button onclick="abrirFormApt()" style="margin-top:12px;padding:8px 20px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar aptitudes</button>
+        <br><button onclick="abrirFormApt()" style="margin-top:10px;padding:6px 16px;border:1.5px dashed rgba(39,168,85,.3);border-radius:20px;background:none;color:var(--v2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar aptitudes</button>
       </div>`;
         return;
       }
