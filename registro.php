@@ -270,7 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 
     .header{display:flex;align-items:center;gap:14px;margin-bottom:32px}
-    .header img{width:44px;filter:drop-shadow(0 2px 8px rgba(245,200,0,.35))}
+    .header img{width:auto;height:70px;object-fit:contain; filter:drop-shadow(0 2px 8px rgba(245,200,0,.35))}
     .header-txt{}
     .header h1{font-family:'Fraunces',serif;font-size:30px;font-weight:900;line-height:1.1;margin:0}
     .header h1 span{color:var(--lima)}
