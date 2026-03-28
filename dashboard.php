@@ -863,21 +863,21 @@ if ($subTipo === 'servicio') {
     /* ──── SIDEBAR ──────────────────────────────── */
     .sidebar {
       width: var(--nav-w);
-      min-height: 100vh;
       background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       position: fixed;
-      top: 0;
+      top: var(--top-h);
       left: 0;
       bottom: 0;
       z-index: 200;
       transition: transform .3s ease;
+      overflow-y: auto;
     }
 
     .sidebar-logo {
-      padding: 20px 22px 16px;
+      padding: 14px 18px 12px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
@@ -1076,13 +1076,24 @@ if ($subTipo === 'servicio') {
       border-bottom: 1px solid var(--border);
       position: fixed;
       top: 0;
-      left: var(--nav-w);
+      left: 0;
       right: 0;
-      z-index: 100;
+      z-index: 300;
       display: flex;
       align-items: center;
-      padding: 0 28px;
+      padding: 0 28px 0 calc(var(--nav-w) + 16px);
       gap: 16px;
+    }
+
+    .topbar-logo {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .topbar-logo img {
+      height: 28px;
     }
 
     .topbar-title {
@@ -2009,7 +2020,7 @@ if ($subTipo === 'servicio') {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 20px;
+      padding: 10px 16px;
       border-bottom: 1px solid var(--border);
     }
 
@@ -2049,7 +2060,7 @@ if ($subTipo === 'servicio') {
     }
 
     .psec-body {
-      padding: 16px 20px;
+      padding: 6px 16px 10px;
     }
 
     .psec-empty {
@@ -2256,6 +2267,7 @@ if ($subTipo === 'servicio') {
 
       .sidebar {
         transform: translateX(-240px);
+        top: 0;
         --nav-w: 240px;
       }
 
@@ -2268,8 +2280,15 @@ if ($subTipo === 'servicio') {
       }
 
       .topbar {
-        left: 0;
         padding: 0 16px;
+      }
+
+      .topbar-logo {
+        display: flex;
+      }
+
+      .topbar-title {
+        display: none;
       }
 
       .hamburger {
@@ -2967,6 +2986,9 @@ if ($subTipo === 'servicio') {
     <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">
       <span></span><span></span><span></span>
     </button>
+    <div class="topbar-logo">
+      <img src="Imagenes/quibdo_desco_new.png" alt="QuibdóConecta">
+    </div>
     <div class="topbar-title">Mi <span>Panel</span></div>
     <div class="topbar-actions">
       <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
