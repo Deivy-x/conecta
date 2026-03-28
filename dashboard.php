@@ -1091,23 +1091,20 @@ if ($subTipo === 'servicio') {
       align-items: center;
       gap: 8px;
       flex-shrink: 0;
+      text-decoration: none;
+      cursor: pointer;
     }
 
     .topbar-logo img {
-      height: 30px;
+      height: 34px;
     }
 
     .topbar-logo-txt {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--brand);
-      line-height: 1.2;
+      display: none;
     }
 
     .topbar-logo-sub {
-      font-size: 10px;
-      color: var(--ink4);
-      font-weight: 400;
+      display: none;
     }
 
     .topbar-title {
@@ -1219,7 +1216,7 @@ if ($subTipo === 'servicio') {
     /* ──── MAIN CONTENT ──────────────────────────── */
     .main {
       margin-left: var(--nav-w);
-      margin-top: var(--top-h);
+      margin-top: calc(var(--top-h) + 4px);
       flex: 1;
       min-width: 0;
       padding: 28px;
@@ -2372,7 +2369,145 @@ if ($subTipo === 'servicio') {
       }
     }
 
-    /* ──── MODALS BOX ──────────────────────────── */
+    /* ──── BANDERA CHOCÓ ──────────────────────── */
+    .barra-bandera {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #1f9d55 33.3%, #d4a017 33.3% 66.6%, #1a3a6b 66.6%);
+      z-index: 9999;
+    }
+
+    /* ──── IDENTIDAD CHOCOANA ─────────────────── */
+    :root {
+      --choco-verde: #1f9d55;
+      --choco-dorado: #d4a017;
+      --choco-azul: #1a3a6b;
+      --choco-bg: #f0faf4;
+      --choco-gold-light: #fef9e7;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--choco-bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .main {
+      margin-left: var(--nav-w);
+      margin-top: var(--top-h);
+      flex: 1;
+      min-width: 0;
+      padding: 28px;
+      background: var(--choco-bg);
+    }
+
+    .topbar {
+      height: var(--top-h);
+      background: linear-gradient(135deg, #ffffff 60%, #f0faf4 100%);
+      border-bottom: 2px solid rgba(31, 157, 85, .15);
+      position: fixed;
+      top: 4px;
+      left: var(--nav-w);
+      right: 0;
+      z-index: 250;
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 16px;
+      box-shadow: 0 2px 12px rgba(31, 157, 85, .08);
+    }
+
+    .sidebar {
+      width: var(--nav-w);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fffe 100%);
+      border-right: 2px solid rgba(31, 157, 85, .12);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 4px;
+      left: 0;
+      bottom: 0;
+      z-index: 150;
+      transition: transform .3s ease;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .hero-strip {
+      background: linear-gradient(135deg, #ffffff 0%, #f0faf4 60%, #fef9e7 100%);
+      border: 1px solid rgba(31, 157, 85, .15);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-strip::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #1f9d55 33.3%, #d4a017 33.3% 66.6%, #1a3a6b 66.6%);
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid rgba(31, 157, 85, .1);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(31, 157, 85, .06);
+    }
+
+    .metric-card {
+      background: #ffffff;
+      border: 1px solid rgba(31, 157, 85, .1);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all .2s;
+      cursor: default;
+      box-shadow: 0 1px 4px rgba(31, 157, 85, .06);
+    }
+
+    .metric-card:hover {
+      border-color: var(--brand-mid);
+      box-shadow: 0 4px 16px rgba(31, 157, 85, .12);
+      transform: translateY(-1px);
+    }
+
+    .alert-bar.av {
+      background: linear-gradient(135deg, #e8f5e9, #f0faf4);
+      border: 1px solid #a5d6a7;
+      color: #1b5e20;
+    }
+
+    .sidebar-plan {
+      background: linear-gradient(135deg, #1f9d55 0%, #27a855 60%, #1a3a6b 100%);
+      border-radius: var(--radius);
+      padding: 14px;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
     .modal-box,
     .hoja-modal-box {
       background: var(--surface);
@@ -2931,6 +3066,7 @@ if ($subTipo === 'servicio') {
 
 <body>
 
+  <div class="barra-bandera"></div>
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
   <!-- ──── SIDEBAR ──────────────────────────────────────────────── -->
@@ -2993,7 +3129,7 @@ if ($subTipo === 'servicio') {
         <div class="sidebar-plan">
           <div class="sp-label">Plan activo</div>
           <div class="sp-name"><?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
-          <a href="empresas.php#planes" class="sp-btn">✦ Mejorar plan</a>
+          <a href="empresas.php#precios" class="sp-btn">✦ Mejorar plan</a>
         </div>
       <?php endif; ?>
       <a href="Php/logout.php" class="nav-salir">
@@ -3007,14 +3143,10 @@ if ($subTipo === 'servicio') {
     <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">
       <span></span><span></span><span></span>
     </button>
-    <div class="topbar-logo">
+    <a href="index.html" class="topbar-logo" title="Ir al inicio">
       <img src="Imagenes/quibdo_desco_new.png" alt="QuibdóConecta">
-      <div>
-        <div class="topbar-logo-txt">QuibdóConecta</div>
-        <div class="topbar-logo-sub">Conectando el Chocó</div>
-      </div>
-    </div>
-    <div class="topbar-title">Mi <span>Panel</span></div>
+    </a>
+    <div class="topbar-title">🏴 Mi <span>Panel</span></div>
     <div class="topbar-actions">
       <?php if ($tipo === 'empresa' || $tipo === 'negocio'): ?>
         <button class="btn-primary" onclick="abrirPublicarVacante()" style="display:flex;align-items:center;gap:5px">
@@ -3325,7 +3457,7 @@ if ($subTipo === 'servicio') {
                   <label class="tog"><input type="checkbox" <?= ($talento['visible'] ?? 0) ? 'checked' : '' ?>
                       onchange="toggleVis(this.checked)"><span class="tog-sl"></span></label>
                 <?php else: ?>
-                  <a href="empresas.php#planes"
+                  <a href="empresas.php#precios"
                     style="font-size:11px;font-weight:700;color:var(--brand);background:var(--brand-light);padding:5px 10px;border-radius:8px">✦
                     Mejorar</a>
                 <?php endif; ?>
@@ -3471,7 +3603,8 @@ if ($subTipo === 'servicio') {
           <div class="card">
             <div class="card-header">
               <div class="card-title">⭐ Plan <?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
-              <a href="empresas.php#planes" class="btn-primary" style="padding:7px 16px;font-size:12px">✦ Mejorar plan</a>
+              <a href="empresas.php#precios" class="btn-primary" style="padding:7px 16px;font-size:12px">✦ Mejorar
+                plan</a>
             </div>
             <div class="plan-grid">
               <?php foreach (['mensajes' => ['💬', 'Mensajes'], 'aplicaciones' => ['📋', 'Aplicaciones'], 'vacantes' => ['💼', 'Vacantes']] as $key => [$ico, $label]):
