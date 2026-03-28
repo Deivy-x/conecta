@@ -1470,10 +1470,9 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
 
   <!-- NAVBAR -->
   <header class="navbar" id="navbar">
-    <div class="nav-left">
-      <img src="Imagenes/Quibdo.png" alt="Quibdó Conecta" class="logo">
-      <span class="brand">Quibdó<span>Conecta</span></span>
-    </div>
+        <div class="nav-left">
+            <img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar">
+        </div>
     <nav class="nav-center">
       <a href="index.html">Inicio</a>
       <a href="Empleo.php">Empleos</a>
