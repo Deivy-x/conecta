@@ -3061,6 +3061,274 @@ if ($subTipo === 'servicio') {
         padding: 20px 16px 18px;
       }
     }
+
+    /* ──── DASH USER WIDGET (topbar) ──────────────────────── */
+    .dash-avatar-btn {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: white;
+      border: 1.5px solid rgba(31, 157, 85, .3);
+      border-radius: 40px;
+      padding: 5px 14px 5px 5px;
+      cursor: pointer;
+      transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+      box-shadow: 0 2px 12px rgba(31, 157, 85, .12);
+      user-select: none;
+    }
+
+    .dash-avatar-btn:hover,
+    .dash-avatar-btn.open {
+      border-color: #1f9d55;
+      box-shadow: 0 4px 20px rgba(31, 157, 85, .22);
+      transform: translateY(-1px);
+    }
+
+    .dash-avatar-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1f9d55, #27a855);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: white;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 2px solid rgba(31, 157, 85, .3);
+    }
+
+    .dash-avatar-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .dash-avatar-info {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .dash-avatar-nombre {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dash-avatar-sub {
+      font-size: 10px;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dash-avatar-arrow {
+      font-size: 9px;
+      color: #1f9d55;
+      transition: transform .3s;
+    }
+
+    .dash-avatar-btn.open .dash-avatar-arrow {
+      transform: rotate(180deg);
+    }
+
+    .dash-online-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2ecc71;
+      animation: dash-online 2.5s infinite;
+    }
+
+    @keyframes dash-online {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .4);
+      }
+
+      60% {
+        box-shadow: 0 0 0 5px rgba(46, 204, 113, 0);
+      }
+    }
+
+    .dash-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 270px;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .15), 0 4px 16px rgba(0, 0, 0, .08);
+      border: 1px solid rgba(0, 0, 0, .07);
+      overflow: hidden;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(-10px) scale(.97);
+      pointer-events: none;
+      transition: all .25s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    .dash-dropdown.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+
+    .dash-drop-header {
+      padding: 18px 20px 14px;
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border-bottom: 1px solid rgba(31, 157, 85, .1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dash-drop-av {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1f9d55, #27a855);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: white;
+      flex-shrink: 0;
+      border: 3px solid white;
+      box-shadow: 0 4px 12px rgba(31, 157, 85, .3);
+      overflow: hidden;
+    }
+
+    .dash-drop-av img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .dash-drop-nombre {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .dash-drop-tipo {
+      font-size: 11px;
+      color: #1f9d55;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-top: 2px;
+    }
+
+    .dash-drop-correo {
+      font-size: 11px;
+      color: #999;
+      margin-top: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 150px;
+    }
+
+    .dash-drop-badges {
+      padding: 10px 20px;
+      border-bottom: 1px solid rgba(0, 0, 0, .05);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .dash-drop-menu {
+      padding: 8px 0;
+    }
+
+    .dash-drop-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      color: #333;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all .2s;
+      cursor: pointer;
+    }
+
+    .dash-drop-link:hover {
+      background: #f8fffe;
+      color: #1f9d55;
+      padding-left: 24px;
+    }
+
+    .dash-dl-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: #f4f6f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+
+    .dash-drop-link:hover .dash-dl-icon {
+      background: rgba(31, 157, 85, .1);
+      transform: scale(1.1);
+    }
+
+    .dash-dl-badge {
+      margin-left: auto;
+      background: #e74c3c;
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 12px;
+    }
+
+    .dash-drop-sep {
+      height: 1px;
+      background: rgba(0, 0, 0, .06);
+      margin: 4px 0;
+    }
+
+    .dash-drop-logout {
+      color: #e74c3c !important;
+    }
+
+    .dash-drop-logout .dash-dl-icon {
+      background: #fff5f5 !important;
+    }
+
+    .dash-drop-logout:hover {
+      background: #fff5f5 !important;
+      color: #c0392b !important;
+    }
+
+    @media (max-width: 820px) {
+      .dash-avatar-info {
+        display: none;
+      }
+
+      .dash-avatar-btn {
+        padding: 5px;
+      }
+    }
   </style>
 </head>
 
@@ -3166,6 +3434,7 @@ if ($subTipo === 'servicio') {
           <span>📄</span> Mi CV
         </button>
       <?php endif; ?>
+
       <div style="position:relative">
         <div class="tb-btn" id="navNotif" title="Notificaciones">
           🔔<div class="tb-dot" id="notifDot" style="display:none"></div>
@@ -3176,6 +3445,62 @@ if ($subTipo === 'servicio') {
                 <div class="tnp-empty">Cargando…</div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position:relative" id="dashUserWidget">
+        <div class="dash-avatar-btn" id="dashAvatarBtn" title="Mi cuenta">
+          <div class="dash-avatar-img" id="dashAvatarImg">
+            <?php if ($fotoUrl): ?>
+              <img src="<?= $fotoUrl ?>" alt="Foto">
+            <?php else: ?>
+              <?= $inicial ?>
+            <?php endif; ?>
+          </div>
+          <div class="dash-avatar-info">
+            <span class="dash-avatar-nombre"><?= htmlspecialchars($usuario['nombre']) ?></span>
+            <span class="dash-avatar-sub"><span class="dash-online-dot"></span>En línea <span
+                class="dash-avatar-arrow">▾</span></span>
+          </div>
+        </div>
+        <div class="dash-dropdown" id="dashDropdown">
+          <div class="dash-drop-header">
+            <div class="dash-drop-av">
+              <?php if ($fotoUrl): ?>
+                <img src="<?= $fotoUrl ?>" alt="Foto">
+              <?php else: ?>
+                <?= $inicial ?>
+              <?php endif; ?>
+            </div>
+            <div>
+              <div class="dash-drop-nombre">
+                <?= htmlspecialchars(trim($usuario['nombre'] . ' ' . ($usuario['apellido'] ?? ''))) ?></div>
+              <div class="dash-drop-tipo"><?= $tc['label'] ?></div>
+              <div class="dash-drop-correo"><?= htmlspecialchars($usuario['correo']) ?></div>
+            </div>
+          </div>
+          <?php if (!empty($badgesHTML)): ?>
+            <div class="dash-drop-badges"><?= $badgesHTML ?></div>
+          <?php endif; ?>
+          <div class="dash-drop-menu">
+            <a href="<?= $tipo === 'empresa' ? 'dashboard_empresa.php' : ($tipo === 'negocio' ? 'dashboard_negocios.php' : 'dashboard.php') ?>"
+              class="dash-drop-link">
+              <span class="dash-dl-icon">🏠</span> Mi panel
+            </a>
+            <a href="chat.php" class="dash-drop-link" id="dashChatLink">
+              <span class="dash-dl-icon">💬</span> Mensajes
+              <?php if ($chatNoLeidos > 0): ?>
+                <span class="dash-dl-badge"><?= $chatNoLeidos ?></span>
+              <?php endif; ?>
+            </a>
+            <a href="verificar_cuenta.php" class="dash-drop-link">
+              <span class="dash-dl-icon">🪪</span> Verificación
+            </a>
+            <div class="dash-drop-sep"></div>
+            <a href="Php/logout.php" class="dash-drop-link dash-drop-logout">
+              <span class="dash-dl-icon">🚪</span> Cerrar sesión
+            </a>
           </div>
         </div>
       </div>
@@ -4699,6 +5024,24 @@ if ($subTipo === 'servicio') {
     async function cargarNotificaciones() {
       try { const r = await fetch('api_usuario.php?action=notificaciones'); const j = await r.json(); if (j.ok) renderNotifs(j); } catch (e) { }
     }
+
+    const dashAvatarBtn = document.getElementById('dashAvatarBtn');
+    const dashDropdown = document.getElementById('dashDropdown');
+    if (dashAvatarBtn && dashDropdown) {
+      dashAvatarBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isOpen = dashDropdown.classList.contains('visible');
+        dashDropdown.classList.toggle('visible', !isOpen);
+        dashAvatarBtn.classList.toggle('open', !isOpen);
+      });
+      document.addEventListener('click', function (e) {
+        if (!dashAvatarBtn.contains(e.target) && !dashDropdown.contains(e.target)) {
+          dashDropdown.classList.remove('visible');
+          dashAvatarBtn.classList.remove('open');
+        }
+      });
+    }
+
     cargarNotificaciones();
     setInterval(cargarNotificaciones, 30000);
 
