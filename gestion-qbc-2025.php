@@ -89,7 +89,7 @@ if (isset($_SESSION['admin_id'])) {
                         ar.perm_verificar, ar.perm_mensajes, ar.perm_pagos, ar.perm_stats,
                         ar.perm_solicitudes, ar.perm_artistas, ar.perm_badges,
                         ar.perm_convocatorias, ar.perm_actividad, ar.perm_auditoria,
-                        ar.perm_documentos
+                        ar.perm_documentos, ar.perm_talentos, ar.perm_simulador
                         FROM admin_roles ar WHERE ar.usuario_id = ?");
           $chk2->execute([$_SESSION['admin_id']]);
           $permsRow = $chk2->fetch();
@@ -97,8 +97,20 @@ if (isset($_SESSION['admin_id'])) {
             $adminUser = array_merge($adminUser, $permsRow);
           }
         } catch (Exception $e2) {
-          // Columnas nuevas aún no existen — continuar sin ellas
-          // superadmin y admin tendrán acceso completo igual
+          // Algunas columnas no existen aún — cargar solo las básicas
+          try {
+            $chk3 = $db->prepare("SELECT ar.perm_usuarios, ar.perm_empleos,
+                          ar.perm_verificar, ar.perm_mensajes, ar.perm_stats,
+                          ar.perm_badges, ar.perm_convocatorias
+                          FROM admin_roles ar WHERE ar.usuario_id = ?");
+            $chk3->execute([$_SESSION['admin_id']]);
+            $permsRow = $chk3->fetch();
+            if ($permsRow) {
+              $adminUser = array_merge($adminUser, $permsRow);
+            }
+          } catch (Exception $e3) {
+            // Sin permisos granulares — superadmin igual tiene acceso por $esSA
+          }
         }
       }
     } catch (Exception $e) {
@@ -125,21 +137,28 @@ if ($action && $logueado) {
     $ajaxRow = [];
   }
   // Todos los permisos — superadmin tiene todo, admin delegado usa sus permisos guardados en BD
+  // Si el admin delegado no tiene ninguno configurado aún, se le dan todos por defecto
+  $ajaxSinPerms = $ajaxAD && empty(array_filter([
+    $ajaxRow['perm_usuarios'] ?? null,
+    $ajaxRow['perm_empleos'] ?? null,
+    $ajaxRow['perm_badges'] ?? null,
+    $ajaxRow['perm_talentos'] ?? null,
+  ], fn($v) => $v !== null));
   $ajaxPerms = [
-    'usuarios' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_usuarios'])),
-    'empleos' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_empleos'])),
-    'verificar' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_verificar'])),
-    'solicitudes' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_solicitudes'])),
-    'mensajes' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_mensajes'])),
-    'stats' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_stats'])),
-    'badges' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_badges'])),
-    'convocatorias' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_convocatorias'])),
-    'actividad' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_actividad'])),
-    'auditoria' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_auditoria'])),
-    'documentos' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_documentos'])),
+    'usuarios' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_usuarios'])),
+    'empleos' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_empleos'])),
+    'verificar' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_verificar'])),
+    'solicitudes' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_solicitudes'])),
+    'mensajes' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_mensajes'])),
+    'stats' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_stats'])),
+    'badges' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_badges'])),
+    'convocatorias' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_convocatorias'])),
+    'actividad' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_actividad'])),
+    'auditoria' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_auditoria'])),
+    'documentos' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_documentos'])),
     'destacar' => $ajaxSA || $ajaxAD, // ambos pueden destacar
-    'talentos' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_talentos'])),
-    'simulador' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_simulador'])),
+    'talentos' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_talentos'])),
+    'simulador' => $ajaxSA || $ajaxSinPerms || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_simulador'])),
   ];
 
   // ── CATÁLOGO DE BADGES ──────────────────────────────────
@@ -3650,22 +3669,32 @@ if ($action) {
     // Calcular permisos efectivos
     $esSA = $nivel === 'superadmin';
     $esAD = $nivel === 'admin';
-    // Superadmin tiene todo. Admin delegado usa SOLO sus permisos guardados en BD.
+    // Si el admin delegado no tiene NINGÚN permiso configurado (BD vacía), darle todos por defecto
+    $sinPermsConfig = $esAD && empty(array_filter([
+      $adminUser['perm_usuarios'] ?? null,
+      $adminUser['perm_empleos'] ?? null,
+      $adminUser['perm_verificar'] ?? null,
+      $adminUser['perm_mensajes'] ?? null,
+      $adminUser['perm_badges'] ?? null,
+      $adminUser['perm_talentos'] ?? null,
+      $adminUser['perm_stats'] ?? null,
+      $adminUser['perm_simulador'] ?? null,
+    ], fn($v) => $v !== null));
     $perms = [
-      'usuarios' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_usuarios'])),
-      'empleos' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_empleos'])),
-      'verificar' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_verificar'])),
-      'solicitudes' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_solicitudes'])),
-      'mensajes' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_mensajes'])),
-      'stats' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_stats'])),
-      'badges' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_badges'])),
-      'convocatorias' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_convocatorias'])),
-      'actividad' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_actividad'])),
-      'auditoria' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_auditoria'])),
-      'documentos' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_documentos'])),
-      'talentos' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_talentos'])),
+      'usuarios' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_usuarios'])),
+      'empleos' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_empleos'])),
+      'verificar' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_verificar'])),
+      'solicitudes' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_solicitudes'])),
+      'mensajes' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_mensajes'])),
+      'stats' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_stats'])),
+      'badges' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_badges'])),
+      'convocatorias' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_convocatorias'])),
+      'actividad' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_actividad'])),
+      'auditoria' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_auditoria'])),
+      'documentos' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_documentos'])),
+      'talentos' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_talentos'])),
       'roles' => $esSA,
-      'simulador' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_simulador'])),
+      'simulador' => $esSA || $sinPermsConfig || (!$esSA && $esAD && !empty($adminUser['perm_simulador'])),
     ];
     ?>
 
