@@ -2461,7 +2461,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
     <div class="sidebar-bottom">
       <?php if (!empty($datosPlan)): ?>
         <div class="sidebar-plan">
-          <div class="sp-label">Plan activ</div>
+          <div class="sp-label">Plan activo</div>
           <div class="sp-name"><?= htmlspecialchars($datosPlan['nombre'] ?? 'Semilla') ?></div>
           <a href="empresas.php#precios" class="sp-btn">✦ Mejorar plan</a>
         </div>
