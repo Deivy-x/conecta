@@ -2918,7 +2918,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
       <div class="col-12">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🏆 Badges activos</div>
+            <div class="card-title">🏆 Badges actvos</div>
           </div>
           <div class="card-body" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
             <?php if ($tieneTop): ?><span
