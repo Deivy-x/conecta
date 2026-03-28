@@ -2301,8 +2301,9 @@ if ($subTipo === 'servicio') {
 
       .topbar {
         left: 0;
-        padding: 0 16px;
+        padding: 0 12px;
         z-index: 300;
+        gap: 8px;
       }
 
       .topbar-title {
@@ -2313,24 +2314,103 @@ if ($subTipo === 'servicio') {
         display: flex;
       }
 
+      .topbar-actions {
+        gap: 6px;
+      }
+
+      .topbar-actions .btn-primary {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      .dash-avatar-info {
+        display: none;
+      }
+
+      .dash-avatar-btn {
+        padding: 4px;
+      }
+
       .main {
         padding: 18px 16px;
         margin-left: 0;
       }
 
       .hero-strip {
-        flex-wrap: wrap;
-        gap: 14px;
-        padding: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+      }
+
+      .hero-top-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+      }
+
+      .hero-av {
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
+        flex-shrink: 0;
+      }
+
+      .hero-info {
+        width: 100%;
+      }
+
+      .hero-name {
+        font-size: 18px;
+      }
+
+      .hero-sub {
+        font-size: 12px;
       }
 
       .hero-stats {
-        gap: 14px;
+        display: flex;
+        gap: 0;
+        width: 100%;
+        background: var(--surface2);
+        border-radius: 12px;
+        padding: 10px 0;
+      }
+
+      .hs {
+        flex: 1;
+        text-align: center;
+        border-right: 1px solid var(--border);
+        padding: 0 8px;
+      }
+
+      .hs:last-child {
+        border-right: none;
+      }
+
+      .hs-val {
+        font-size: 20px;
+      }
+
+      .hs-lab {
+        font-size: 10px;
       }
 
       .hero-actions {
+        display: flex;
         flex-direction: row;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        gap: 8px;
+        width: 100%;
+      }
+
+      .hero-actions .btn-primary,
+      .hero-actions .btn-secondary {
+        flex: 1;
+        justify-content: center;
+        font-size: 12px;
+        padding: 9px 10px;
       }
 
       .col-4,
@@ -2346,26 +2426,25 @@ if ($subTipo === 'servicio') {
     }
 
     @media (max-width: 480px) {
-      .hero-av {
-        width: 56px;
-        height: 56px;
-        font-size: 22px;
+      .main {
+        padding: 12px 10px;
+      }
+
+      .hero-strip {
+        padding: 14px 12px;
       }
 
       .hero-name {
-        font-size: 18px;
-      }
-
-      .hero-stats {
-        gap: 12px;
+        font-size: 16px;
       }
 
       .hs-val {
-        font-size: 20px;
+        font-size: 18px;
       }
 
-      .main {
-        padding: 14px 12px;
+      .topbar-actions .btn-primary {
+        padding: 7px 10px;
+        font-size: 11px;
       }
     }
 
@@ -3542,31 +3621,33 @@ if ($subTipo === 'servicio') {
 
     <!-- HERO STRIP -->
     <div class="hero-strip">
-      <div class="hero-av" id="heroAvatar" onclick="abrirModal()" title="Cambiar foto">
-        <?php if ($fotoUrl): ?><img src="<?= $fotoUrl ?>" alt="Foto"><?php else: ?><?= $inicial ?><?php endif; ?>
-      </div>
-      <div class="hero-info">
-        <div class="hero-chips">
-          <span class="hchip hc-tipo"><?= $tc['label'] ?></span>
-          <?php if ($tieneVerificado): ?><span class="hchip hc-v">✓ Verificado</span><?php endif; ?>
-          <?php if ($tienePremium): ?><span class="hchip hc-p">⭐ Premium</span><?php endif; ?>
-          <?php if ($tieneTop): ?><span class="hchip hc-top">👑 Top</span><?php endif; ?>
-          <?php if ($tieneDestacado): ?><span class="hchip hc-dest">🏅 Destacado</span><?php endif; ?>
+      <div class="hero-top-row">
+        <div class="hero-av" id="heroAvatar" onclick="abrirModal()" title="Cambiar foto">
+          <?php if ($fotoUrl): ?><img src="<?= $fotoUrl ?>" alt="Foto"><?php else: ?><?= $inicial ?><?php endif; ?>
         </div>
-        <div class="hero-name" id="dNombreHero">
-          ¡Hola, <em><?= htmlspecialchars($usuario['nombre']) ?></em>!
-        </div>
-        <div class="hero-sub">
-          <?php if ($tipo === 'empresa' && $nombreEmpresa): ?>
-            <?= $nombreEmpresa ?>   <?php if ($sectorEmp): ?> · <?= $sectorEmp ?><?php endif; ?><?php if ($ciudad): ?> ·
-              <?= $ciudad ?>   <?php endif; ?>
-          <?php elseif ($tipo === 'negocio' && $nombreNegocio): ?>
-            <?= $nombreNegocio ?>   <?php if ($catNeg): ?> · <?= $catNeg ?><?php endif; ?>
-          <?php elseif (!empty($talento['profesion'])): ?>
-            <?= htmlspecialchars($talento['profesion']) ?>   <?php if ($ciudad): ?> · <?= $ciudad ?><?php endif; ?>
-          <?php else: ?>
-            <?= $tipo === 'empresa' ? 'Conecta con el talento del Chocó.' : 'Completa tu perfil para conectar con oportunidades.' ?>
-          <?php endif; ?>
+        <div class="hero-info">
+          <div class="hero-chips">
+            <span class="hchip hc-tipo"><?= $tc['label'] ?></span>
+            <?php if ($tieneVerificado): ?><span class="hchip hc-v">✓ Verificado</span><?php endif; ?>
+            <?php if ($tienePremium): ?><span class="hchip hc-p">⭐ Premium</span><?php endif; ?>
+            <?php if ($tieneTop): ?><span class="hchip hc-top">👑 Top</span><?php endif; ?>
+            <?php if ($tieneDestacado): ?><span class="hchip hc-dest">🏅 Destacado</span><?php endif; ?>
+          </div>
+          <div class="hero-name" id="dNombreHero">
+            ¡Hola, <em><?= htmlspecialchars($usuario['nombre']) ?></em>!
+          </div>
+          <div class="hero-sub">
+            <?php if ($tipo === 'empresa' && $nombreEmpresa): ?>
+              <?= $nombreEmpresa ?>   <?php if ($sectorEmp): ?> · <?= $sectorEmp ?><?php endif; ?><?php if ($ciudad): ?> ·
+                <?= $ciudad ?>   <?php endif; ?>
+            <?php elseif ($tipo === 'negocio' && $nombreNegocio): ?>
+              <?= $nombreNegocio ?>   <?php if ($catNeg): ?> · <?= $catNeg ?><?php endif; ?>
+            <?php elseif (!empty($talento['profesion'])): ?>
+              <?= htmlspecialchars($talento['profesion']) ?>   <?php if ($ciudad): ?> · <?= $ciudad ?><?php endif; ?>
+            <?php else: ?>
+              <?= $tipo === 'empresa' ? 'Conecta con el talento del Chocó.' : 'Completa tu perfil para conectar con oportunidades.' ?>
+            <?php endif; ?>
+          </div>
         </div>
       </div>
       <div class="hero-stats">
