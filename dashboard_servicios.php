@@ -64,7 +64,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try { $db->exec("ALTER TABLE talento_perfil ADD COLUMN IF NOT EXISTS instagram VARCHAR(100) DEFAULT ''"); } catch(Exception $e){}
         try { $db->prepare("UPDATE talento_perfil SET instagram=? WHERE usuario_id=? ORDER BY id DESC LIMIT 1")->execute([$instagram,$usuario['id']]); } catch(Exception $e){}
 
-        echo json_encode(['ok'=>true,'nombre'=>$nombre,'tipo_servicio'=>$tipoSvc,'ciudad'=>$ciudad]);
+        // Releer foto actual para devolverla al frontend y que no se pierda del DOM
+        $fotoStmt = $db->prepare('SELECT foto FROM usuarios WHERE id=? LIMIT 1');
+        $fotoStmt->execute([$usuario['id']]);
+        $fotoActualResp = $fotoStmt->fetchColumn() ?: '';
+        echo json_encode(['ok'=>true,'nombre'=>$nombre,'tipo_servicio'=>$tipoSvc,'ciudad'=>$ciudad,'foto'=>$fotoActualResp]);
         exit;
     }
 
@@ -408,7 +412,7 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
     <a href="Ayuda.html" class="nl">❓ Ayuda</a>
   </nav>
   <div class="nav-usuario">
-    <div class="nav-avatar" onclick="abrirModal()">
+    <div class="nav-avatar" id="navAvatar" onclick="abrirModal()">
       <?php if ($fotoUrl): ?><img src="<?=$fotoUrl?>" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$inicial?><?php endif; ?>
     </div>
     <span class="nav-nombre"><?=$nombreCompleto?></span>
@@ -418,7 +422,7 @@ if ($tieneVerificado) $pct=min(100,$pct+5);
 
 <div class="hero">
   <div class="hero-inner">
-    <div class="hero-av" onclick="abrirModal()" title="Cambiar foto">
+    <div class="hero-av" id="heroAvatar" onclick="abrirModal()" title="Cambiar foto">
       <?php if ($fotoUrl): ?><img src="<?=$fotoUrl?>" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$inicial?><?php endif; ?>
     </div>
     <div>
@@ -854,8 +858,17 @@ async function guardarServicio(){
   try{
     const r=await fetch('dashboard_servicios.php',{method:'POST',body:fd});
     const j=await r.json();
-    if(j.ok){mostrarMsg('¡Perfil actualizado!','success');setTimeout(cerrarModal,1500);}
-    else mostrarMsg(j.msg||'Error al guardar.','error');
+    if(j.ok){
+      mostrarMsg('¡Perfil actualizado!','success');
+      // Actualizar nombre en hero
+      const dNom = document.getElementById('dNombreHero'); if(dNom) dNom.textContent = j.nombre;
+      // Restaurar foto en todos los avatares si el servidor la devuelve
+      if(j.foto){
+        const imgTag=`<img src="${j.foto}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+        ['fotoPreview','navAvatar','heroAvatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=imgTag;});
+      }
+      setTimeout(cerrarModal,1500);
+    } else mostrarMsg(j.msg||'Error al guardar.','error');
   }catch(e){mostrarMsg('Error de conexión.','error');}
   btn.disabled=false;btn.textContent='💾 Guardar cambios';
 }
@@ -875,7 +888,7 @@ async function subirFoto(input){
   try{const r=await fetch('dashboard_servicios.php',{method:'POST',body:fd});const j=await r.json();
     if(j.ok){msg.textContent='✅ Foto actualizada';msg.style.color='#6b21a8';
       const img=`<img src="${j.foto}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-      document.getElementById('fotoPreview').innerHTML=img;
+      ['fotoPreview','navAvatar','heroAvatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=img;});
     }else{msg.textContent='❌ '+(j.msg||'Error');msg.style.color='#e74c3c';}
   }catch(e){msg.textContent='❌ Error de conexión';msg.style.color='#e74c3c';}
   input.value='';
