@@ -2670,10 +2670,9 @@ if ($subTipo === 'servicio') {
 
   <!-- ── NAVBAR ── -->
   <nav class="navbar">
-    <a href="index.html" class="nav-marca">
-      <img src="Imagenes/Quibdo.png" alt="Logo">
-      <div class="nav-marca-txt">Quibdó<em>Conecta</em></div>
-    </a>
+        <div class="nav-left">
+            <img src="Imagenes/quibdo_desco_new.png" alt="Quibdó Conecta" class="logo-navbar">
+        </div>
     <div class="nav-links">
       <a href="dashboard.php" class="nl on">🏠 Panel</a>
       <a href="Empleo.php" class="nl">💼 Empleos</a>
