@@ -124,22 +124,22 @@ if ($action && $logueado) {
   } catch (Exception $e) {
     $ajaxRow = [];
   }
-  // Todos los permisos — si la columna no existe en $ajaxRow, default false (superadmin/admin pasan igual)
+  // Todos los permisos — superadmin tiene todo, admin delegado usa sus permisos guardados en BD
   $ajaxPerms = [
-    'usuarios' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_usuarios']),
-    'empleos' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_empleos']),
-    'verificar' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_verificar']),
-    'solicitudes' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_solicitudes']),
-    'mensajes' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_mensajes']),
-    'stats' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_stats']),
-    'badges' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_badges']),
-    'convocatorias' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_convocatorias']),
-    'actividad' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_actividad']),
-    'auditoria' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_auditoria']),
-    'documentos' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_documentos']),
-    'destacar' => $ajaxSA || $ajaxAD, // Solo superadmin y admin delegado
-    'talentos' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_talentos']),
-    'simulador' => $ajaxSA || $ajaxAD || !empty($ajaxRow['perm_simulador']),
+    'usuarios' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_usuarios'])),
+    'empleos' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_empleos'])),
+    'verificar' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_verificar'])),
+    'solicitudes' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_solicitudes'])),
+    'mensajes' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_mensajes'])),
+    'stats' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_stats'])),
+    'badges' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_badges'])),
+    'convocatorias' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_convocatorias'])),
+    'actividad' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_actividad'])),
+    'auditoria' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_auditoria'])),
+    'documentos' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_documentos'])),
+    'destacar' => $ajaxSA || $ajaxAD, // ambos pueden destacar
+    'talentos' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_talentos'])),
+    'simulador' => $ajaxSA || (!$ajaxSA && $ajaxAD && !empty($ajaxRow['perm_simulador'])),
   ];
 
   // ── CATÁLOGO DE BADGES ──────────────────────────────────
@@ -1886,10 +1886,15 @@ if ($action && $logueado) {
     }
     try {
       if ($tabla === 'talento_perfil') {
-        // UPSERT: si el usuario no tiene fila en talento_perfil aún, la crea
+        // Asegurar que bio tiene DEFAULT '' para evitar error strict mode
+        try {
+          $db->exec("ALTER TABLE talento_perfil ALTER COLUMN bio SET DEFAULT ''");
+        } catch (Exception $e2) {
+        }
+        // UPSERT: incluir bio='' para satisfacer strict mode cuando es insert nuevo
         $db->prepare("
-          INSERT INTO talento_perfil (usuario_id, $campo)
-          VALUES (?, ?)
+          INSERT INTO talento_perfil (usuario_id, bio, $campo)
+          VALUES (?, '', ?)
           ON DUPLICATE KEY UPDATE $campo = VALUES($campo)
         ")->execute([$uid, $valor]);
       } else {
@@ -3645,21 +3650,22 @@ if ($action) {
     // Calcular permisos efectivos
     $esSA = $nivel === 'superadmin';
     $esAD = $nivel === 'admin';
+    // Superadmin tiene todo. Admin delegado usa SOLO sus permisos guardados en BD.
     $perms = [
-      'usuarios' => $esSA || $esAD || !empty($adminUser['perm_usuarios']),
-      'empleos' => $esSA || $esAD || !empty($adminUser['perm_empleos']),
-      'verificar' => $esSA || $esAD || !empty($adminUser['perm_verificar']),
-      'solicitudes' => $esSA || $esAD || !empty($adminUser['perm_solicitudes']),
-      'mensajes' => $esSA || $esAD || !empty($adminUser['perm_mensajes']),
-      'stats' => $esSA || $esAD || !empty($adminUser['perm_stats']),
-      'badges' => $esSA || $esAD || !empty($adminUser['perm_badges']),
-      'convocatorias' => $esSA || $esAD || !empty($adminUser['perm_convocatorias']),
-      'actividad' => $esSA || $esAD || !empty($adminUser['perm_actividad']),
-      'auditoria' => $esSA || $esAD || !empty($adminUser['perm_auditoria']),
-      'documentos' => $esSA || $esAD || !empty($adminUser['perm_documentos']),
-      'talentos' => $esSA || $esAD || !empty($adminUser['perm_talentos']),
+      'usuarios' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_usuarios'])),
+      'empleos' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_empleos'])),
+      'verificar' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_verificar'])),
+      'solicitudes' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_solicitudes'])),
+      'mensajes' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_mensajes'])),
+      'stats' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_stats'])),
+      'badges' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_badges'])),
+      'convocatorias' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_convocatorias'])),
+      'actividad' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_actividad'])),
+      'auditoria' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_auditoria'])),
+      'documentos' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_documentos'])),
+      'talentos' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_talentos'])),
       'roles' => $esSA,
-      'simulador' => $esSA || $esAD || !empty($adminUser['perm_simulador']),
+      'simulador' => $esSA || (!$esSA && $esAD && !empty($adminUser['perm_simulador'])),
     ];
     ?>
 
@@ -3781,6 +3787,8 @@ if ($action) {
           <button class="sb-item" data-tip="Roles" onclick="irA('roles')" id="nav-roles">
             <span class="ic">👑</span><span>Roles</span>
           </button>
+        <?php endif; ?>
+        <?php if ($perms['talentos']): ?>
           <button class="sb-item" data-tip="Candidatos" onclick="irA('candidatos')" id="nav-candidatos">
             <span class="ic">👤</span><span>Candidatos</span>
           </button>
