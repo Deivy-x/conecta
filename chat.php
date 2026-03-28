@@ -295,6 +295,7 @@ $conUsuario = (int) ($_GET['con'] ?? 0);
 height:30px;
 width:auto;
 object-fit:contain;
+margin-left: 20px;
 }
         
         .sb-nav {
