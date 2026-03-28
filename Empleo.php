@@ -150,7 +150,7 @@ function catIcono($cat, $iconos) {
     
     .logo{width:52px;height:auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.15))}
     .logo-navbar{
-height:75px;
+height:45px;
 width:auto;
 object-fit:contain;
 }

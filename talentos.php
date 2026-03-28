@@ -167,7 +167,11 @@ if (file_exists(__DIR__ . '/Php/db.php')) {
       height: auto;
       filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
     }
-
+.logo-navbar{
+height:45px;
+width:auto;
+object-fit:contain;
+}
     .brand {
       font-size: 22px;
       font-weight: 800;
