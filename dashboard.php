@@ -819,7 +819,11 @@ if ($subTipo === 'servicio') {
     .franja-top span:nth-child(3) {
       background: var(--r3)
     }
-
+.logo-navbar{
+height:75px;
+width:auto;
+object-fit:contain;
+}
     .navbar {
       position: sticky;
       top: 3px;
@@ -832,7 +836,7 @@ if ($subTipo === 'servicio') {
       align-items: center;
       justify-content: space-between;
       padding: 0 36px;
-      height: 20px
+      height: 56px
     }
 
     .nav-marca {
