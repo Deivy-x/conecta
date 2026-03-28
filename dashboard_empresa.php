@@ -2087,7 +2087,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
     }
 
     .banner-info-row {
-      padding: 0 20px 1px;
+      padding: 0 20px 16px;
       margin-top: -40px;
       position: relative;
       z-index: 2;
