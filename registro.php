@@ -369,7 +369,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container">
   <div class="header" style="justify-content:space-between">
     <div style="display:flex;align-items:center;gap:14px">
-      <img src="Imagenes/Quibdo.png" alt="Logo">
+      <img src="Imagenes/quibdo_desco_new.png" alt="Logo">
       <div class="header-txt">
         <h1>Crear <span>cuenta</span></h1>
         <p>Únete a QuibdóConecta gratis</p>
