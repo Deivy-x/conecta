@@ -2460,7 +2460,7 @@ $visibleEnWeb = (int) ($ep['visible'] ?? 1) && (int) ($ep['visible_admin'] ?? 1)
           <a href="empresas.php#precios" class="sp-btn">✦ Mejorar plan</a>
         </div>
       <?php endif; ?>
-      <a href="?salir=1" class="nav-salir"><span>🚪</span> Cerra sesión</a>
+      <a href="?salir=1" class="nav-salir"><span>🚪</span> Cerrar sesión</a>
     </div>
   </aside>
 
